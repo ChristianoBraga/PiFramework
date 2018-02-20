@@ -1,18 +1,36 @@
-***(
-Basic Programming Languages Constructs Library
-Mosses February 2018
-Author: Christiano Braga
-http://www.ic.uff.br/~cbraga
-Universidade Federal Fluminense, Brazil	
+\documentclass{llncs}
+\usepackage[utf8x]{inputenc}
+\usepackage[colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=blue]{hyperref}
+\usepackage{fourier}
+\usepackage{tikz}
+\usetikzlibrary{arrows,automata}
+\usepackage{marvosym,alltt}
+\usepackage{graphicx}
+\usepackage{amsmath}
 
-Basic Programming Languages Constructs is a library of common programming language constructs 
-whose semantics are formally specified. Therefore, to give semantics to a programming language 
-means to relate constructions of the given language with the constructs of BPLC. 
+\usepackage{noweb}
 
-It is implemented in the Maude language and requires the version implementing the Logical Model 
-Checker aviable in http://maude.cs.illinois.edu/tools/lmc/.
-)
+% Comandos do noweb:
+% noweave -delay bplc.noweb > bplc.tex
+% notangle -Rbplc.maude bplc.noweb > bplc.maude 
 
+\begin{document}
+	
+\title{BPLC Library}
+\author{Christiano Braga\\\email{cbraga@ic.uff.br}}
+\institute{Instituto de Computação\\Universidade Federal Fluminense}
+
+\maketitle
+
+\center \includegraphics[scale=0.45]{bplc-logo.png}
+
+\begin{abstract}
+Basic Programming Languages Constructs (pronounced "beeplick") is a library of common programming language constructs whose semantics are formally specified. Therefore, to give semantics to a programming language means to relate constructions of the given language with the constructs of BPLC. It is implemented in the~\href{http://maude.cs.uiuc.edu}{Maude} language.
+\end{abstract}
+
+\pagestyle{plain}
+
+<<gsmc>>=
 -----------------------------
 --- Generalized SMC machines.
 
@@ -29,7 +47,9 @@ fmod GSMC is
     sorts Attrib Conf .
     op <_> : Set{SemComp} -> Conf [format(c! c! c! o)] . 
 endfm
+@
 
+<<bplc-sem-comp>>=
 fmod VALUE-SORT is
     sort Value . 
 endfm
@@ -128,7 +148,9 @@ fmod ENV is
        sort Map{Id,Bindable} to Env,
        op undefined to undefid, op empty to noEnv). 
 endfm
+@
 
+<<bplc-exp>>=
 fmod EXP is
     pr RAT .
     ex GSMC .  ex ENV .
@@ -192,152 +214,181 @@ fmod EXP is
     eq ge(E1:Exp, E2:Exp) = neg(lt(E1:Exp, E2:Exp)) .
 
     eq [rat-exp] :
-	< cnt : (rat(R:Rat) C:ControlStack), val : SK:ValueStack, ... > =
+	< cnt : (rat(R:Rat) C:ControlStack), val : SK:ValueStack, ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R:Rat) SK:ValueStack), ... > [variant] .
 
     eq [bool-exp] :
-	< cnt : (boo(B:Bool) C:ControlStack), val : SK:ValueStack, ... > =
+	< cnt : (boo(B:Bool) C:ControlStack), val : SK:ValueStack, ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(B:Bool) SK:ValueStack), ... > [variant] .
+	  val : (val(B:Bool) SK:ValueStack), ... > [variant] .
 
     eq [add-exp] :
-	< cnt : (add(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (add(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E1:Exp E2:Exp ADD C:ControlStack), ... > [variant] .
 
     eq [add-exp] :
 	< cnt : (ADD C:ControlStack),
-	val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > =
+	  val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R1:Rat + R2:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R1:Rat + R2:Rat) SK:ValueStack), ... > [variant] .
 
     eq [sub-exp] :
-	< cnt : (sub(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (sub(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E1:Exp E2:Exp SUB C:ControlStack), ... > [variant] .
 
     eq [sub-exp] :
 	< cnt : (SUB C:ControlStack),
-	val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > =
+ 	  val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R2:Rat - R1:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R2:Rat - R1:Rat) SK:ValueStack), ... > [variant] .
 
     eq [mul-exp] :
-	< cnt : (mul(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (mul(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E1:Exp E2:Exp MUL C:ControlStack), ... > [variant] .
 
     eq [mul-exp] :
 	< cnt : (MUL C:ControlStack),
-	val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > =
+	  val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R1:Rat * R2:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R1:Rat * R2:Rat) SK:ValueStack), ... > [variant] .
 
     eq [div-exp] :
-	< cnt : (div(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (div(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E1:Exp E2:Exp DIV C:ControlStack), ... > [variant] .
 
     eq [div-exp] :
 	< cnt : (DIV C:ControlStack),
-	val : (val(R1:Rat) val(R2:NzRat) SK:ValueStack), ... > =
+	  val : (val(R1:Rat) val(R2:NzRat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R1:Rat / R2:NzRat) SK:ValueStack), ... > [variant] .
+	  val : (val(R1:Rat / R2:NzRat) SK:ValueStack), ... > [variant] .
 
     eq [lt-exp] :
-	< cnt : (lt(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (lt(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E2:Exp E1:Exp LT C:ControlStack), ... > [variant] .
 
     eq [lt-exp] :
 	< cnt : (LT C:ControlStack),
-	val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > =
+	  val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R1:Rat < R2:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R1:Rat < R2:Rat) SK:ValueStack), ... > [variant] .
 
     eq [le-exp] :
-	< cnt : (le(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (le(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E2:Exp E1:Exp LE C:ControlStack), ... > [variant] .
 
     eq [le-exp] :
 	< cnt : (LE C:ControlStack),
-	val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > =
+	  val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R1:Rat <= R2:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R1:Rat <= R2:Rat) SK:ValueStack), ... > [variant] .
 
     eq [eq-exp] :
-	< cnt : (eq(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (eq(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E2:Exp E1:Exp EQ C:ControlStack), ... > [variant] .
 
     eq [eq-exp] :
 	< cnt : (EQ C:ControlStack),
-	val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > =
+	  val : (val(R1:Rat) val(R2:Rat) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(R1:Rat == R2:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R1:Rat == R2:Rat) SK:ValueStack), ... > [variant] .
 
     eq [eq-exp] :
 	< cnt : (EQ C:ControlStack),
-	val : (val(B1:Bool) val(B2:Bool) SK:ValueStack), ... > =
+	  val : (val(B1:Bool) val(B2:Bool) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(B1:Bool == B2:Bool) SK:ValueStack), ... > [variant] .
+	  val : (val(B1:Bool == B2:Bool) SK:ValueStack), ... > [variant] .
 
     eq [neg-exp] :
-	< cnt : (neg(E:Exp) C:ControlStack), ... > =
+	< cnt : (neg(E:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E:Exp NEG C:ControlStack), ... > [variant] .
 
     eq [neg-exp] :
 	< cnt : (NEG C:ControlStack),
-	val : (val(B:Bool) SK:ValueStack), ... > =
+	  val : (val(B:Bool) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(not(B:Bool)) SK:ValueStack), ... > [variant] .
+	  val : (val(not(B:Bool)) SK:ValueStack), ... > [variant] .
 
     eq [and-exp] :
-	< cnt : (and(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (and(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E1:Exp E2:Exp AND C:ControlStack), ... > [variant] .
 
     eq [and-exp] :
 	< cnt : (AND C:ControlStack),
-	val : (val(B1:Bool) val(B2:Bool) SK:ValueStack), ... > =
+	  val : (val(B1:Bool) val(B2:Bool) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(B1:Bool and B2:Bool) SK:ValueStack), ... > [variant] .
+	  val : (val(B1:Bool and B2:Bool) SK:ValueStack), ... > [variant] .
 
     eq [or-exp] :
-	< cnt : (or(E1:Exp, E2:Exp) C:ControlStack), ... > =
+	< cnt : (or(E1:Exp, E2:Exp) C:ControlStack), ... > 
+     =
 	< cnt : (E1:Exp E2:Exp OR C:ControlStack), ... > [variant] .
 
     eq [and-exp] :
 	< cnt : (OR C:ControlStack),
-	val : (val(B1:Bool) val(B2:Bool) SK:ValueStack), ... > =
+	  val : (val(B1:Bool) val(B2:Bool) SK:ValueStack), ... > 
+     =
 	< cnt : C:ControlStack,
-	val : (val(B1:Bool or B2:Bool) SK:ValueStack), ... > [variant] .
+	  val : (val(B1:Bool or B2:Bool) SK:ValueStack), ... > [variant] .
 
     eq [variable-exp] :
 	< env : (I:Id |-> bind(L:Loc), E:Env),
-	sto : (L:Loc |-> store(R:Rat), S:Store),
-	cnt : (I:Id C:ControlStack), val : SK:ValueStack, ... > =
+	  sto : (L:Loc |-> store(R:Rat), S:Store),
+	  cnt : (I:Id C:ControlStack), val : SK:ValueStack, ... > 
+     =
  	< env : (I:Id |-> bind(L:Loc), E:Env),
-	sto : (L:Loc |-> store(R:Rat), S:Store),
-	cnt : C:ControlStack ,
-	val : (val(R:Rat) SK:ValueStack) , ... > [variant] .
+	  sto : (L:Loc |-> store(R:Rat), S:Store),
+	  cnt : C:ControlStack ,
+	  val : (val(R:Rat) SK:ValueStack) , ... > [variant] .
 
     eq [variable-exp] :
 	< env : (I:Id |-> bind(L:Loc), E:Env),
-	sto : (L:Loc |-> store(B:Bool), S:Store),
-	cnt : (I:Id C:ControlStack), val : SK:ValueStack, ... > =
+	  sto : (L:Loc |-> store(B:Bool), S:Store),
+	  cnt : (I:Id C:ControlStack), val : SK:ValueStack, ... > 
+     =
  	< env : (I:Id |-> bind(L:Loc), E:Env),
-	sto : (L:Loc |-> store(B:Bool), S:Store),
-	cnt : C:ControlStack ,
-	val : (val(B:Bool) SK:ValueStack) , ... > [variant] .
+	  sto : (L:Loc |-> store(B:Bool), S:Store),
+	  cnt : C:ControlStack ,
+	  val : (val(B:Bool) SK:ValueStack) , ... > [variant] .
 
     eq [constant-rat-exp] :
 	< env : (I:Id |-> bind(R:Rat), E:Env), cnt : (I:Id C:ControlStack),
-	val : SK:ValueStack , ... > =
+	  val : SK:ValueStack , ... > 
+     =
  	< env : (I:Id |-> bind(R:Rat), E:Env), cnt : C:ControlStack,
-	val : (val(R:Rat) SK:ValueStack), ... > [variant] .
+	  val : (val(R:Rat) SK:ValueStack), ... > [variant] .
 
     eq [constant-bool-exp] :
  	< env : (I:Id |-> bind(B:Bool), E:Env), cnt : (I:Id C:ControlStack),
-	val : SK:ValueStack, ... > =
+  	  val : SK:ValueStack, ... > 
+     =
 	< env : (I:Id |-> bind(B:Bool), E:Env), cnt : C:ControlStack,
-   	val : (val(B:Bool) SK:ValueStack), ... > [variant] .
+   	  val : (val(B:Bool) SK:ValueStack), ... > [variant] .
 endfm
+@
 
+<<bplc-cmd>>=
 mod CMD is
     ex EXP .
 
@@ -370,72 +421,83 @@ mod CMD is
 )
     eq [assign-cmd] :
 	< env : (I:Id |-> bind(L:Loc), E),
-	cnt : (assign(I:Id, E:Exp) C),
-	val : V, ... > =
+	  cnt : (assign(I:Id, E:Exp) C),
+	  val : V, ... > 
+     =
 	< env : (I:Id |-> bind(L:Loc), E),
-	cnt : (E:Exp ASSIGN C),
-   	val : (val(I:Id) V), ... > [variant] .
+	  cnt : (E:Exp ASSIGN C),
+   	  val : (val(I:Id) V), ... > [variant] .
 
     eq [assign-cmd] :
 	< env : (I:Id |-> bind(L:Loc), E),
-	sto : (L:Loc |-> T:Storable, S),
-	cnt : (ASSIGN C),
-	val : (val(R:Rat) val(I:Id) V), ... > =
+	  sto : (L:Loc |-> T:Storable, S),
+	  cnt : (ASSIGN C),
+	  val : (val(R:Rat) val(I:Id) V), ... > 
+     =
 	< env : (I:Id |-> bind(L:Loc), E),
-	sto : (L:Loc |-> store(R:Rat), S),
-	cnt : C,
-	val : V, ... > [variant] .
+	  sto : (L:Loc |-> store(R:Rat), S),
+	  cnt : C,
+	  val : V, ... > [variant] .
 
     eq [assign-cmd] :
 	< env : (I:Id |-> bind(L:Loc), E),
-	sto : (L:Loc |-> T:Storable, S),
-	cnt : (ASSIGN C),
-   	val : (val(B:Bool) val(I:Id) V), ... > =
+	  sto : (L:Loc |-> T:Storable, S),
+	  cnt : (ASSIGN C),
+   	  val : (val(B:Bool) val(I:Id) V), ... > 
+     =
 	< env : (I:Id |-> bind(L:Loc), E),
-	sto : (L:Loc |-> store(B:Bool), S),
-	cnt : C,
-   	val : V, ... > [variant] .
+	  sto : (L:Loc |-> store(B:Bool), S),
+	  cnt : C,
+   	  val : V, ... > [variant] .
 
     eq [loop] :
-	< cnt : loop(E:Exp, K:Cmd) C, val : V, ... > =
+	< cnt : loop(E:Exp, K:Cmd) C, val : V, ... > 
+     =
 	< cnt : E:Exp LOOP C,
-	val : val(loop(E:Exp, K:Cmd)) V, ... > [variant] .
+	  val : val(loop(E:Exp, K:Cmd)) V, ... > [variant] .
 
     rl [loop] :
 	< cnt : LOOP C,
-	val : val(true) val(loop(E:Exp, K:Cmd)) V, ... > =>
+	  val : val(true) val(loop(E:Exp, K:Cmd)) V, ... > 
+    =>
 	< cnt : K:Cmd loop(E:Exp, K:Cmd) C,
-	val : V, ... > .
+	  val : V, ... > .
 ***(
     rl [loop] :
 	< cnt : LOOP C,
-	val : val(true) val(loop(E:Exp, K:Cmd)) V, ... > =>
+	  val : val(true) val(loop(E:Exp, K:Cmd)) V, ... > =>
 	< cnt : K:Cmd loop(E:Exp, K:Cmd) C,
-	val : V, ... > [narrowing] .
+	  val : V, ... > [narrowing] .
 )
     eq [loop] :
 	< cnt : LOOP C,
-	val : val(false) val(loop(E:Exp, K:Cmd)) V, ... > =
+	  val : val(false) val(loop(E:Exp, K:Cmd)) V, ... > 
+     =
 	< cnt : C, val : V, ... > [variant] .
 
     eq [if] :
-       < cnt : if(E:Exp, K1:Cmd, K2:Cmd) C, val : V, ... > =
+       < cnt : if(E:Exp, K1:Cmd, K2:Cmd) C, val : V, ... > 
+     =
        < cnt : E:Exp IF C,
          val : val(if(E:Exp, K1:Cmd, K2:Cmd)) V, ... > [variant] .
 
     eq [if] :
        < cnt : IF C,
-         val : val(true) val(if(E:Exp, K1:Cmd, K2:Cmd)) V, ... > =
+         val : val(true) val(if(E:Exp, K1:Cmd, K2:Cmd)) V, ... > 
+     =
        < cnt : K1:Cmd C,
          val : V, ... > [variant] .
 
     eq [if] :
        < cnt : IF C,
-         val : val(false) val(if(E:Exp, K1:Cmd, K2:Cmd)) V, ... > =
+         val : val(false) val(if(E:Exp, K1:Cmd, K2:Cmd)) V, ... > 
+     =
        < cnt : K2:Cmd C,
          val : V, ... > [variant] .
 endm
+@
 
+<<bplc-dec>>=
 mod DEC is
     ex CMD .
 
@@ -474,24 +536,27 @@ mod DEC is
     var C : ControlStack . var V : ValueStack .
 
     eq [blk] :
-	< cnt : blk(D:Dec, M:Cmd) C, env : E , val : V , ... > =
+	< cnt : blk(D:Dec, M:Cmd) C, env : E , val : V , ... > 
+     =
 	< cnt : D:Dec M:Cmd BLK C, env : E , val : val(E) V , ... > [variant] .
 
     eq [blk] :
-	< cnt : blk(M:Cmd) C, env : E , val : V , ... > =
+	< cnt : blk(M:Cmd) C, env : E , val : V , ... > 
+     =
 	< cnt : M:Cmd BLK C, env : E , val : val(E) V , ... > [variant] .
 
     eq [blk] :
 	< cnt : BLK C ,
-	env : E' ,
-	val : val(E) V ,
-	locs : SL:Set{Loc},
-	sto : S:Store, ... > =
+	  env : E' ,
+	  val : val(E) V ,
+	 locs : SL:Set{Loc},
+	  sto : S:Store, ... > 
+     =
 	< cnt : C ,
-	env : E ,
-	val : V ,
-	locs : noLocs,
-	sto : free(SL:Set{Loc}, S:Store), ... > [variant] .
+	  env : E ,
+	  val : V ,
+	 locs : noLocs,
+	  sto : free(SL:Set{Loc}, S:Store), ... > [variant] .
 
     eq [ref] :
 	< cnt : ref(I:Id, X:Exp) C , val : V , ... > =
@@ -501,7 +566,8 @@ mod DEC is
 	< cnt : REF C, env : E ,
 	  sto : S ,
 	  val : val(R:Rat) val(I:Id) V ,
-	  locs : SL:Set{Loc} , ... > =
+	  locs : SL:Set{Loc} , ... > 
+     =
 	< cnt : C ,
 	  env : insert(I:Id, bind(newLoc(S)), E) ,
 	  sto : insert(newLoc(S), store(R:Rat), S) ,
@@ -575,7 +641,9 @@ mod DEC is
     op addDec : Dec Blk -> Blk .
     eq addDec(D:Dec, B:Blk) = blk(D:Dec, B:Blk) .
 endm
+@
 
+<<bplc-out>>=
 mod OUT is
     ex DEC .
 
@@ -603,7 +671,9 @@ mod OUT is
 	  val : V:ValueStack,
 	  out : val(R:Rat) O:ValueStack , ... > [variant] .
 endm
+@
 
+<<bplc-ext>>=
 mod EXIT is
     ex OUT .
 
@@ -654,7 +724,9 @@ mod EXIT is
 	< cnt : seq(C1:Cmd, C2:Cmd) C, exc : EXT, ... > =
 	< cnt : ecs, exc : EXT, ... > [variant] .
 endm
+@
 
+<<bplc>>=
 --- Basic programming languages constructs.
 mod BPLC is
     ex EXIT .
@@ -667,7 +739,9 @@ mod BPLC is
           sto : (L:Loc |-> S:Storable, S:Store) ,
    	  ... >) = S:Storable .
 endm
+@
 
+<<bplc-mc>>=
 load lmc
 
 mod BPLC-MODEL-CHECKER is
@@ -692,4 +766,18 @@ mod BPLC-MODEL-CHECKER is
 	    ... >) = true .
     eq valueOf(I:Id, B:Bool, C:Conf) = false [owise] .
 endm
+@
+
+\end{document}
+
+<<bplc.maude>>=
+<<gsmc>>
+<<bplc-sem-comp>>
+<<bplc-exp>>
+<<bplc-cmd>>
+<<bplc-dec>>
+<<bplc-out>>
+<<bplc-ext>>
+<<bplc>>
+<<bplc-mc>>
 
