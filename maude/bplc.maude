@@ -113,7 +113,7 @@ fmod ENV is
        op undefined to undefid, op empty to noEnv). 
 endfm
 fmod EXP is
-    pr RAT .
+	pr QID .   pr RAT .
     ex GSMC .  ex ENV .
     ex STORE . ex CONTROL-STACK .
     ex VALUE-STACK .
@@ -123,7 +123,7 @@ fmod EXP is
     subsort Id < Exp < Control .
 
     --- Arithmetic
-
+    op id : Qid -> Exp [ctor format(!g o)] .
     op rat : Rat -> Exp [ctor format(!g o)] .
     op boo : Bool -> Exp [ctor format(!g o)] .
     op add : Exp Exp -> Exp [format(! o)] .

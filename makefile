@@ -1,10 +1,10 @@
 #!/bin/bash
 
-tex: doc/bplc.tex
+tex: 
 	noweave -delay bplc.noweb > doc/bplc.tex
 	pdflatex -output-directory=doc doc/bplc.tex
 
-maude: maude/bplc.maude
+maude: 
 	notangle -Rbplc.maude bplc.noweb > maude/bplc.maude
 
 clean:

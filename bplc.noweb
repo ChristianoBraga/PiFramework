@@ -22,13 +22,37 @@
 
 \maketitle
 
-\center \includegraphics[scale=0.45]{bplc-logo.png}
+\begin{center} \includegraphics[scale=0.45]{bplc-logo.png}\end{center}
 
 \begin{abstract}
 Basic Programming Languages Constructs (pronounced "beeplick") is a library of common programming language constructs whose semantics are formally specified. Therefore, to give semantics to a programming language means to relate constructions of the given language with the constructs of BPLC. It is implemented in the~\href{http://maude.cs.uiuc.edu}{Maude} language.
 \end{abstract}
 
 \pagestyle{plain}
+
+\section{Generalized SMC machines}
+
+In~\cite{plotkin}, Plotkin defined Structural Operational Semantics, one of the most applied frameworks for the definition of the semantics of programming languages. Essentially, the framework consists of transition rules that specify how configurations, formed by program syntax and semantics information, such as the store or the environment, evolve in time as each construct of a given programming language is executed by a program. Thus, SOS assigns to a program a transition system where the nodes are the states of a program and the transitions denote the execution of a programming language construct that changes the state of the given program. 
+%TODO: SOS of assignement
+
+In this same paper, Plotkin defined yet another simple approach, called SMC machines, to the same end, but that includes more states than "necessary" and when compared to SOS. % TODO: Illustrate this.
+SMC machines uses a calculator metaphor in Łukasiewicz posfixed notation, aka. reverse polish notation, to execute a program. It is a stack machine with three components: a value stack, the memory store and a control stack. The semantics of a programming language is defined by rules specifying how 
+such a machine changes as constructs are executed.
+
+As an illustration, let us consider a programming language command, assignment for instance, that requires the evaluation of its right-hand (RHS) side before the memory location associated with its left-hand side (LHS) can be updated. First a command opcode is pushed into the control stack, such as ASSIGN, then the identifier in the LHS is pushed into the control stack, and finally the RHS expression. The evaluation of RHS should lead to a (storable) value on the top of the value stack and so the location bound to the identifier in the LHS. Once opcode ASSIGN is found in the control stack then the actual update of the appropriate memory location is performed with the value on top of the value stack.    
+%TODO: SMC for assignment
+
+If from the one hand there is some additional bureaucracy to transform a construct into its posfixed form, to push and pop values from the stacks, and finally yield the result, from the other hand this framework allows for the writing of rule-based specifications with a very nice characteristic: rules are unconditional. This characteristic is interesting from a proof-theoretic perspective %TODO: why?
+and for the same reason it gives rise to quite efficient execution of specifications when an appropriate executable framework is chosen to animate the specification or perform analysis on it.
+
+With this thesis, that \emph{SMC machines are an effective means to specify and implement operational semantics of programming languages}, we \emph{generalize it} so that a set of semantic components can be made part of the configuration, denoting the states of the associted (unlabeled) transition system. 
+
+Given a programming language construct in prefixed form $f(p_1, \ldots, p_n)$, its semantics if given by the following scheme:
+$$
+\{S, M, (f(p_1, \ldots, p_n)) C, c_1, \ldots, c_m\} =  
+\{S, M, (p_n, \ldots p_1 F) C, c_1, \ldots, c_m\} 
+$$ 
+where 
 
 <<gsmc>>=
 -----------------------------
