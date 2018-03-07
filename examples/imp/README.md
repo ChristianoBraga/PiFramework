@@ -3,7 +3,7 @@
 </p>
 
 # IMP
-IMP is a simple imperative created to illustrate the use of the Basic Programming Languages Constructs library ([BPLC](http://github.com/ChristianoBraga/BPLC)). 
+IMP is a simple imperative programming language created to illustrate the use of the Basic Programming Languages Constructs library ([BPLC](http://github.com/ChristianoBraga/BPLC)). 
 It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
 
 ## System requirements
