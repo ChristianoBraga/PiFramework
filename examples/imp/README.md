@@ -14,7 +14,7 @@ It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christia
 
 <p align="center">
 <img src="./fact-session.jpg" width="600">
-<img src="./fact-rect-session.jpg" width="600">
+<img src="./fact-rec-session.jpg" width="600">
 <img src="./mutex-session.jpg" width="600">
 <img src="./mutex2-session.jpg" width="600">
 </p>
