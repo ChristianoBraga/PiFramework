@@ -1,0 +1,15 @@
+--- An loop implementation of the factorial function
+(module Fact
+    var y
+    init y = 1 
+    proc fact(x) {
+		while ~ (x == 0)
+        do {               
+		  y := y * x ;
+          x := x - 1
+		} ; 
+		print(y)
+	}
+end)
+(view)
+(exec fact(100))
