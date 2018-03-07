@@ -8,7 +8,7 @@ It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christia
 
 ## System requirements
 
-* This version of IMP runs on version 2.7.1 of the Maude system. 
+* This version of IMP runs on version 2.7.1 of the [Maude](http://maude.cs.uiuc.edu) system. 
 * [iTerm 2](https://www.iterm2.com) on [macOS](https://www.apple.com/br/macos/) produces a nicer experience.
 
 ## Session pictures
