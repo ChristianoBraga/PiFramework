@@ -8,5 +8,5 @@ It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christia
 
 ## System requirements
 
-* This version of IMP runs on verion 2.7.1 of the Maude system. 
+* This version of IMP runs on version 2.7.1 of the Maude system. 
 
