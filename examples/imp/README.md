@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./imp.jpg">
+<img src="./img/imp.jpg">
 </p>
 
 # IMP
@@ -14,10 +14,10 @@ It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christia
 ## Session pictures
 
 <p align="center">
-<img src="./fact-session.jpg" width="600">
-<img src="./fact-rec-session.jpg" width="600">
-<img src="./mutex-session.jpg" width="600">
-<img src="./mutex2-session.jpg" width="600">
+<img src="./img/fact-session.jpg" width="600">
+<img src="./img/fact-rec-session.jpg" width="600">
+<img src="./img/mutex-session.jpg" width="600">
+<img src="./img/mutex2-session.jpg" width="600">
 </p>
 
 

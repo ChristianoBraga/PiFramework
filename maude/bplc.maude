@@ -14,7 +14,6 @@ fmod GSMC is
     sorts Attrib Conf .
     op <_> : Set{SemComp} -> Conf [format(c! c! c! o)] . 
 endfm
-
 fmod VALUE-SORT is
     sort Value . 
 endfm
@@ -113,9 +112,8 @@ fmod ENV is
        sort Map{Id,Bindable} to Env,
        op undefined to undefid, op empty to noEnv). 
 endfm
-
 fmod EXP is
-	pr QID .   pr RAT .
+        pr QID .   pr RAT .
     ex GSMC .  ex ENV .
     ex STORE . ex CONTROL-STACK .
     ex VALUE-STACK .
@@ -349,7 +347,6 @@ fmod EXP is
         < env : (I:Id |-> bind(B:Bool), E:Env), cnt : C:ControlStack,
           val : (val(B:Bool) SK:ValueStack), ... > [variant] .
 endfm
-
 mod CMD is
     ex EXP .
 
@@ -374,12 +371,8 @@ mod CMD is
 
     rl [choice-cmd] :
         < cnt : choice(M1:Cmd, M2:Cmd) C, ... > =>
-        < cnt : M1:Cmd C, ... > .
-***(
-    rl [choice-cmd] :
-        < cnt : choice(M1:Cmd, M2:Cmd) C, ... > =>
-        < cnt : M1:Cmd C, ... > [narrowing] .
-)
+        < cnt : M1:Cmd C, ... > . --- [narrowing] .
+
     eq [assign-cmd] :
         < env : (I:Id |-> bind(L:Loc), E),
           cnt : (assign(I:Id, E:Exp) C),
@@ -422,14 +415,8 @@ mod CMD is
           val : val(true) val(loop(E:Exp, K:Cmd)) V, ... > 
     =>
         < cnt : K:Cmd loop(E:Exp, K:Cmd) C,
-          val : V, ... > .
-***(
-    rl [loop] :
-        < cnt : LOOP C,
-          val : val(true) val(loop(E:Exp, K:Cmd)) V, ... > =>
-        < cnt : K:Cmd loop(E:Exp, K:Cmd) C,
-          val : V, ... > [narrowing] .
-)
+          val : V, ... > . --- [narrowing] .
+
     eq [loop] :
         < cnt : LOOP C,
           val : val(false) val(loop(E:Exp, K:Cmd)) V, ... > 
@@ -456,7 +443,6 @@ mod CMD is
        < cnt : K2:Cmd C,
          val : V, ... > [variant] .
 endm
-
 mod DEC is
     ex CMD .
 
@@ -485,7 +471,7 @@ mod DEC is
     op val : Env -> Value [ctor] .
     op val : Loc -> Value [ctor] .
     op val : Abs -> Value [ctor] .
-	op val : Set{Loc} -> Value [ctor] .
+        op val : Set{Loc} -> Value [ctor] .
 
     op abs : Blk -> Abs [ctor] .
     op abs : Formals Blk -> Abs [ctor] .
@@ -499,15 +485,15 @@ mod DEC is
         < cnt : blk(D:Dec, M:Cmd) C, env : E , val : V , locs : SL:Set{Loc} , ... > 
      =
         < cnt : D:Dec M:Cmd BLK C, env : E , 
-		  val : val(E) val(SL:Set{Loc}) V , 
-		  locs : noLocs , ... > [variant] .
+                  val : val(E) val(SL:Set{Loc}) V , 
+                  locs : noLocs , ... > [variant] .
 
     eq [blk] :
         < cnt : blk(M:Cmd) C, env : E , val : V , locs : SL:Set{Loc} , ... > 
      =
         < cnt : M:Cmd BLK C, env : E , 
-		  val : val(E) val(SL:Set{Loc}) V , 
-		  locs : noLocs , ... > [variant] .
+                  val : val(E) val(SL:Set{Loc}) V , 
+                  locs : noLocs , ... > [variant] .
 
     eq [blk] :
         < cnt : BLK C ,
@@ -605,7 +591,6 @@ mod DEC is
     op addDec : Dec Blk -> Blk .
     eq addDec(D:Dec, B:Blk) = blk(D:Dec, B:Blk) .
 endm
-
 mod OUT is
     ex DEC .
 
@@ -633,7 +618,6 @@ mod OUT is
           val : V:ValueStack,
           out : val(R:Rat) O:ValueStack , ... > [variant] .
 endm
-
 mod EXIT is
     ex OUT .
 
@@ -684,7 +668,6 @@ mod EXIT is
         < cnt : seq(C1:Cmd, C2:Cmd) C, exc : EXT, ... > =
         < cnt : ecs, exc : EXT, ... > [variant] .
 endm
-
 mod BPLC is
     ex EXIT .
     var ... : Set{SemComp} .
@@ -694,16 +677,15 @@ mod BPLC is
           < env : (I:Id |-> bind(L:Loc), E:Env) ,
           sto : (L:Loc |-> S:Storable, S:Store) ,
           ... >) = S:Storable .
-		  
-	op run : Cmd Dec -> Conf .
-	rl run(C:Cmd, D:Dec) =>
-	  	< cnt : blk(D:Dec, C:Cmd) ecs,
-	  	  env : noEnv, sto : noStore , val : evs ,
-	  	  locs : noLocs , out : evs , exc : CNT > .		  
+                  
+        op run : Cmd Dec -> Conf .
+        rl run(C:Cmd, D:Dec) =>
+                < cnt : blk(D:Dec, C:Cmd) ecs,
+                  env : noEnv, sto : noStore , val : evs ,
+                  locs : noLocs , out : evs , exc : CNT > .               
 endm
-
 mod BPLC+META-LEVEL is
-	pr BPLC . pr META-LEVEL .
+        pr BPLC . pr META-LEVEL .
 endm 
 
 load model-checker
@@ -711,8 +693,8 @@ load model-checker
 mod BPLC-MODEL-CHECKER is
     ex BPLC .
     pr MODEL-CHECKER .
-	pr LTL-SIMPLIFIER .
-	pr META-LEVEL .
+        pr LTL-SIMPLIFIER .
+        pr META-LEVEL .
 
     subsort Conf < State .
     
@@ -731,30 +713,30 @@ mod BPLC-MODEL-CHECKER is
             sto : (L:Loc |-> store(B:Bool), S:Store) ,
             ... >) = true .
     eq valueOf(I:Id, B:Bool, C:Conf) = false [owise] .
-	
+        
     op _,_|=?_ : Dec Cmd Formula -> ModelCheckResult .
     eq D:Dec, C:Cmd |=? F:Formula =
-	   modelCheck(run(C:Cmd,D:Dec), F:Formula) .    
-	   
+           modelCheck(run(C:Cmd,D:Dec), F:Formula) .    
+           
     op makeOpDeclSet : Dec -> OpDeclSet .
     eq makeOpDeclSet(ref(idn(Q:Qid), E:Exp)) = 
-	   (op Q:Qid : 'Rat -> 'Prop [none] .) .
+           (op Q:Qid : 'Rat -> 'Prop [none] .) .
     eq makeOpDeclSet(dec(D1:Dec, D2:Dec)) = 
-	   makeOpDeclSet(D1:Dec) makeOpDeclSet(D2:Dec) .
+           makeOpDeclSet(D1:Dec) makeOpDeclSet(D2:Dec) .
     eq makeOpDeclSet(D:Dec) = none [owise] . 
     
     op makeEqSet : Dec -> EquationSet .
     eq makeEqSet(ref(idn(Q:Qid), E:Exp)) = 
-	   (ceq '_|=_['S:State, Q:Qid['R:Rat]] = 'true.Bool 
-	    if 'valueOf['idn[upTerm(Q:Qid)],'R:Rat,'S:State] = 'true.Bool [none] .) .
+           (ceq '_|=_['S:State, Q:Qid['R:Rat]] = 'true.Bool 
+            if 'valueOf['idn[upTerm(Q:Qid)],'R:Rat,'S:State] = 'true.Bool [none] .) .
     eq makeEqSet(dec(D1:Dec, D2:Dec)) = 
-   	   makeEqSet(D1:Dec) makeEqSet(D2:Dec) .
+           makeEqSet(D1:Dec) makeEqSet(D2:Dec) .
     eq makeEqSet(D:Dec) = none [owise] .
     
     op makeMCModule : Qid Dec -> SModule .
     eq makeMCModule(Q:Qid, D:Dec) =
        (mod qid("MODEL-CHECK-" + string(Q:Qid)) is 
-			protecting 'BPLC-MODEL-CHECKER .
+                        protecting 'BPLC-MODEL-CHECKER .
             sorts none .
             none --- SubsortDeclSet
             --- op 'bid : 'Qid -> 'GSLIdentifiers [none] .
@@ -763,4 +745,4 @@ mod BPLC-MODEL-CHECKER is
             makeEqSet(D:Dec)
             none endm) .
 endm
-	 
+
