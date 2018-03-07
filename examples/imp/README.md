@@ -2,7 +2,7 @@
 <img src="./imp.jpg">
 </p>
 <p align="left">
-<img src="./fact-session.jpg" width="400">
+<img src="./fact-session.jpg" width="600">
 </p>
 
 # IMP
