@@ -1,8 +1,10 @@
-<p align="center">
-<img src="./imp.jpg">
-</p>
 <p align="left">
 <img src="./fact-session.jpg" width="600">
+<img src="./mutex-session.jpg" width="600">
+</p>
+
+<p align="center">
+<img src="./imp.jpg">
 </p>
 
 # IMP
