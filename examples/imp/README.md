@@ -1,10 +1,7 @@
 <p align="center">
 <img src="./imp.jpg">
 </p>
-<p align="left">
-<img scale=60% src="./fact-session.jpg">
-</p>
-
+![](./fact-session.jpg =100x20)
 
 # IMP
 IMP is a simple imperative programming language created to illustrate the use of the Basic Programming Languages Constructs library ([BPLC](http://github.com/ChristianoBraga/BPLC)). 
