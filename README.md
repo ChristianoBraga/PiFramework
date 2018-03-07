@@ -7,7 +7,7 @@ Basic Programming Languages Constructs (pronounced "beeplick") is a library of c
 
 ## System requirements
 
-* This version of BPLC implementation runs on the Logical Model Checker extension of Maude available at http://maude.cs.illinois.edu/tools/lmc/
+* This version of BPLC implementation runs on version 2.7.1 of the Maude system.
 
 ### Acknowledgements
 
