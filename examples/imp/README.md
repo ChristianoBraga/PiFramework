@@ -1,8 +1,3 @@
-<p align="left">
-<img src="./fact-session.jpg" width="600">
-<img src="./mutex-session.jpg" width="600">
-</p>
-
 <p align="center">
 <img src="./imp.jpg">
 </p>
@@ -14,4 +9,14 @@ It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christia
 ## System requirements
 
 * This version of IMP runs on version 2.7.1 of the Maude system. 
+
+## Session pictures
+
+<p align="center">
+<img src="./fact-session.jpg" width="600">
+<img src="./fact-rect-session.jpg" width="600">
+<img src="./mutex-session.jpg" width="600">
+<img src="./mutex2-session.jpg" width="600">
+</p>
+
 
