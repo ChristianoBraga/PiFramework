@@ -342,6 +342,7 @@ mod IMP-PRETTY-PRINTING is
     pr BPLC-MODEL-CHECKER .
 	pr INT .
 	
+    --- Some auxiliary constants and functions
     ops level incr : -> Nat .
     eq level = 3 .
     eq incr = 3 .
@@ -361,7 +362,7 @@ mod IMP-PRETTY-PRINTING is
 	eq printTokens('_`,_[T1:Term, T2:Term]) = 
 	   printTokens(T1:Term) printToken('`,) printTokens(T2:Term) .
        
-    --- Pretty-print Expressions
+    --- Pretty-printing IMP Expressions
     op printExp : Term -> QidList .
     eq printExp('true.PredicateDecl) = 'true .
 
@@ -410,7 +411,7 @@ mod IMP-PRETTY-PRINTING is
     eq printExp(T:Term) =
        metaPrettyPrint(upModule('IMP-GRAMMAR, false), T:Term) [owise] .
     
-    --- Pretty-print Commands
+    --- Pretty-printing IMP Commands
     op printCmd : Term Nat -> QidList .
     eq printCmd('nop.CommandDecl, N:Nat) = 'nop .
 
@@ -420,13 +421,26 @@ mod IMP-PRETTY-PRINTING is
     eq printCmd('_`(_`)[T1:Term, T2:Term], N:Nat) =
        printExp(T1:Term) printToken('`() printExp(T2:Term) printToken('`)) .
 
-    eq printCmd('_|_[T1:Term, T2:Term], N:Nat) = 
-       printCmd(T1:Term, N:Nat) printToken('|) printCmd(T2:Term, N:Nat) .
+    eq printCmd('_|_[T1:Term, '_;_[T2:TermList]], N:Nat) = 
+       printSpaces(N:Nat) 
+       printCmd(T1:Term, N:Nat) printToken('|) '\n 
+       printSpaces(N:Nat) printToken('`() printCmd('_;_[T2:TermList], N:Nat) printToken('`)) .
 
-    eq printCmd('_;_[T1:Term, T2:Term], N:Nat) =
-       printSpaces(N:Nat) printCmd(T1:Term, N:Nat) printToken(';) '\n 
-       printSpaces(N:Nat) printCmd(T2:Term, N:Nat) .
+    ceq printCmd('_|_[T:TermList, F:Qid[TL:TermList]], N:Nat) = 
+        printSpaces(N:Nat) printCmd(T:TermList, N:Nat) printToken('|)  
+        printCmd(F:Qid[TL:TermList], N:Nat) 
+     if F:Qid =/= '_;_ .
 
+    ceq printCmd('_;_[F1:Qid[TL1:TermList], F2:Qid[TL2:TermList]], N:Nat) =
+        printCmd(F1:Qid[TL1:TermList], N:Nat) '\s printToken(';)  
+        printCmd(F2:Qid[TL2:TermList], N:Nat)
+     if F1:Qid =/= '_;_ and F2:Qid =/= '_;_ .
+
+    ceq printCmd('_;_[F1:Qid[TL1:TermList], F2:Qid[TL2:TermList]], N:Nat) =
+        printSpaces(N:Nat) printCmd(F1:Qid[TL1:TermList], N:Nat) '\s printToken(';) '\n
+        printSpaces(N:Nat) printCmd(F1:Qid[TL1:TermList], N:Nat)
+     if F1:Qid == '_;_ or F2:Qid == '_;_ .
+        
     eq printCmd('_:=_[T1:Term, T2:Term], N:Nat) =
        printExp(T1:Term) printToken(':=) printExp(T2:Term) .
 
@@ -441,22 +455,27 @@ mod IMP-PRETTY-PRINTING is
        '\s printToken('else) printCmd(T3:Term, N:Nat) .
 
     eq printCmd('`{_`}[C:Constant], N:Nat) =
-       printToken('`{) printCmd(C:Constant, 0) printToken('`}) .
+       '\s printToken('`{) printCmd(C:Constant, 0) printToken('`}) .
 
     eq printCmd('`{_`}['_;_[TL:TermList]], N:Nat) =
-       printToken('`{) '\n printCmd('_;_[TL:TermList], N:Nat + incr) '\n 
+       '\s printToken('`{) '\n 
+       printSpaces(N:Nat + incr) printCmd('_;_[TL:TermList], N:Nat + incr) '\n 
+       printSpaces(N:Nat) printToken('`}) .
+
+    eq printCmd('`{_`}['_|_[TL:TermList]], N:Nat) =
+       '\s printToken('`{) '\n printCmd('_|_[TL:TermList], N:Nat + incr) '\n 
        printSpaces(N:Nat) printToken('`}) .
 
     ceq printCmd('`{_`}[F:Qid[TL:TermList]], N:Nat) =
        '\s printToken('`{) '\n 
        printSpaces(N:Nat + incr) printCmd(F:Qid[TL:TermList], N:Nat + incr) '\n 
        printSpaces(N:Nat) printToken('`}) 
-    if F:Qid =/= '_;_ .
+    if F:Qid =/= '_;_ /\ F:Qid =/= '_|_ .
 
     eq printCmd(T:Term, N:Nat) =
        printSpaces(N:Nat) metaPrettyPrint(upModule('IMP-GRAMMAR, false), T:Term) [owise] .
     
-	--- Pretty-print declarations
+	--- Pretty-printing IMP Declarations
     op printModule : Term -> QidList .
     eq printModule('module__end[T1:Term, T2:Term]) = 
 	   printToken('module) printTokens(T1:Term)
@@ -500,8 +519,7 @@ mod IMP-PRETTY-PRINTING is
     eq printInit('_`,_[T1:Term, T2:Term]) = 
 	   printInit(T1:Term) printInit(T2:Term) .
 	   
-    --- Input/Output pretty-printing
-	
+    --- Pretty-printing parse error
     op printQidList : QidList -> QidList .
     eq printQidList(nil) = (nil).QidList .
     eq printQidList(Q:Qid QL:QidList) = printToken(Q:Qid) printQidList(QL:QidList) .
@@ -540,6 +558,7 @@ mod IMP-PRETTY-PRINTING is
 	   '\r 'vs. '\o '\n
 	   metaPrettyPrint(upModule('IMP-GRAMMAR, false), getTerm(T2:ResultPair)) .
 	
+    --- Pretty-print exec and mc output 
     op printState : Env Store -> QidList .
     eq printState(noEnv, S:Store) = (nil).QidList .
 
@@ -657,13 +676,13 @@ mod IMP-PRETTY-PRINTING is
 	    printConf(C:Conf) '\b '-> '\o printTransitionList(TL:TransitionList) 
     if TL:TransitionList =/= nil .
     
-    op printModelCheckResult : ModelCheckResult -> QidList .
-    eq printModelCheckResult(B:Bool) = 
-	   'IMP: '\b 'Model 'check 'result '\o '\n  
+    op printModelCheckResult : ModelCheckResult QidList -> QidList .
+    eq printModelCheckResult(B:Bool, QL:QidList) = 
+	   'IMP: '\b 'Model 'check 'result 'to 'command '\c QL:QidList '\o '\b ': '\o '\n  
 	   metaPrettyPrint(upModule('BOOL, false), upTerm(B:Bool)) .
 
-    eq printModelCheckResult(counterexample(TL1:TransitionList, TL2:TransitionList)) = 
-   	   'IMP: '\b 'Model 'check 'counter 'example '\o '\n  
+    eq printModelCheckResult(counterexample(TL1:TransitionList, TL2:TransitionList), QL:QidList) = 
+   	   'IMP: '\b 'Model 'check 'counter 'example 'to 'command '\c QL:QidList '\o '\b ': '\o '\n  
 	   '\b 'Path 'from 'the 'initial 'state: '\o
 	   '\n printTransitionList(TL1:TransitionList)
    	   '\n '\b 'Loop: '\o 
@@ -720,7 +739,7 @@ mod IMP-INTERFACE is
         then [nil, < M:MetaIMPModule ; D:Dec ; QIL' > , 
             if compileCmd(getTerm(P:ResultPair?)) :: Cmd 
             then 
-			  'IMP: 'Execution 'result 'for QIL ':  
+			  'IMP: '\b 'Execution 'result 'for '\c QIL '\o '\b ': '\o  
 			  printExec(getTerm(metaRewrite(upModule('BPLC+META-LEVEL, false),
            		   'run[upTerm(compileCmd(getTerm(P:ResultPair?))), upTerm(D:Dec)], unbounded)))	
             else 'IMP: '\r 'Internal 'Error 'while 'compiling '\s QIL
@@ -737,15 +756,12 @@ mod IMP-INTERFACE is
         then [nil, < 'module__end[T1:Term, T2:Term] ; D:Dec ; QIL' >,
               if compileCmd(getTerm(P1:ResultPair?)) :: Cmd
 	          then 
-               --- metaPrettyPrint(upModule('BPLC-MODEL-CHECKER, false), 
                printModelCheckResult(downTerm(
                    getTerm(metaReduce(
                      makeMCModule(printTokens(T1:Term), D:Dec), 
                      '_`,_|=?_[upTerm(D:Dec),
                                upTerm(compileCmd(getTerm(P1:ResultPair?))), 
-                               getTerm(P2:ResultPair?)]))
-              ---) 
-              ,true))
+                               getTerm(P2:ResultPair?)])),true), QIL1 '\s '|= '\s QIL2)
               else 'IMP: '\r 'Internal 'Error 'while 'processing 'command '\o 'mc QIL1 '|= QIL2
               fi ]
         else [nil, < 'module__end[T1:Term, T2:Term] ; D:Dec ; QIL' >,

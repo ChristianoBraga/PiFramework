@@ -11,5 +11,9 @@
       else print(y) 
    }
 end)
+
 (view)
-(exec fact(10))
+
+set show loop stats on .
+set show loop timing on .
+(exec fact(100))
