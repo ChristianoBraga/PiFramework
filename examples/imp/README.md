@@ -2,7 +2,7 @@
 <img src="./imp.jpg">
 </p>
 <p align="left">
-<img src="./fact-session.jpg">
+<img scale=60% src="./fact-session.jpg">
 </p>
 
 
