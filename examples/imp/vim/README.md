@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./imp.jpg">
+<img src="../imp.jpg">
 </p>
 
 # VIM IMP
