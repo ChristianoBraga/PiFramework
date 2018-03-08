@@ -5,7 +5,7 @@ IMP_DIR="/Users/cbraga/Dropbox/BPLC/BPLC/examples/imp/"
 
 if [ "$TERM_PROGRAM" = "iTerm.app" ] ;
 then
-  ./imgcat imp.jpg
+  ./imgcat ./img/imp.jpg
 fi
   
 if [ "$1" != "" ]; then
