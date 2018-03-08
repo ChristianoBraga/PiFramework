@@ -2,8 +2,7 @@
 
 tex: doc/bplc.tex 
 	noweave -delay bplc.noweb > doc/bplc.tex
-	pdflatex -output-directory=doc doc/bplc.tex
-        pdflatex -output-directory=doc doc/bplc.tex
+	pdflatex -output-directory=doc bplc.tex
 
 maude: maude/bplc.maude 
 	notangle -Rbplc.maude bplc.noweb > maude/bplc.maude

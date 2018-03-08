@@ -1,4 +1,6 @@
 \documentclass{llncs}
+\usepackage{draftwatermark}
+\SetWatermarkLightness{0.95}
 \usepackage[utf8x]{inputenc}
 \usepackage[colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=blue]{hyperref}
 \usepackage{fourier}
@@ -14,6 +16,8 @@
 % noweave -delay bplc.noweb > bplc.tex
 % notangle -Rbplc.maude bplc.noweb > bplc.maude 
 
+\renewcommand{\date}{\today}
+
 \begin{document}
 	
 \title{BPLC Library}
@@ -22,7 +26,12 @@
 
 \maketitle
 
+\begin{center}
+\date
+\end{center}
+
 \begin{center} \includegraphics[scale=0.45]{bplc-logo.png}\end{center}
+
 
 \begin{abstract}
 Basic Programming Languages Constructs (pronounced "beeplick") is a library of common programming language constructs whose semantics are formally specified. Therefore, to give semantics to a programming language means to relate constructions of the given language with the constructs of BPLC. It is implemented in the~\href{http://maude.cs.uiuc.edu}{Maude} language.
@@ -47,12 +56,12 @@ and for the same reason it gives rise to quite efficient execution of specificat
 
 With this thesis, that \emph{SMC machines are an effective means to specify and implement operational semantics of programming languages}, we \emph{generalize it} so that a set of semantic components can be made part of the configuration, denoting the states of the associted (unlabeled) transition system. 
 
-Given a programming language construct in prefixed form $f(p_1, \ldots, p_n)$, its semantics if given by the following scheme:
-$$
-\{S, M, (f(p_1, \ldots, p_n)) C, c_1, \ldots, c_m\} =  
-\{S, M, (p_n, \ldots p_1 F) C, c_1, \ldots, c_m\} 
-$$ 
-where 
+%Given a programming language construct in prefixed form $f(p_1, \ldots, p_n)$, its semantics if given by the following scheme:
+%$$
+%\{S, M, (f(p_1, \ldots, p_n)) C, c_1, \ldots, c_m\} =  
+%\{S, M, (p_n, \ldots p_1 F) C, c_1, \ldots, c_m\} 
+%$$ 
+%where 
 
 <<gsmc>>=
 -----------------------------
@@ -73,6 +82,7 @@ fmod GSMC is
 endfm
 @
 
+\section{Semantic components}
 <<bplc-sem-comp>>=
 fmod VALUE-SORT is
     sort Value . 
@@ -174,6 +184,19 @@ fmod ENV is
 endfm
 @
 
+\section{Basic Programming Languages Constructs}
+
+\begin{itemize}
+\item Expressions: identifier, rational numbers, Boolean values, arithmetic and predicates. Semantic components: Identifiers require the environment and the store. The remaining constructs do not require any semantic component.  
+
+\item Commands: print, assignment, sequence, choice, block, conditional, and loop. Print updates output. The remaining constructs affect only the store.
+
+\item Declarations: variables, constants, and procedures. These constructs affect the environment. 
+
+\item Abnormal termination: exit. Command exit changes the semantic component that indicates abnormal termination. The behavior of command composition is also affected by this semantic component.   
+\end{itemize}
+
+\subsection{Expressions}
 <<bplc-exp>>=
 fmod EXP is
 	pr QID .   pr RAT .
@@ -412,6 +435,7 @@ fmod EXP is
 endfm
 @
 
+\subsection{Commands}
 <<bplc-cmd>>=
 mod CMD is
     ex EXP .
@@ -511,6 +535,7 @@ mod CMD is
 endm
 @
 
+\subsection{Declarations}
 <<bplc-dec>>=
 mod DEC is
     ex CMD .
@@ -662,6 +687,7 @@ mod DEC is
 endm
 @
 
+\subsection{Output}
 <<bplc-out>>=
 mod OUT is
     ex DEC .
@@ -692,6 +718,7 @@ mod OUT is
 endm
 @
 
+\subsection{Abnormal termination}
 <<bplc-ext>>=
 mod EXIT is
     ex OUT .
@@ -745,6 +772,7 @@ mod EXIT is
 endm
 @
 
+\subsection{Running a command}
 <<bplc>>=
 mod BPLC is
     ex EXIT .
@@ -764,6 +792,7 @@ mod BPLC is
 endm
 @
 
+\section{Model checking}
 <<bplc-mc>>=
 mod BPLC+META-LEVEL is
 	pr BPLC . pr META-LEVEL .
