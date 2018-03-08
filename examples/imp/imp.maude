@@ -360,7 +360,7 @@ mod IMP-PRETTY-PRINTING is
 	eq printTokens(Q:Qid) = Q:Qid .
 	eq printTokens('token[Q:Qid]) = downTerm(Q:Qid, 'Qid) .
 	eq printTokens('_`,_[T1:Term, T2:Term]) = 
-	   printTokens(T1:Term) printToken('`,) printTokens(T2:Term) .
+	   printTokens(T1:Term) printToken('`,) '\s printTokens(T2:Term) .
        
     --- Pretty-printing IMP Expressions
     op printExp : Term -> QidList .
@@ -475,7 +475,7 @@ mod IMP-PRETTY-PRINTING is
     eq printCmd(T:Term, N:Nat) =
        printSpaces(N:Nat) metaPrettyPrint(upModule('IMP-GRAMMAR, false), T:Term) [owise] .
     
-	--- Pretty-printing IMP Declarations
+    --- Pretty-printing IMP Declarations
     op printModule : Term -> QidList .
     eq printModule('module__end[T1:Term, T2:Term]) = 
 	   printToken('module) printTokens(T1:Term)
@@ -517,7 +517,7 @@ mod IMP-PRETTY-PRINTING is
 	eq printInit('_=_[T1:Term, T2:Term]) = 
 	   printTokens(T1:Term) printToken('=) printExp(T2:Term) .
     eq printInit('_`,_[T1:Term, T2:Term]) = 
-	   printInit(T1:Term) printInit(T2:Term) .
+	   printInit(T1:Term) printToken('`,) '\s printInit(T2:Term) .
 	   
     --- Pretty-printing parse error
     op printQidList : QidList -> QidList .
