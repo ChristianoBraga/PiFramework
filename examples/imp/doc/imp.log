@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.10.13)  12 MAR 2018 10:53
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017) (preloaded format=pdflatex 2017.10.13)  12 MAR 2018 12:28
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -947,8 +947,7 @@ LaTeX Font Info:    Font shape `U/futm/m/n' will be
 \nw@chunkcount=\count168
 \@commacount=\count169
 \nwix@counter=\count170
-)
-No file imp.aux.
+) (doc/imp.aux)
 \openout1 = `imp.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 17.
@@ -973,7 +972,7 @@ LaTeX Font Info:    Checking defaults for FMX/futm/m/n on input line 17.
 LaTeX Font Info:    ... okay on input line 17.
 LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 17.
 LaTeX Font Info:    Try loading font information for TS1+cmr on input line 17.
-(/usr/local/texlive/2017/texmf-dist/tex/latex/base/ts1cmr.fd
+ (/usr/local/texlive/2017/texmf-dist/tex/latex/base/ts1cmr.fd
 File: ts1cmr.fd 2014/09/29 v2.5h Standard LaTeX font definitions
 )
 LaTeX Font Info:    ... okay on input line 17.
@@ -995,11 +994,12 @@ Package: gettitlestring 2016/05/16 v1.5 Cleanup title references (HO)
 LaTeX Info: Redefining \ref on input line 17.
 LaTeX Info: Redefining \pageref on input line 17.
 LaTeX Info: Redefining \nameref on input line 17.
+
+(doc/imp.out) (doc/imp.out)
 \@outlinefile=\write4
 \openout4 = `imp.out'.
 
-
-ABD: EveryShipout initializing macros
+ ABD: EveryShipout initializing macros
 (/usr/local/texlive/2017/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count172
@@ -1036,7 +1036,7 @@ LaTeX Font Info:    Font shape `T1/futs/bx/n' in size <14.4> not available
 (/usr/local/texlive/2017/texmf-dist/tex/latex/ucs/data/uni-0.def
 File: uni-0.def 2013/05/13 UCS: Unicode data U+0000..U+00FF
 )
-<img/imp.jpg, id=7, 90.3375pt x 90.3375pt>
+<img/imp.jpg, id=11, 90.3375pt x 90.3375pt>
 File: img/imp.jpg Graphic file (type jpg)
  <use img/imp.jpg>
 Package pdftex.def Info: img/imp.jpg used on input line 25.
@@ -1132,10 +1132,10 @@ Package rerunfilecheck Info: File `imp.out' has not changed.
 Package atveryend Info: Empty hook `AtVeryVeryEnd' on input line 849.
  ) 
 Here is how much of TeX's memory you used:
- 19199 strings out of 492995
- 361839 string characters out of 6132703
- 439874 words of memory out of 5000000
- 22376 multiletter control sequences out of 15000+600000
+ 19207 strings out of 492995
+ 361918 string characters out of 6132703
+ 439924 words of memory out of 5000000
+ 22378 multiletter control sequences out of 15000+600000
  66213 words of font info for 64 fonts, out of 8000000 for 9000
  1141 hyphenation exceptions out of 8191
  55i,5n,66p,420b,614s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -1147,10 +1147,10 @@ ive/2017/texmf-dist/fonts/type1/adobe/utopia/putb8a.pfb></usr/local/texlive/201
 -dist/fonts/type1/adobe/utopia/putri8a.pfb></usr/local/texlive/2017/texmf-dist/
 fonts/type1/public/cm-super/sftt0900.pfb></usr/local/texlive/2017/texmf-dist/fo
 nts/type1/public/cm-super/sftt1000.pfb>
-Output written on doc/imp.pdf (20 pages, 132907 bytes).
+Output written on doc/imp.pdf (20 pages, 133091 bytes).
 PDF statistics:
- 144 PDF objects out of 1000 (max. 8388607)
- 113 compressed objects within 2 object streams
+ 148 PDF objects out of 1000 (max. 8388607)
+ 117 compressed objects within 2 object streams
  32 named destinations out of 1000 (max. 500000)
- 18 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 26 words of extra memory for PDF output out of 10000 (max. 10000000)
 
