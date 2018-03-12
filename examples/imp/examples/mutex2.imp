@@ -45,3 +45,5 @@ set show loop timing on .
 
 --- Strong liveness
 (mc mutex() |= ([]<> p1(1)) -> ([]<> p1(2)))
+
+quit

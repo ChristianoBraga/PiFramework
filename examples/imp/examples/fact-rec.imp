@@ -17,3 +17,5 @@ end)
 set show loop stats on .
 set show loop timing on .
 (exec fact(100))
+
+quit

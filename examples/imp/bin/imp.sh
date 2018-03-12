@@ -5,8 +5,7 @@ if [ "$TERM_PROGRAM" = "iTerm.app" ] ;
 then
   ./imgcat ./img/imp.jpg
 fi
-if [ "$1" != "" ]; then
+while [ "$1" != "" ]; do
   $MAUDE -no-banner $IMP_DIR/maude/imp.maude "$1"
-else
-  $MAUDE -no-banner $IMP_DIR/maude/imp.maude
-fi
+  shift
+done

@@ -27,7 +27,8 @@ set show loop stats on .
 set show loop timing on .
 
 --- Safety
---- (mc mutex() |= [] ~(p1(2) /\ p2(2)))
+(mc mutex() |= [] ~(p1(2) /\ p2(2)))
 --- Liveness
 (mc mutex() |= [] (p1(1) -> <> p1(2)))
 
+quit
