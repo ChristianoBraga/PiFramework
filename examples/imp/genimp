@@ -1,0 +1,15 @@
+#!/bin/bash
+
+echo "#!/bin/bash"
+echo "MAUDE=$1/maude.darwin64"
+echo "IMP_DIR=$2"
+
+echo "if [ \"\$TERM_PROGRAM\" = \"iTerm.app\" ] ;"
+echo "then"
+echo "  ./imgcat ./img/imp.jpg"
+echo "fi"
+echo "if [ \"\$1\" != \"\" ]; then"
+echo "  \$MAUDE -no-banner \$IMP_DIR/imp.maude \"\$1\""
+echo "else"
+echo "  \$MAUDE -no-banner \$IMP_DIR/imp.maude"
+echo "fi"
