@@ -1,4 +1,5 @@
 \documentclass{llncs}
+\usepackage[printwatermark]{xwatermark}
 \usepackage[utf8x]{inputenc}
 \usepackage[colorlinks=true,urlcolor=blue,linkcolor=blue,citecolor=blue]{hyperref}
 \usepackage{fourier}
@@ -9,6 +10,8 @@
 \usepackage{amsmath}
 \usepackage{syntax}
 \usepackage{noweb}
+
+\newwatermark[allpages,color=gray!10,angle=45,scale=3,xpos=0,ypos=0]{DRAFT}
 
 \usepackage{listings}
 \definecolor{LtGray}{rgb}{0.95,0.95,0.95}
@@ -157,6 +160,18 @@ the~\href{http://maude.cs.uiuc.edu}{Maude} language.
 
 \subsection{A Maude primer}
 
+\paragraph{Syntax}
+\begin{itemize}
+    \item Modules
+    \item Signatures
+    \item Equations
+    \item Rules
+\end{itemize}
+
+\paragraph{Semantics.} Modules, transition systems and Kripke structures. 
+
+\paragraph{Metalevel}
+
 \subsection{Parser}
 
 Module [[TOKEN]] specifies what [[Tokens]], [[TokenLists]] and [[NeTokenList]] are. They are constructed with operators [[token]], [[bubble]] and [[neTokenList]], where attribute [[Exclude]] specify which terms are not to be constructed by the given constructor.
@@ -197,8 +212,8 @@ Module [[IMP-GRAMMAR]] implements the grammar of Section~\ref{sec:imp-grammar} i
 \end{grammar}
 is implemented in Module [[IMP-GRAMMAR]] by the operation declarations
 \begin{maude}
- op proc\_\_ : Token BlockCommandDecl -> ProcDecl [prec 50] .
- op proc\_`(\_`)\_ : Token TokenList BlockCommandDecl -> ProcDecl [prec 50] .
+ op proc__ : Token BlockCommandDecl -> ProcDecl [prec 50] .
+ op proc_`(_`)_ : Token TokenList BlockCommandDecl -> ProcDecl [prec 50] .
 \end{maude}
 together with the declarations for sorts [[ProcDecl]] and [[BlockCommandDecl]].
 <<imp-grammar-module>>=
@@ -281,23 +296,29 @@ fmod IMP-GRAMMAR is
  op proc__ : Token BlockCommandDecl -> ProcDecl [prec 50] .
  op proc_`(_`)_ : Token TokenList BlockCommandDecl -> ProcDecl  
     [prec 50] .
- op __ : ProcDeclList ProcDeclList -> ProcDeclList  [assoc comm prec 60] .
+ op __ : ProcDeclList ProcDeclList -> ProcDeclList  
+   [assoc comm prec 60] .
 endfm 
 @ 
 
 \subsection{Compiling to BPLC}
 
-<<compiler-to-bplc>>=
-load ../../../maude/bplc.maude
-
+Compilation from IMP to BPLC is quite trivial as there exists a one-to-one correspondence between IMP constructions and BPLC. Essentially, an IMP [[module]] gives rise to a BPLC [[dec]]. IMP [[var]] and [[const]] are declarations and so is a [[proc]] declaration that gives rise to a [[prc]] declaration in BPLC. 
+<<compile-imp-to-bplc>>=
 mod COMPILE-IMP-TO-BPLC is
  inc PREDICATE-DECL .
  inc COMMAND-DECL .
  pr BPLC .
  pr META-LEVEL .
 
- *** Compiling IMP expressions to BPLC Exp.
+ <<Compiling IMP expressions to BPLC Exp>>
+ <<Compiling IMP commands to BPLC Cmd>> 
+ <<Compiling IMP declarations to BPLC Dec>>
+@
 
+The compilation from IMP to BPLC exp relates IMP tokens to BPLC Id, IMP arithmetic and boolean expressions to BPLC Exp. In particular, the compilation of a [[token]] has to check if the token is a primitive type, either [[Rat]] (for Rational numbers) or [[Bool]] (for Boolean values), or an identifier. Since [[Rat]] and [[Bool]] are tokenized and we need Maude metalevel descent function [[downTerm]] to help us parse them into proper constants
+ 
+<<Compiling tokens>>= 
  op compileId : Qid -> Id .
  eq compileId(I:Qid) = idn(downTerm(I:Qid, 'Qid)) .
 
@@ -315,7 +336,10 @@ mod COMPILE-IMP-TO-BPLC is
      else idn(downTerm(I:Qid, 'Qid))
      fi
     fi .
+@
 
+Arithmetic expressions are mapped to their prefixed counterpart in BPLC, e.g, an IMP expression [[a + b]] is compiled to [[add(compileExp(a), compileExp(b))]].
+<<Compiling arithmetic expressions>>=
  op compileExp : Term -> Exp .
  ceq compileExp(I:Qid) = compileId(I:Qid) 
   if not(I:Qid :: Constant) .
@@ -328,6 +352,10 @@ mod COMPILE-IMP-TO-BPLC is
      mul(compileExp(T1:Term), compileExp(T2:Term)) .
  eq compileExp('_/_[T1:Term, T2:Term]) =
      div(compileExp(T1:Term), compileExp(T2:Term)) .
+@
+
+A treatment similar to arithmetic expressions is given to Boolean expressions, with a particular care with constants, as we did in  @<<Compiling tokens>>. Here, however, we do not require a call to [[downTerm]] as the constants for [[PredicateDecl]] are already typed.
+<<Compiling boolean expressions>>=
  eq compileExp('true.PredicateDecl) = boo(true) .
  eq compileExp('false.PredicateDecl) = boo(false) .
  eq compileExp('~[T:Term]) = neg(compileExp(T:Term)) .
@@ -345,9 +373,9 @@ mod COMPILE-IMP-TO-BPLC is
     lt(compileExp(T1:Term), compileExp(T2:Term)) .
  eq compileExp('_<=_[T1:Term,T2:Term]) = 
     le(compileExp(T1:Term), compileExp(T2:Term)) .
+@
 
- *** Compiling IMP commands to BPLC Cmd.
-
+<<Compiling IMP commands to BPLC Cmd>>=
  op compileCmd : Term -> Cmd .
  eq compileCmd('nop.CommandDecl) = nop .
  eq compileCmd('_:=_['token[I:Qid], T:Term]) =
@@ -398,9 +426,9 @@ mod COMPILE-IMP-TO-BPLC is
   if downTerm(Q:Qid, 'error) =/= 'error .
  eq makeExprDeclQidList((Q:Qid , TL:TermList)) =
     makeExprDeclQidList(Q:Qid) makeExprDeclQidList(TL:TermList) .
+@
 
- *** Compiling IMP declarations to BPLC Dec.
-
+<<Compiling IMP declarations to BPLC Dec>>=
  *** Compiling variables. The initialization clause is 
  *** necessary to properly declare variables according to BPLC 
  *** ref construct.
@@ -963,8 +991,24 @@ fmod COMMAND-DECL is
 endfm
 @
 
+<<compiler-to-bplc>>=
+<<load-bplc>>
+<<compile-imp-to-bplc>>
+@
+
+<<load-bplc>>=
+load ../../../maude/bplc.maude
+@
+
+<<Compiling IMP expressions to BPLC Exp>>=
+ <<Compiling tokens>>
+ <<Compiling arithmetic expressions>>
+ <<Compiling boolean expressions>>
+@ 
+
 <<imp.maude>>=
 <<imp-grammar>>
 <<compiler-to-bplc>>
 <<imp-pretty-printing>>
 <<imp-interface>>
+@
