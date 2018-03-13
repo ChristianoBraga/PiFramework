@@ -3,6 +3,7 @@
 export MAUDE
 
 all:
+	@echo ">>IMP make: cleaning up..."
 	@$(MAKE) clean
 	@echo ">>IMP make: creating shell..."
 	@$(MAKE) imp
@@ -21,6 +22,9 @@ ifeq ($(MAUDE),)
 	@echo ">>IMP make: Command line should be make imp -B MAUDE=maude-path"
 	@exit 1
 endif
+ifeq (, $(wildcard ./bin/))
+	@mkdir ./bin
+endif
 	@./genimp $(MAUDE) $(PWD) > bin/imp.sh
 ifneq (, $(wildcard ./bin/imp.sh))
 	@chmod +x bin/imp.sh
@@ -31,26 +35,31 @@ ifeq (, $(wildcard ./imp))
 endif
 
 tex:
-	@noweave -delay imp.noweb > doc/imp.tex
-	@pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
-	@pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
+ifeq (, $(wildcard ./doc))
+	mkdir ./doc
+endif
+	noweave -delay imp.noweb > doc/imp.tex
+	pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
+	pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
 
 maude:
+ifeq (, $(wildcard ./maude))
+	@mkdir ./maude
+endif
 	@notangle -Rimp.maude imp.noweb > maude/imp.maude
 
 clean:
-	@$(MAKE) cleanbin
-	@$(MAKE) cleandoc
-ifneq (, $(wildcard ./maude/imp.maude))
-	@rm ./maude/imp.maude
-endif
-
-cleanbin:
 ifneq (, $(wildcard ./imp))
 	@rm ./imp
 endif
-ifneq (, $(wildcard ./bin/imp.sh))
-	@rm ./bin/imp.sh
+ifneq (, $(wildcard ./bin))
+	@rm -fr ./bin
+endif
+ifneq (, $(wildcard ./doc))
+	@rm -fr ./doc
+endif
+ifneq (, $(wildcard ./maude))
+	@rm -fr ./doc
 endif
 
 cleandoc:
@@ -68,4 +77,4 @@ ifneq (, $(wildcard ./doc/imp.tex))
 endif
 
 test:
-	./imp $(wildcard examples/*.imp)
+	@./imp $(wildcard examples/*.imp)
