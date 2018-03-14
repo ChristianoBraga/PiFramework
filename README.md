@@ -1,15 +1,23 @@
 <p align="center">
-<img src="./bplc-logo.png">
+<img src="./img/imp.jpg">
 </p>
 
-# BPLC
-Basic Programming Languages Constructs (pronounced "beeplick") is a library of common programming language constructs whose semantics are formally specified. Therefore, to give semantics to a programming language means to relate constructions of the given language with the constructs of BPLC. It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
+# IMP
+IMP is a simple imperative programming language created to illustrate the use of the Basic Programming Languages Constructs library ([BPLC](http://github.com/ChristianoBraga/BPLC)). 
+It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
 
 ## System requirements
 
-* This version of BPLC implementation runs on version 2.7.1 of the Maude system.
+* This version of IMP runs on version 2.7.1 of the [Maude](http://maude.cs.uiuc.edu) system. 
+* [iTerm 2](https://www.iterm2.com) on [macOS](https://www.apple.com/br/macos/) produces a nicer experience.
 
-### Acknowledgements
+## Session pictures
 
-<div>Logo made with <a href="https://www.designevo.com/" title="Free Online Logo Maker">DesignEvo</a>.</div>
+<p align="center">
+<img src="./img/fact-session.jpg" width="600">
+<img src="./img/fact-rec-session.jpg" width="600">
+<img src="./img/mutex-session.jpg" width="600">
+<img src="./img/mutex2-session.jpg" width="600">
+</p>
+
 
