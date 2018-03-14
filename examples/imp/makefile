@@ -1,7 +1,7 @@
 #!/bin/bash
 
 export MAUDE
-TEXINPUTS=$(PWD)/../../doc/:$(TEXINPUTS)
+TEXINPUTS := $(PWD)/../../doc/:$(TEXINPUTS)
 
 all:
 	@echo ">>IMP make: cleaning up..."
@@ -23,6 +23,7 @@ ifeq ($(MAUDE),)
 	@echo ">>IMP make: Command line should be make imp -B MAUDE=maude-path"
 	@exit 1
 endif
+	@chmod +x ./genimp
 	@./genimp $(MAUDE) . > imp
 	@chmod +x imp
 
@@ -31,9 +32,9 @@ tex:
 ifeq (, $(wildcard ./doc))
 	mkdir ./doc
 endif
-	noweave -delay imp.noweb > doc/imp.tex
-	pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
-	pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
+	@noweave -delay imp.noweb > doc/imp.tex
+	@pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
+	@pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
 
 maude:
 ifeq (, $(wildcard ./maude))
