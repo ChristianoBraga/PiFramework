@@ -10,7 +10,7 @@ It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christia
 
 * This version of IMP runs on version 2.7.1 of the [Maude](http://maude.cs.uiuc.edu) system. 
 * IMP is coded using [Litterate Programming](https://www-cs-faculty.stanford.edu/~knuth/lp.html). [noweb](https://www.cs.tufts.edu/~nr/noweb/) should be installed to generate both documentation (in LaTeX) and code (in Maude). 
-* `pdflatex' should be installed to generate a PDF file from the LaTeX code.
+* `pdflatex` should be installed to generate a PDF file from the LaTeX code.
 * [iTerm 2](https://www.iterm2.com) on [macOS](https://www.apple.com/br/macos/) produces a nicer experience.
 ## Session pictures
 
