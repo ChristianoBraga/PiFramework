@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export MAUDE
+TEXINPUTS=$(PWD)/../../doc/:$(TEXINPUTS)
 
 all:
 	@echo ">>IMP make: cleaning up..."
@@ -22,19 +23,11 @@ ifeq ($(MAUDE),)
 	@echo ">>IMP make: Command line should be make imp -B MAUDE=maude-path"
 	@exit 1
 endif
-ifeq (, $(wildcard ./bin/))
-	@mkdir ./bin
-endif
-	@./genimp $(MAUDE) $(PWD) > bin/imp.sh
-ifneq (, $(wildcard ./bin/imp.sh))
-	@chmod +x bin/imp.sh
-endif
-ifeq (, $(wildcard ./imp))
-	@ln -s bin/imp.sh ./imp
+	@./genimp $(MAUDE) . > imp
 	@chmod +x imp
-endif
 
 tex:
+        @echo ">>IMP make: creating documentation..."
 ifeq (, $(wildcard ./doc))
 	mkdir ./doc
 endif
