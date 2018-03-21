@@ -24,6 +24,7 @@ ifeq ($(MAUDE),)
 	@exit 1
 endif
 	@chmod +x ./genimp
+	@chmod +x ./imgcat
 	@./genimp $(MAUDE) . > imp
 	@chmod +x imp
 

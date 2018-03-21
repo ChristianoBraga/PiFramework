@@ -10,12 +10,9 @@ echo "fi"
 echo "if [ \"\$1\" = \"\" ] ;"
 echo "then"
 echo "  \$MAUDE -no-banner \$IMP_DIR/maude/imp.maude"
+echo "else"
+echo "  while [ \"\$1\" != \"\" ]; do"
+echo "    \$MAUDE -no-banner \$IMP_DIR/maude/imp.maude \"\$1\""
+echo "   shift"
+echo "  done"
 echo "fi"
-
-
-
-
-echo "while [ \"\$1\" != \"\" ]; do"
-echo "  \$MAUDE -no-banner \$IMP_DIR/maude/imp.maude \"\$1\""
-echo "  shift"
-echo "done"
