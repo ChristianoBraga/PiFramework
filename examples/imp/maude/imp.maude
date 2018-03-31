@@ -686,10 +686,16 @@ mod IMP-INTERFACE is
                            printModule(M:MetaIMPModule)]
   if M:MetaIMPModule =/= noModule .
 
- *** Viewing a module.
+ *** Viewing a python module.
  crl [python] : ['py , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
               [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
                dec2Decl(D:Dec, D:Dec, 0)]
+  if M:MetaIMPModule =/= noModule .
+
+ *** Deplying a Python Flask module.
+ crl [deploy] : ['deply , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
+              [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
+               mkFlaskModule(dec2Decl(D:Dec, D:Dec, 0))]
   if M:MetaIMPModule =/= noModule .
 
  *** Executing a command.
