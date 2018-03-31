@@ -28,7 +28,7 @@ endif
 	@./genimp $(MAUDE) . > imp
 	@chmod +x imp
 
-tex:
+tex: 
         @echo ">>IMP make: creating documentation..."
 ifeq (, $(wildcard ./doc))
 	mkdir ./doc
