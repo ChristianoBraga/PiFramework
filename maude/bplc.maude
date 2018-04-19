@@ -12,8 +12,9 @@ endv
 fmod GSMC is
     ex SET{SemComp} * (op empty to noSemComp) .
     sorts Attrib Conf .
-    op <_> : Set{SemComp} -> Conf [format(c! c! c! o)] . 
+    op <_> : Set{SemComp} -> Conf [ctor format(c! c! c! o)] . 
 endfm
+
 fmod VALUE-SORT is
     sort Value . 
 endfm
@@ -148,10 +149,10 @@ fmod EXP is
     ops LT LE EQ NEG AND OR : -> Control [ctor] .
 
     --- Semantic components
-    op env : -> EnvAttrib .
-    op sto : -> StoreAttrib .
-    op cnt : -> ControlAttrib .
-    op val : -> ValueAttrib .
+    op env : -> EnvAttrib [ctor] .
+    op sto : -> StoreAttrib [ctor] .
+    op cnt : -> ControlAttrib [ctor] .
+    op val : -> ValueAttrib [ctor] .
     op _:_ : EnvAttrib Env -> SemComp [ctor format(c! b! o o)] .
     op _:_ : StoreAttrib Store -> SemComp [ctor format(r! b! o o)] .
     op _:_ : ControlAttrib ControlStack -> SemComp [ctor format(c! b! o o)] .
