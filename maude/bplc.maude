@@ -695,7 +695,7 @@ mod COMPILE-TO-PYTHON is
 
     op printSpaces : Nat -> QidList .
     eq printSpaces(0) = (nil).QidList .
-    eq printSpaces(N:Nat) = '\n printSpaces(sd(N:Nat, 1)) .
+    eq printSpaces(N:Nat) = '\s printSpaces(sd(N:Nat, 1)) .
     
     op id2Qid : Id -> QidList .
     eq id2Qid(idn(Q:Qid)) = Q:Qid .

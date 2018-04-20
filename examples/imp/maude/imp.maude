@@ -319,16 +319,8 @@ mod COMPILE-IMP-TO-BPLC is
  endm
 mod IMP-PRETTY-PRINTING is
  pr BPLC-MODEL-CHECKER .
+ pr COMPILE-TO-PYTHON . 
  pr INT .
-
- *** Some auxiliary constants and functions.
- ops level incr : -> Nat .
- eq level = 3 .
- eq incr = 3 .
-
- op printSpaces : Nat -> QidList .
- eq printSpaces(0) = (nil).QidList .
- eq printSpaces(N:Nat) = '\s printSpaces(sd(N:Nat, 1)) .
 
  op printTermList : TermList -> QidList .
  eq printTermList(empty) = (nil).QidList .
@@ -641,7 +633,6 @@ mod IMP-INTERFACE is
  pr LOOP-MODE * (sort State to LoopState).
  pr COMPILE-IMP-TO-BPLC .
  pr IMP-PRETTY-PRINTING .
- pr COMPILE-TO-PYTHON .
 
  sorts Dec? MetaIMPModule Command IMPState .
  subsort Term < MetaIMPModule .
@@ -686,16 +677,10 @@ mod IMP-INTERFACE is
                            printModule(M:MetaIMPModule)]
   if M:MetaIMPModule =/= noModule .
 
- *** Viewing a python module.
+ *** Viewing a module.
  crl [python] : ['py , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
-              [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
-               dec2Decl(D:Dec, D:Dec, 0)]
-  if M:MetaIMPModule =/= noModule .
-
- *** Deplying a Python Flask module.
- crl [deploy] : ['deply , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
-              [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
-               mkFlaskModule(dec2Decl(D:Dec, D:Dec, 0))]
+                [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
+                      dec2Decl(D:Dec, D:Dec, 0)]
   if M:MetaIMPModule =/= noModule .
 
  *** Executing a command.

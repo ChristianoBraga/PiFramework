@@ -29,10 +29,10 @@ endif
 ifneq (, $(wildcard ./bin/imp.sh))
 	@chmod +x bin/imp.sh
 endif
-#ifeq (, $(wildcard ./imp))
-#	@ln -s bin/imp.sh ./imp
-#	@chmod +x imp
-#endif
+ifeq (, $(wildcard ./imp))
+	@ln -s bin/imp.sh ./imp
+	@chmod +x imp
+endif
 
 tex:
 ifeq (, $(wildcard ./doc))
