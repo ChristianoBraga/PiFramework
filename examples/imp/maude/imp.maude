@@ -678,7 +678,7 @@ mod IMP-INTERFACE is
   if M:MetaIMPModule =/= noModule .
 
  *** Viewing a module.
- crl [python] : ['py , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
+ crl [python] : ['pie , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
                 [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
                       dec2Decl(D:Dec, D:Dec, 0)]
   if M:MetaIMPModule =/= noModule .
@@ -737,7 +737,7 @@ mod IMP-INTERFACE is
      [nil, < M:MetaIMPModule ; D:Dec ; QIL' > ,
       'IMP: '\r 'Error 'no 'such 'command '\o Q:Qid QIL]
   if (Q:Qid =/= 'module) /\ (Q:Qid =/= 'view) /\
-     (Q:Qid =/= 'exec) /\ (Q:Qid =/= 'mc) /\ (Q:Qid =/= 'py) .
+     (Q:Qid =/= 'exec) /\ (Q:Qid =/= 'mc) /\ (Q:Qid =/= 'pie) .
 endm
 
 loop init .
