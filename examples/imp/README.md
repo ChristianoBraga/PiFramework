@@ -6,6 +6,10 @@
 IMP is a simple imperative programming language created to illustrate the use of the Basic Programming Languages Constructs library ([BPLC](http://github.com/ChristianoBraga/BPLC)). 
 It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
 
+## Installation
+
+Simply type `make -B MAUDE=<<your maude 2.7.1 path>>`. It should generate the Maude files, documentation and run the examples.
+
 ## System requirements
 
 * This version of IMP runs on version 2.7.1 of the [Maude](http://maude.cs.uiuc.edu) system. 
