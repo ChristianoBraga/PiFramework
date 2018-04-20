@@ -1,5 +1,5 @@
 <p align="center">
-<img src="./img/bplc.jpg">
+<img src="./logo/logo.png">
 </p>
 
 # BPLC
