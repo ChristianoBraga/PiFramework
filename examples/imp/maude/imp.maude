@@ -319,16 +319,8 @@ mod COMPILE-IMP-TO-BPLC is
  endm
 mod IMP-PRETTY-PRINTING is
  pr BPLC-MODEL-CHECKER .
+ pr COMPILE-TO-PYTHON . 
  pr INT .
-
- *** Some auxiliary constants and functions.
- ops level incr : -> Nat .
- eq level = 3 .
- eq incr = 3 .
-
- op printSpaces : Nat -> QidList .
- eq printSpaces(0) = (nil).QidList .
- eq printSpaces(N:Nat) = '\s printSpaces(sd(N:Nat, 1)) .
 
  op printTermList : TermList -> QidList .
  eq printTermList(empty) = (nil).QidList .
@@ -685,6 +677,12 @@ mod IMP-INTERFACE is
                            printModule(M:MetaIMPModule)]
   if M:MetaIMPModule =/= noModule .
 
+ *** Viewing a module.
+ crl [python] : ['py , < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
+                [nil, < M:MetaIMPModule ; D:Dec ; QIL' >,
+                      dec2Decl(D:Dec, D:Dec, 0)]
+  if M:MetaIMPModule =/= noModule .
+
  *** Executing a command.
  crl [exec-unbounded] : [('exec QIL), 
                          < M:MetaIMPModule ; D:Dec ; QIL' >, QIL''] =>
@@ -739,7 +737,7 @@ mod IMP-INTERFACE is
      [nil, < M:MetaIMPModule ; D:Dec ; QIL' > ,
       'IMP: '\r 'Error 'no 'such 'command '\o Q:Qid QIL]
   if (Q:Qid =/= 'module) /\ (Q:Qid =/= 'view) /\
-     (Q:Qid =/= 'exec) /\ (Q:Qid =/= 'mc) .
+     (Q:Qid =/= 'exec) /\ (Q:Qid =/= 'mc) /\ (Q:Qid =/= 'py) .
 endm
 
 loop init .

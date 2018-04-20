@@ -902,6 +902,136 @@ mod BPLC-MODEL-CHECKER is
 endm
 @
 
+\section{Generating Python code}
+
+<<bplc-compile-to-python>>=
+mod COMPILE-TO-PYTHON is
+    pr BPLC .
+    pr QID-LIST .
+    pr META-LEVEL .
+    
+    ops level incr : -> Nat .
+    eq level = 3 .
+    eq incr = 3 .
+
+    op printSpaces : Nat -> QidList .
+    eq printSpaces(0) = (nil).QidList .
+    eq printSpaces(N:Nat) = '\s printSpaces(sd(N:Nat, 1)) .
+    
+    op id2Qid : Id -> QidList .
+    eq id2Qid(idn(Q:Qid)) = Q:Qid .
+    
+    op formals2QidList : Formals -> QidList .   
+    eq formals2QidList(vod) = (nil).QidList .
+    eq formals2QidList(par(I:Id)) = id2Qid(I:Id) .
+    eq formals2QidList(for(F1:Formals, F2:Formals)) = 
+       formals2QidList(F1:Formals) '`, formals2QidList(F2:Formals) .
+       
+    op blk2Block : Blk Dec Nat -> QidList .   
+   ceq blk2Block(blk(D1:Dec, C:Cmd), D2:Dec, N:Nat) = 
+       '\s ':  
+       declareGlobal(C:Cmd, D2:Dec, N:Nat + incr) 
+       dec2Decl(D1:Dec, D2:Dec, N:Nat + incr) 
+       cmd2Comm(C:Cmd, D2:Dec, N:Nat + incr) 
+    if declareGlobal(C:Cmd, D2:Dec, N:Nat + incr) =/= (nil).QidList .
+   ceq blk2Block(blk(D1:Dec, C:Cmd), D2:Dec, N:Nat) = 
+        '\s ': '\n 
+        dec2Decl(D1:Dec, D2:Dec, N:Nat + incr) 
+        cmd2Comm(C:Cmd, D2:Dec, N:Nat + incr) 
+    if declareGlobal(C:Cmd, D2:Dec, N:Nat + incr) == (nil).QidList .
+   ceq blk2Block(blk(C:Cmd), D:Dec, N:Nat) = 
+       '\s ':  
+       declareGlobal(C:Cmd, D:Dec, N:Nat + incr)
+       cmd2Comm(C:Cmd, D:Dec, N:Nat + incr) 
+    if declareGlobal(C:Cmd, D:Dec, N:Nat + incr) =/= (nil).QidList .   
+   ceq blk2Block(blk(C:Cmd), D:Dec, N:Nat) = 
+        '\s ':   
+        cmd2Comm(C:Cmd, D:Dec, N:Nat + incr) 
+    if declareGlobal(C:Cmd, D:Dec, N:Nat + incr) =/= (nil).QidList .   
+    
+    op dec2Decl : Dec Dec Nat -> QidList .
+    eq dec2Decl(cns(I:Id, E:Exp), D:Dec, N:Nat) = 
+       id2Qid(I:Id) '= exp2Expr(E:Exp) .
+    eq dec2Decl(ref(I:Id, E:Exp), D:Dec, N:Nat) = 
+       id2Qid(I:Id) '= exp2Expr(E:Exp) .
+    eq dec2Decl(prc(I:Id, B:Blk), D:Dec, N:Nat) = 
+       'def id2Qid(I:Id) '`( '`) 
+       blk2Block(B:Blk, D:Dec, N:Nat + incr) .
+    eq dec2Decl(prc(I:Id, F:Formals, B:Blk), D:Dec, N:Nat) = 
+       'def id2Qid(I:Id) '`( formals2QidList(F:Formals) '`)  
+       blk2Block(B:Blk, D:Dec, N:Nat + incr) .
+    eq dec2Decl(dec(D1:Dec, D2:Dec), D3:Dec, N:Nat) =    
+       dec2Decl(D1:Dec, D3:Dec, N:Nat) '\n
+       dec2Decl(D2:Dec, D3:Dec, N:Nat) . 
+       
+    op isGlobal : Id Dec -> Bool [memo] .     
+    eq isGlobal(I1:Id, ref(I2:Id, E:Exp)) = I1:Id == I2:Id .
+    eq isGlobal(I1:Id, cns(I2:Id, E:Exp)) = false .
+    eq isGlobal(I1:Id, prc(I2:Id, F:Formals, B:Blk)) = false .
+    eq isGlobal(I1:Id, prc(I2:Id, B:Blk)) = false .
+    eq isGlobal(I:Id, dec(D1:Dec, D2:Dec)) = 
+       isGlobal(I:Id, D1:Dec) or isGlobal(I:Id, D2:Dec) .
+       
+    op exp2Expr : Exp -> QidList .
+    eq exp2Expr(I:Id) = id2Qid(I:Id) .   
+    eq exp2Expr(rat(R:Rat)) = 
+       metaPrettyPrint(upModule('RAT, false), upTerm(R:Rat)) . 
+    eq exp2Expr(boo(B:Bool)) = 
+       metaPrettyPrint(upModule('BOOL, false), upTerm(B:Bool)) . 
+    eq exp2Expr(add(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '+ exp2Expr(E2:Exp) .    
+    eq exp2Expr(mul(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '* exp2Expr(E2:Exp) .    
+    eq exp2Expr(sub(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '- exp2Expr(E2:Exp) .    
+    eq exp2Expr(div(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '/ exp2Expr(E2:Exp) .    
+    eq exp2Expr(neg(E:Exp)) = 
+       'not '`( exp2Expr(E:Exp) '`) .   
+    eq exp2Expr(eq(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '== exp2Expr(E2:Exp) .    
+    eq exp2Expr(and(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) 'and exp2Expr(E2:Exp) .    
+    eq exp2Expr(or(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) 'or exp2Expr(E2:Exp) .    
+    eq exp2Expr(gt(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '> exp2Expr(E2:Exp) .    
+    eq exp2Expr(ge(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '>= exp2Expr(E2:Exp) .    
+    eq exp2Expr(lt(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '< exp2Expr(E2:Exp) .    
+    eq exp2Expr(le(E1:Exp, E2:Exp)) = 
+       exp2Expr(E1:Exp) '<= exp2Expr(E2:Exp) .  
+    
+    op cmd2Comm : Cmd Dec Nat -> QidList .
+    eq cmd2Comm(print(E:Exp), D:Dec, N:Nat) = 
+       'print '`( exp2Expr(E:Exp) '`) . 
+    eq cmd2Comm(assign(I:Id, E:Exp), D:Dec, N:Nat) = 
+       id2Qid(I:Id) '= exp2Expr(E:Exp) . 
+    eq cmd2Comm(if(E:Exp, B1:Blk, B2:Blk), D:Dec, N:Nat) = 
+       'if exp2Expr(E:Exp)  
+       blk2Block(B1:Blk, D:Dec, N:Nat + incr) 
+       'else    
+       blk2Block(B2:Blk, D:Dec, N:Nat + incr) .
+    eq cmd2Comm(loop(E:Exp, B:Blk), D:Dec, N:Nat) = 
+       'while exp2Expr(E:Exp)
+       blk2Block(B:Blk, D:Dec, N:Nat) .
+    eq cmd2Comm(seq(C1:Cmd, C2:Cmd), D:Dec, N:Nat) = 
+       printSpaces(N:Nat)
+       cmd2Comm(C1:Cmd, D:Dec, N:Nat) '\n
+       printSpaces(N:Nat)
+       cmd2Comm(C2:Cmd, D:Dec, N:Nat) .
+       
+    op declareGlobal : Cmd Dec Nat -> QidList .
+   ceq declareGlobal(assign(I:Id, E:Exp), D:Dec, N:Nat) = 
+       '\n printSpaces(N:Nat) 'global id2Qid(I:Id) 
+    if isGlobal(I:Id, D:Dec) .    
+    eq declareGlobal(seq(C1:Cmd, C2:Cmd), D:Dec, N:Nat) =
+       declareGlobal(C1:Cmd, D:Dec, N:Nat) '\n
+       declareGlobal(C2:Cmd, D:Dec, N:Nat) .
+    eq declareGlobal(C:Cmd, D:Dec, N:Nat) = (nil).Qid [owise] .
+endm
+@
 \end{document}
 
 <<bplc.maude>>=
@@ -914,4 +1044,4 @@ endm
 <<bplc-ext>>
 <<bplc>>
 <<bplc-mc>>
-
+<<bplc-compile-to-python>>

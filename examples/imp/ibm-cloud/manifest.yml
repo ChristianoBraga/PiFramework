@@ -1,0 +1,5 @@
+applications:
+- name: fact-cloud   
+  random-route: true
+  memory: 64M
+

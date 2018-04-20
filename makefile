@@ -1,12 +1,9 @@
 #!/bin/bash
-bplc: bplc.sh
-  genbplc $PWD
-
-tex: doc/bplc.tex
+tex:
 	noweave -delay bplc.noweb > doc/bplc.tex
 	pdflatex -output-directory=doc bplc.tex
 
-maude: maude/bplc.maude
+maude:
 	notangle -Rbplc.maude bplc.noweb > maude/bplc.maude
 
 clean:
