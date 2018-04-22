@@ -1,5 +1,3 @@
-#!/bin/bash
-
 export MAUDE
 TEXINPUTS := $(PWD)/../../doc/:$(TEXINPUTS)
 
@@ -28,14 +26,14 @@ endif
 	@./genimp $(MAUDE) . > imp
 	@chmod +x imp
 
-tex: 
-        @echo ">>IMP make: creating documentation..."
+tex:	
+	@echo ">>IMP make: creating documentation..."
 ifeq (, $(wildcard ./doc))
-	mkdir ./doc
+	@mkdir ./doc
 endif
-	@noweave -delay imp.noweb > doc/imp.tex
-	@pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
-	@pdflatex -halt-on-error -output-directory=doc doc/imp.tex > /dev/null 2>&1
+	@noweave -delay imp.noweb > ./doc/imp.tex
+	@pdflatex -halt-on-error -output-directory=doc ./doc/imp.tex > /dev/null 2>&1
+	@pdflatex -halt-on-error -output-directory=doc ./doc/imp.tex > /dev/null 2>&1
 
 maude:
 ifeq (, $(wildcard ./maude))
@@ -54,7 +52,7 @@ ifneq (, $(wildcard ./doc))
 	@rm -fr ./doc
 endif
 ifneq (, $(wildcard ./maude))
-	@rm -fr ./doc
+	@rm -fr ./maude
 endif
 
 cleandoc:
