@@ -45,9 +45,6 @@ clean:
 ifneq (, $(wildcard ./imp))
 	@rm ./imp
 endif
-ifneq (, $(wildcard ./bin))
-	@rm -fr ./bin
-endif
 ifneq (, $(wildcard ./doc))
 	@rm -fr ./doc
 endif
