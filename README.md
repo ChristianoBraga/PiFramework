@@ -1,6 +1,6 @@
 # &pi;-lib
 
-<p align="center">
+<p align="left">
 <img width="25%" src="./logo/logo-cropped.png">
 </p>
 
