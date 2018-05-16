@@ -1,7 +1,7 @@
 # &pi;-lib
 
 <p align="center">
-<img scale=25% src="./logo/logo-cropped.png">
+<img width="25%" src="./logo/logo-cropped.png">
 </p>
 
 &pi;-lib is a library of basic programming languages constructs whose semantics are formally specified in &pi;-automata. Therefore, to give semantics to a programming language means to relate constructions of the given language with the constructs of &pi;-lib. It is implemented in the [Maude](http://maude.cs.uiuc.edu) language, by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
