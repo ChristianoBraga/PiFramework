@@ -13,7 +13,7 @@
 
 ## Acknowledgements
 
-&pi;-lib is a result of a collaboration with [Fabrício Chalub](http://fcbr.github.io), [José Meseguer](https://dblp.uni-trier.de/pers/hd/m/Meseguer:Jos=eacute=) and [Peter D. Mosses](http://www.cs.swan.ac.uk/~cspdm/). The signature of BPLC has the same roots as the [Component Based Semantics](https://plancomps.csle.cs.rhul.ac.uk/taosd2015/) in the [Programming Language Components and Specifications project](https://plancomps.csle.cs.rhul.ac.uk/). The semantic framework that BPLC implements is Generalized Interpreting Automata.
+&pi;-lib is a result of a collaboration with [Fabrício Chalub](http://fcbr.github.io), [José Meseguer](https://dblp.uni-trier.de/pers/hd/m/Meseguer:Jos=eacute=) and [Peter D. Mosses](http://www.cs.swan.ac.uk/~cspdm/). The signature of &pi;-lib has the same roots as the [Component Based Semantics](https://plancomps.csle.cs.rhul.ac.uk/taosd2015/) in the [Programming Language Components and Specifications project](https://plancomps.csle.cs.rhul.ac.uk/). The semantic framework that BPLC implements is Generalized Interpreting Automata.
 
 <div>Logo made with <a href="https://www.designevo.com/" title="Free Online Logo Maker">DesignEvo</a>.</div>
 
