@@ -1,20 +1,3 @@
------------------------------
---- Generalized SMC machines.
-
-fmod GSMC-SORTS is
-    sorts SemComp . 
-endfm
-
-view SemComp from TRIV to GSMC-SORTS is
-    sort Elt to SemComp . 
-endv
-
-fmod GSMC is
-    ex SET{SemComp} * (op empty to noSemComp) .
-    sorts Attrib Conf .
-    op <_> : Set{SemComp} -> Conf [ctor format(c! c! c! o)] . 
-endfm
-
 fmod VALUE-SORT is
     sort Value . 
 endfm
@@ -60,19 +43,19 @@ fmod CONTROL-STACK is
     op __ : ControlStack ControlStack -> ControlStack [ditto] .         
 endfm
 
-fmod STORE-SORTS is
+fmod MEMORY-SORTS is
     sorts Loc Storable . 
 endfm
 
-view Loc from TRIV to STORE-SORTS is
+view Loc from TRIV to MEMORY-SORTS is
     sort Elt to Loc . 
 endv
 
-view Storable from TRIV to STORE-SORTS is
+view Storable from TRIV to MEMORY-SORTS is
     sort Elt to Storable . 
 endv
 
-fmod STORE is
+fmod MEMORY is
     pr NAT .
     ex MAP{Loc,Storable} * (sort Entry{Loc,Storable} to Cell,
        sort Map{Loc,Storable} to Store,
@@ -113,50 +96,71 @@ fmod ENV is
        sort Map{Id,Bindable} to Env,
        op undefined to undefid, op empty to noEnv). 
 endfm
-fmod EXP is
-        pr QID .   pr RAT .
-    ex GSMC .  ex ENV .
-    ex STORE . ex CONTROL-STACK .
+
+-----------------------------
+--- Generalized SMC machines.
+
+fmod SEMANTIC-COMPONENTS is
+    sorts SemComp . 
+endfm
+
+view SemComp from TRIV to SEMANTIC-COMPONENTS is
+    sort Elt to SemComp . 
+endv
+
+fmod GSMC is
     ex VALUE-STACK .
+    ex MEMORY .
+    ex CONTROL-STACK .
+    ex ENV . 
+    ex SET{SemComp} * (op empty to noSemComp) .
 
-    sorts Exp NzExp Pred EnvAttrib StoreAttrib ControlAttrib ValueAttrib .
+    sorts Attrib Conf EnvAttrib StoreAttrib ControlAttrib ValueAttrib .
     subsort EnvAttrib StoreAttrib ControlAttrib ValueAttrib < Attrib  .
-    subsort Id < Exp < Control .
-
-    --- Identifiers
-    op idn : Qid -> Id [ctor format(!g o)] .
-
-    --- Arithmetic
-    op rat : Rat -> Exp [ctor format(!g o)] .
-    op boo : Bool -> Exp [ctor format(!g o)] .
-    op add : Exp Exp -> Exp [format(! o)] .
-    op sub : Exp Exp -> Exp [format(! o)] .
-    op mul : Exp Exp -> Exp [format(! o)] .
-    op div : Exp Exp -> Exp [format(! o)] .
-
-    ops ADD SUB MUL DIV : -> Control [ctor] .
-
-    --- Boolean expressions
-    op gt : Exp Exp -> Exp [format(! o)] .
-    op ge : Exp Exp -> Exp [format(! o)] .
-    op lt : Exp Exp -> Exp [format(! o)] .
-    op le : Exp Exp -> Exp [format(! o)] .
-    op eq : Exp Exp -> Exp [format(! o)] .
-    op neg : Exp -> Exp [format(! o)] .
-    op and : Exp Exp -> Exp [format(! o)] .
-    op or : Exp Exp -> Exp [format(! o)] .
-
-    ops LT LE EQ NEG AND OR : -> Control [ctor] .
+    op <_> : Set{SemComp} -> Conf [format(c! c! c! o)] . 
 
     --- Semantic components
-    op env : -> EnvAttrib [ctor] .
-    op sto : -> StoreAttrib [ctor] .
-    op cnt : -> ControlAttrib [ctor] .
-    op val : -> ValueAttrib [ctor] .
+    op env : -> EnvAttrib .
+    op sto : -> StoreAttrib .
+    op cnt : -> ControlAttrib .
+    op val : -> ValueAttrib .
     op _:_ : EnvAttrib Env -> SemComp [ctor format(c! b! o o)] .
     op _:_ : StoreAttrib Store -> SemComp [ctor format(r! b! o o)] .
     op _:_ : ControlAttrib ControlStack -> SemComp [ctor format(c! b! o o)] .
     op _:_ : ValueAttrib ValueStack -> SemComp [ctor format(c! b! o o)] .
+endfm
+fmod EXP is
+    pr QID .
+    pr RAT .
+    pr GSMC .  
+
+    sorts Exp BExp AExp .
+    subsort Id < BExp AExp < Exp < Control .
+
+    --- Identifiers
+    op idn : Qid -> Id [ctor format(!g o)] .
+    
+    --- Arithmetic
+    op rat : Rat -> AExp [ctor format(!g o)] .
+    op add : AExp AExp -> AExp [format(! o)] .
+    op sub : AExp AExp -> AExp [format(! o)] .
+    op mul : AExp AExp -> AExp [format(! o)] .
+    op div : AExp AExp -> AExp [format(! o)] .
+
+    ops ADD SUB MUL DIV : -> Control [ctor] .
+
+    --- Boolean expressions
+    op boo : Bool -> AExp [ctor format(!g o)] .
+    op gt : Exp Exp -> BExp [format(! o)] .
+    op ge : Exp Exp -> BExp [format(! o)] .
+    op lt : Exp Exp -> BExp [format(! o)] .
+    op le : Exp Exp -> BExp [format(! o)] .
+    op eq : Exp Exp -> BExp [format(! o)] .
+    op neg : BExp -> BExp [format(! o)] .
+    op and : BExp BExp -> BExp [format(! o)] .
+    op or : BExp BExp -> BExp [format(! o)] .
+
+    ops LT LE EQ NEG AND OR : -> Control [ctor] .
 
     op store : Rat -> Storable [ctor format(ru! o)] .
     op store : Bool -> Storable [ctor format(ru! o)] .
@@ -346,24 +350,24 @@ fmod EXP is
           val : SK:ValueStack, ... > 
      =
         < env : (I:Id |-> bind(B:Bool), E:Env), cnt : C:ControlStack,
-          val : (val(B:Bool) SK:ValueStack), ... > [variant] .
+          val : (val(B:Bool) SK:ValueStack), ... > [variant] .        
 endfm
 mod CMD is
-    ex EXP .
+    pr EXP .
 
-    sorts Cmd ExcAttrib Exc .
+    sort Cmd .
     subsort Cmd < Control .
 
     op nop : -> Cmd [ctor format(! o)] .
     op choice : Cmd Cmd -> Cmd [ctor assoc comm format(! o)] .
     op assign : Id Exp -> Cmd [ctor format(! o)] .
-    op ASSIGN : -> Control [ctor] .
     op loop : Exp Cmd -> Cmd [ctor format(! o)] .
-    op LOOP : -> Control [ctor] .
     op if : Exp Cmd Cmd -> Cmd [ctor format(! o)] .
-    op IF : -> Control [ctor] .
-    op val : Cmd -> Value [ctor] .
 
+    ops ASSIGN LOOP IF : -> Control [ctor] . 
+
+    op val : Cmd -> Value [ctor] .
+    
     var ... : Set{SemComp} . var E : Env . var S : Store .
     var C : ControlStack . var V : ValueStack .
 
@@ -473,7 +477,7 @@ mod DEC is
     op val : Loc -> Value [ctor] .
     op val : Abs -> Value [ctor] .
     op val : Set{Loc} -> Value [ctor] .
-
+    
     op abs : Blk -> Abs [ctor] .
     op abs : Formals Blk -> Abs [ctor] .
     op locs : -> LocsAttrib [ctor] .
@@ -619,9 +623,11 @@ mod OUT is
           val : V:ValueStack,
           out : val(R:Rat) O:ValueStack , ... > [variant] .
 endm
-mod EXIT is
+mod COMMAND-SEQ-AND-ABNORMAL-TERMINATION is
     ex OUT .
 
+    sorts ExcAttrib Exc .
+    
     --- Sequences had to be moved "down" from CMD to this module because
     --- the evaluation of the next command only takes place if no
     --- exit was executed.
@@ -670,7 +676,8 @@ mod EXIT is
         < cnt : ecs, exc : EXT, ... > [variant] .
 endm
 mod BPLC is
-    ex EXIT .
+    ex COMMAND-SEQ-AND-ABNORMAL-TERMINATION .
+
     var ... : Set{SemComp} .
     
     op getValue : Id Conf -> Storable .
@@ -681,9 +688,70 @@ mod BPLC is
                   
     op run : Cmd Dec -> Conf .
     rl run(C:Cmd, D:Dec) =>
-       < cnt : blk(D:Dec, C:Cmd) ecs,
-         env : noEnv, sto : noStore , val : evs ,
-         locs : noLocs , out : evs , exc : CNT > .               
+        < cnt : blk(D:Dec, C:Cmd) ecs,
+          env : noEnv, sto : noStore , val : evs ,
+          locs : noLocs , out : evs , exc : CNT > .               
+endm
+mod BPLC+META-LEVEL is
+        pr BPLC . pr META-LEVEL .
+endm 
+
+load model-checker
+
+mod BPLC-MODEL-CHECKER is
+    ex BPLC .
+    pr MODEL-CHECKER .
+        pr LTL-SIMPLIFIER .
+        pr META-LEVEL .
+
+    subsort Conf < State .
+    
+    var ... : Set{SemComp} .
+    
+    op valueOf : Id Rat Conf -> Bool .
+    op valueOf : Id Bool Conf -> Bool .
+    eq valueOf(I:Id, R:Rat,
+          < env : (I:Id |-> bind(L:Loc), E:Env) ,
+            sto : (L:Loc |-> store(R:Rat), S:Store) ,
+            ... >) = true .
+    eq valueOf(I:Id, R:Rat, C:Conf) = false [owise] .
+
+    eq valueOf(I:Id, B:Bool,
+          < env : (I:Id |-> bind(L:Loc), E:Env) ,
+            sto : (L:Loc |-> store(B:Bool), S:Store) ,
+            ... >) = true .
+    eq valueOf(I:Id, B:Bool, C:Conf) = false [owise] .
+        
+    op _,_|=?_ : Dec Cmd Formula -> ModelCheckResult .
+    eq D:Dec, C:Cmd |=? F:Formula =
+           modelCheck(run(C:Cmd,D:Dec), F:Formula) .    
+           
+    op makeOpDeclSet : Dec -> OpDeclSet .
+    eq makeOpDeclSet(ref(idn(Q:Qid), E:Exp)) = 
+           (op Q:Qid : 'Rat -> 'Prop [none] .) .
+    eq makeOpDeclSet(dec(D1:Dec, D2:Dec)) = 
+           makeOpDeclSet(D1:Dec) makeOpDeclSet(D2:Dec) .
+    eq makeOpDeclSet(D:Dec) = none [owise] . 
+    
+    op makeEqSet : Dec -> EquationSet .
+    eq makeEqSet(ref(idn(Q:Qid), E:Exp)) = 
+           (ceq '_|=_['S:State, Q:Qid['R:Rat]] = 'true.Bool 
+            if 'valueOf['idn[upTerm(Q:Qid)],'R:Rat,'S:State] = 'true.Bool [none] .) .
+    eq makeEqSet(dec(D1:Dec, D2:Dec)) = 
+           makeEqSet(D1:Dec) makeEqSet(D2:Dec) .
+    eq makeEqSet(D:Dec) = none [owise] .
+    
+    op makeMCModule : Qid Dec -> SModule .
+    eq makeMCModule(Q:Qid, D:Dec) =
+       (mod qid("MODEL-CHECK-" + string(Q:Qid)) is 
+                        protecting 'BPLC-MODEL-CHECKER .
+            sorts none .
+            none --- SubsortDeclSet
+            --- op 'bid : 'Qid -> 'GSLIdentifiers [none] .
+            makeOpDeclSet(D:Dec)
+            none --- MembAxSet
+            makeEqSet(D:Dec)
+            none endm) .
 endm
 mod COMPILE-TO-PYTHON is
     pr BPLC .
@@ -811,66 +879,3 @@ mod COMPILE-TO-PYTHON is
        declareGlobal(C2:Cmd, D:Dec, N:Nat) .
     eq declareGlobal(C:Cmd, D:Dec, N:Nat) = (nil).Qid [owise] .
 endm
-
-mod BPLC+META-LEVEL is
-        pr BPLC . pr META-LEVEL .
-endm 
-
-load model-checker
-
-mod BPLC-MODEL-CHECKER is
-    ex BPLC .
-    pr MODEL-CHECKER .
-        pr LTL-SIMPLIFIER .
-        pr META-LEVEL .
-
-    subsort Conf < State .
-    
-    var ... : Set{SemComp} .
-    
-    op valueOf : Id Rat Conf -> Bool .
-    op valueOf : Id Bool Conf -> Bool .
-    eq valueOf(I:Id, R:Rat,
-          < env : (I:Id |-> bind(L:Loc), E:Env) ,
-            sto : (L:Loc |-> store(R:Rat), S:Store) ,
-            ... >) = true .
-    eq valueOf(I:Id, R:Rat, C:Conf) = false [owise] .
-
-    eq valueOf(I:Id, B:Bool,
-          < env : (I:Id |-> bind(L:Loc), E:Env) ,
-            sto : (L:Loc |-> store(B:Bool), S:Store) ,
-            ... >) = true .
-    eq valueOf(I:Id, B:Bool, C:Conf) = false [owise] .
-        
-    op _,_|=?_ : Dec Cmd Formula -> ModelCheckResult .
-    eq D:Dec, C:Cmd |=? F:Formula =
-           modelCheck(run(C:Cmd,D:Dec), F:Formula) .    
-           
-    op makeOpDeclSet : Dec -> OpDeclSet .
-    eq makeOpDeclSet(ref(idn(Q:Qid), E:Exp)) = 
-           (op Q:Qid : 'Rat -> 'Prop [none] .) .
-    eq makeOpDeclSet(dec(D1:Dec, D2:Dec)) = 
-           makeOpDeclSet(D1:Dec) makeOpDeclSet(D2:Dec) .
-    eq makeOpDeclSet(D:Dec) = none [owise] . 
-    
-    op makeEqSet : Dec -> EquationSet .
-    eq makeEqSet(ref(idn(Q:Qid), E:Exp)) = 
-           (ceq '_|=_['S:State, Q:Qid['R:Rat]] = 'true.Bool 
-            if 'valueOf['idn[upTerm(Q:Qid)],'R:Rat,'S:State] = 'true.Bool [none] .) .
-    eq makeEqSet(dec(D1:Dec, D2:Dec)) = 
-           makeEqSet(D1:Dec) makeEqSet(D2:Dec) .
-    eq makeEqSet(D:Dec) = none [owise] .
-    
-    op makeMCModule : Qid Dec -> SModule .
-    eq makeMCModule(Q:Qid, D:Dec) =
-       (mod qid("MODEL-CHECK-" + string(Q:Qid)) is 
-                        protecting 'BPLC-MODEL-CHECKER .
-            sorts none .
-            none --- SubsortDeclSet
-            --- op 'bid : 'Qid -> 'GSLIdentifiers [none] .
-            makeOpDeclSet(D:Dec)
-            none --- MembAxSet
-            makeEqSet(D:Dec)
-            none endm) .
-endm
-

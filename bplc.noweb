@@ -99,26 +99,6 @@ made part of the configuration, denoting the states of the associted
 %where 
 
 <<gsmc>>=
------------------------------
---- Generalized SMC machines.
-
-fmod GSMC-SORTS is
-    sorts SemComp . 
-endfm
-
-view SemComp from TRIV to GSMC-SORTS is
-    sort Elt to SemComp . 
-endv
-
-fmod GSMC is
-    ex SET{SemComp} * (op empty to noSemComp) .
-    sorts Attrib Conf .
-    op <_> : Set{SemComp} -> Conf [format(c! c! c! o)] . 
-endfm
-@
-
-\section{Semantic components}
-<<bplc-sem-comp>>=
 fmod VALUE-SORT is
     sort Value . 
 endfm
@@ -164,19 +144,19 @@ fmod CONTROL-STACK is
     op __ : ControlStack ControlStack -> ControlStack [ditto] .         
 endfm
 
-fmod STORE-SORTS is
+fmod MEMORY-SORTS is
     sorts Loc Storable . 
 endfm
 
-view Loc from TRIV to STORE-SORTS is
+view Loc from TRIV to MEMORY-SORTS is
     sort Elt to Loc . 
 endv
 
-view Storable from TRIV to STORE-SORTS is
+view Storable from TRIV to MEMORY-SORTS is
     sort Elt to Storable . 
 endv
 
-fmod STORE is
+fmod MEMORY is
     pr NAT .
     ex MAP{Loc,Storable} * (sort Entry{Loc,Storable} to Cell,
        sort Map{Loc,Storable} to Store,
@@ -217,6 +197,39 @@ fmod ENV is
        sort Map{Id,Bindable} to Env,
        op undefined to undefid, op empty to noEnv). 
 endfm
+
+-----------------------------
+--- Generalized SMC machines.
+
+fmod SEMANTIC-COMPONENTS is
+    sorts SemComp . 
+endfm
+
+view SemComp from TRIV to SEMANTIC-COMPONENTS is
+    sort Elt to SemComp . 
+endv
+
+fmod GSMC is
+    ex VALUE-STACK .
+    ex MEMORY .
+    ex CONTROL-STACK .
+    ex ENV . 
+    ex SET{SemComp} * (op empty to noSemComp) .
+
+    sorts Attrib Conf EnvAttrib StoreAttrib ControlAttrib ValueAttrib .
+    subsort EnvAttrib StoreAttrib ControlAttrib ValueAttrib < Attrib  .
+    op <_> : Set{SemComp} -> Conf [format(c! c! c! o)] . 
+
+    --- Semantic components
+    op env : -> EnvAttrib .
+    op sto : -> StoreAttrib .
+    op cnt : -> ControlAttrib .
+    op val : -> ValueAttrib .
+    op _:_ : EnvAttrib Env -> SemComp [ctor format(c! b! o o)] .
+    op _:_ : StoreAttrib Store -> SemComp [ctor format(r! b! o o)] .
+    op _:_ : ControlAttrib ControlStack -> SemComp [ctor format(c! b! o o)] .
+    op _:_ : ValueAttrib ValueStack -> SemComp [ctor format(c! b! o o)] .
+endfm
 @
 
 \section{Basic Programming Languages Constructs}
@@ -244,49 +257,37 @@ composition is also affected by this semantic component.
 \subsection{Expressions}
 <<bplc-exp>>=
 fmod EXP is
-    pr QID .   pr RAT .
-    ex GSMC .  ex ENV .
-    ex STORE . ex CONTROL-STACK .
-    ex VALUE-STACK .
+    pr QID .
+    pr RAT .
+    pr GSMC .  
 
-    sorts Exp NzExp Pred EnvAttrib StoreAttrib ControlAttrib ValueAttrib .
-    subsort EnvAttrib StoreAttrib ControlAttrib ValueAttrib < Attrib  .
-    subsort Id < Exp < Control .
+    sorts Exp BExp AExp .
+    subsort Id < BExp AExp < Exp < Control .
 
     --- Identifiers
     op idn : Qid -> Id [ctor format(!g o)] .
-
+    
     --- Arithmetic
-    op rat : Rat -> Exp [ctor format(!g o)] .
-    op boo : Bool -> Exp [ctor format(!g o)] .
-    op add : Exp Exp -> Exp [format(! o)] .
-    op sub : Exp Exp -> Exp [format(! o)] .
-    op mul : Exp Exp -> Exp [format(! o)] .
-    op div : Exp Exp -> Exp [format(! o)] .
+    op rat : Rat -> AExp [ctor format(!g o)] .
+    op add : AExp AExp -> AExp [format(! o)] .
+    op sub : AExp AExp -> AExp [format(! o)] .
+    op mul : AExp AExp -> AExp [format(! o)] .
+    op div : AExp AExp -> AExp [format(! o)] .
 
     ops ADD SUB MUL DIV : -> Control [ctor] .
 
     --- Boolean expressions
-    op gt : Exp Exp -> Exp [format(! o)] .
-    op ge : Exp Exp -> Exp [format(! o)] .
-    op lt : Exp Exp -> Exp [format(! o)] .
-    op le : Exp Exp -> Exp [format(! o)] .
-    op eq : Exp Exp -> Exp [format(! o)] .
-    op neg : Exp -> Exp [format(! o)] .
-    op and : Exp Exp -> Exp [format(! o)] .
-    op or : Exp Exp -> Exp [format(! o)] .
+    op boo : Bool -> AExp [ctor format(!g o)] .
+    op gt : Exp Exp -> BExp [format(! o)] .
+    op ge : Exp Exp -> BExp [format(! o)] .
+    op lt : Exp Exp -> BExp [format(! o)] .
+    op le : Exp Exp -> BExp [format(! o)] .
+    op eq : Exp Exp -> BExp [format(! o)] .
+    op neg : BExp -> BExp [format(! o)] .
+    op and : BExp BExp -> BExp [format(! o)] .
+    op or : BExp BExp -> BExp [format(! o)] .
 
     ops LT LE EQ NEG AND OR : -> Control [ctor] .
-
-    --- Semantic components
-    op env : -> EnvAttrib .
-    op sto : -> StoreAttrib .
-    op cnt : -> ControlAttrib .
-    op val : -> ValueAttrib .
-    op _:_ : EnvAttrib Env -> SemComp [ctor format(c! b! o o)] .
-    op _:_ : StoreAttrib Store -> SemComp [ctor format(r! b! o o)] .
-    op _:_ : ControlAttrib ControlStack -> SemComp [ctor format(c! b! o o)] .
-    op _:_ : ValueAttrib ValueStack -> SemComp [ctor format(c! b! o o)] .
 
     op store : Rat -> Storable [ctor format(ru! o)] .
     op store : Bool -> Storable [ctor format(ru! o)] .
@@ -476,28 +477,28 @@ fmod EXP is
           val : SK:ValueStack, ... > 
      =
         < env : (I:Id |-> bind(B:Bool), E:Env), cnt : C:ControlStack,
-          val : (val(B:Bool) SK:ValueStack), ... > [variant] .
+          val : (val(B:Bool) SK:ValueStack), ... > [variant] .        
 endfm
 @
 
 \subsection{Commands}
 <<bplc-cmd>>=
 mod CMD is
-    ex EXP .
+    pr EXP .
 
-    sorts Cmd ExcAttrib Exc .
+    sort Cmd .
     subsort Cmd < Control .
 
     op nop : -> Cmd [ctor format(! o)] .
     op choice : Cmd Cmd -> Cmd [ctor assoc comm format(! o)] .
     op assign : Id Exp -> Cmd [ctor format(! o)] .
-    op ASSIGN : -> Control [ctor] .
     op loop : Exp Cmd -> Cmd [ctor format(! o)] .
-    op LOOP : -> Control [ctor] .
     op if : Exp Cmd Cmd -> Cmd [ctor format(! o)] .
-    op IF : -> Control [ctor] .
-    op val : Cmd -> Value [ctor] .
 
+    ops ASSIGN LOOP IF : -> Control [ctor] . 
+
+    op val : Cmd -> Value [ctor] .
+    
     var ... : Set{SemComp} . var E : Env . var S : Store .
     var C : ControlStack . var V : ValueStack .
 
@@ -610,8 +611,8 @@ mod DEC is
     op val : Env -> Value [ctor] .
     op val : Loc -> Value [ctor] .
     op val : Abs -> Value [ctor] .
-	op val : Set{Loc} -> Value [ctor] .
-
+    op val : Set{Loc} -> Value [ctor] .
+    
     op abs : Blk -> Abs [ctor] .
     op abs : Formals Blk -> Abs [ctor] .
     op locs : -> LocsAttrib [ctor] .
@@ -765,9 +766,11 @@ endm
 
 \subsection{Abnormal termination}
 <<bplc-ext>>=
-mod EXIT is
+mod COMMAND-SEQ-AND-ABNORMAL-TERMINATION is
     ex OUT .
 
+    sorts ExcAttrib Exc .
+    
     --- Sequences had to be moved "down" from CMD to this module because
     --- the evaluation of the next command only takes place if no
     --- exit was executed.
@@ -820,7 +823,8 @@ endm
 \subsection{Running a command}
 <<bplc>>=
 mod BPLC is
-    ex EXIT .
+    ex COMMAND-SEQ-AND-ABNORMAL-TERMINATION .
+
     var ... : Set{SemComp} .
     
     op getValue : Id Conf -> Storable .
@@ -829,11 +833,11 @@ mod BPLC is
           sto : (L:Loc |-> S:Storable, S:Store) ,
           ... >) = S:Storable .
 		  
-	op run : Cmd Dec -> Conf .
-	rl run(C:Cmd, D:Dec) =>
-	  	< cnt : blk(D:Dec, C:Cmd) ecs,
-	  	  env : noEnv, sto : noStore , val : evs ,
-	  	  locs : noLocs , out : evs , exc : CNT > .		  
+    op run : Cmd Dec -> Conf .
+    rl run(C:Cmd, D:Dec) =>
+ 	< cnt : blk(D:Dec, C:Cmd) ecs,
+  	  env : noEnv, sto : noStore , val : evs ,
+  	  locs : noLocs , out : evs , exc : CNT > .		  
 endm
 @
 
@@ -1036,7 +1040,6 @@ endm
 
 <<bplc.maude>>=
 <<gsmc>>
-<<bplc-sem-comp>>
 <<bplc-exp>>
 <<bplc-cmd>>
 <<bplc-dec>>
