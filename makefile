@@ -3,7 +3,12 @@ all: clean tex maude
 
 tex:
 	noweave -delay bplc.noweb > doc/bplc.tex
-	pdflatex -output-directory=doc bplc.tex
+	cd doc	
+	pdflatex bplc.tex
+	bibtex bplc
+	pdflatex bplc.tex
+	pdflatex bplc.tex
+	cd ..
 
 maude:
 	notangle -Rbplc.maude bplc.noweb > maude/bplc.maude
