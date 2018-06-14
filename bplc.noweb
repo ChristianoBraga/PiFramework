@@ -68,7 +68,7 @@ numberbychapter=false,
 
 
 \begin{abstract}
-$\uppi$ framework is comprised by $\uppi$-lib is a library of common programming language constructs whose semantics are formally specified and $\uppi$-automata, an au\-to\-mata-based formalism to describe the operational semantics of programming languages.  To give semantics to a programming language means to relate constructions of the given language with the constructs of $\uppi$-lib. It is implemented in the~\href{http://maude.cs.uiuc.edu}{Maude} language.
+$\uppi$ framework is comprised by $\uppi$-lib, a library of common programming language constructs whose semantics are formally specified, and $\uppi$-automata, an au\-to\-mata-based formalism to describe the operational semantics of programming languages.  To give semantics to a programming language means to relate constructions of the given language with the constructs of $\uppi$-lib. It is implemented in the~\href{http://maude.cs.uiuc.edu}{Maude} language.
 \end{abstract}
 
 \pagestyle{plain}
