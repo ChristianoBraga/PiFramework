@@ -3,23 +3,27 @@
 
 # # π$^2$: π Framework in Python
 # 
-# The π Framework is a simple framework for compiler construction. It defines a set of common programming languages primitives (π Lib) and their formal semantics (π Automata). In this notebook π is formally described. The syntax of π Lib is given as a BNF description. The π Automata for the dynamic semantics of π Lib is described in Maude syntax. We implement the π Framework in Python to start exploring notebook features together with different libraries available for the Python language such as ``llvm`` and ``SMV`` bindings.
+# __Christiano Braga__  
+# __Universidade Federal Fluminense__  
 # 
-# ## π Lib Expressions
+# http://www.ic.uff.br/~cbraga
+# 
+# The π Framework is a simple framework for teaching compiler construction. It defines a set of common programming languages primitives (π Lib, inspired by `funcons` from the [Componenent Based Framework](https://plancomps.github.io/CBS-beta), by Peter D. Mosses) and their formal semantics (π Automata). In this notebook π is formally described. The syntax of π Lib is given as a BNF description. The π Automata for the dynamic semantics of π Lib is described in Maude syntax. We implement the π Framework in Python to start exploring notebook features together with different libraries available for the Python language such as ``llvm`` and ``SMV`` bindings.
 
+# ## π Lib Expressions
 # ### Grammar for π Lib Expressions
 # $\begin{array}{rcl}
 # Statement & ::= & Exp \\
 # Exp       & ::= & ArithExp \mid BoolExp \\
-# ArithExp  & ::= & Sum(Exp, Exp) \mid Sub(Exp, Exp) \mid Mul(Exp, Exp) \\
-# BoolExp.  & ::= & Eq(Exp, Exp) \mid Not(Exp)
+# ArithExp  & ::= & \mathtt{Sum}(Exp, Exp)\mid \mathtt{Sub}(Exp, Exp) \mid \mathtt{Mul}(Exp, Exp) \\
+# BoolExp  & ::= & \mathtt{Eq}(Exp, Exp) \mid \mathtt{Not}(Exp)
 # \end{array}$
 
 # ### π Lib Expressions in Python
 # 
 # We encode BNF rules as classes in Python. Every non-terminal gives rise to a class. The reduction relation $::=$ is encoded as inheritance. Operands are encoded as cells in a list object attribute, whose types are enforced by `assert` predicates on `isinstace` calls. The operand list `opr` is declared in the `Statement` class, whose constructor initializes the `opr` attribute with as many parameters as the subclass constructor might have.
 
-# In[2]:
+# In[14]:
 
 
 # π Lib
@@ -39,43 +43,42 @@ class Exp(Statement): pass
 class ArithExp(Exp): pass
 class Num(ArithExp): 
     def __init__(self, f): 
-        assert(isinstance(f, float))
-        super().__init__(f)
+        assert(isinstance(f, int))
+        ArithExp.__init__(self,f)
 class Sum(ArithExp): 
     def __init__(self, e1, e2): 
         assert(isinstance(e1, Exp) and isinstance(e2, Exp))
-        super().__init__(e1, e2)
+        ArithExp.__init__(self, e1, e2)
 class Sub(ArithExp): 
     def __init__(self, e1, e2): 
         assert(isinstance(e1, Exp) and isinstance(e2, Exp))
-        super().__init__(e1, e2)
+        ArithExp.__init__(self, e1, e2)
 class Mul(ArithExp): 
     def __init__(self, e1, e2): 
         assert(isinstance(e1, Exp) and isinstance(e2, Exp))
-        super().__init__(e1, e2)
+        ArithExp.__init__(self, e1, e2)
 class BoolExp(Exp): pass
 class Eq(BoolExp):
     def __init__(self, e1, e2):
         assert(isinstance(e1, Exp) and isinstance(e2, Exp))
-        super().__init__(e1, e2)
+        BoolExp.__init__(self, e1, e2)
 class Not(BoolExp):
     def __init__(self, e):
         assert(isinstance(e, Exp))
-        super().__init__(e)
+        BoolExp.__init__(self, e)
 
 
-# In[3]:
+# In[15]:
 
 
-exp = Sum(Num(1.0), Mul(Num(2.0), Num(4.0)))
-type(exp)
+exp = Sum(Num(1), Mul(Num(2), Num(4)))
 print(exp)
 
 
 # However, if we create an ill-formed tree, an exception is raised.
 # 
 # ```python
-# exp2 = Mul(2.0, 1.0)
+# exp2 = Mul(2, 1)
 # 
 # ---------------------------------------------------------------------------
 # AssertionError                            Traceback (most recent call last)
@@ -94,16 +97,16 @@ print(exp)
 
 # ### π Automaton for π Lib Expressions
 
-# The π automaton for π Lib Expressions is implemented in the `ExpπAut` class. Instances of `ExpπAut` are dictionaries, that come initialized with two entries: one for the value stack, at index `val`, and antother for the control stack, indexed `cnt`.
+# The π automaton for π Lib Expressions is implemented in the `ExpPiAut` class. Instances of `ExpPiAut` are dictionaries, that come initialized with two entries: one for the value stack, at index `val`, and antother for the control stack, indexed `cnt`.
 # ```python
-# class ExpπAut(dict):
+# class ExpPiAut(dict):
 #     def __init__(self):    
 #         self["val"] = ValueStack()
 #         self["cnt"] = ControlStack()
 # # ...
 # ```
 
-# Class `ExpπAut` encapsulates the encoding for π Lib Expression rules as private methods that are called by the public (polimorphic) `eval` method. In the following code snippet it calls the function that evaluates a `Sum` expression.
+# Class `ExpπAut` encapsulates the encoding for π Lib Expression rules as private methods that are called by the public (polymorphic) `eval` method. In the following code snippet it calls the function that evaluates a `Sum` expression.
 # ```python
 # def eval(self):
 #     e = self.popCnt()
@@ -130,7 +133,7 @@ print(exp)
 
 # ### The complete π Automaton for π Lib Expressions in Python
 
-# In[4]:
+# In[16]:
 
 
 ## Expressions
@@ -142,7 +145,7 @@ class ExpKW:
     MUL = "#MUL"
     EQ = "#EQ"
     NOT = "#NOT"
-class ExpπAut(dict):
+class ExpPiAut(dict):
     def __init__(self):    
         self["val"] = ValueStack()
         self["cnt"] = ControlStack()
@@ -243,13 +246,13 @@ class ExpπAut(dict):
         elif e == ExpKW.NOT:
             self.__evalNotKW()
         else:
-            raise Exception("Ill formed:", e)
+            raise Exception("Ill formed: ", e)
 
 
-# In[5]:
+# In[17]:
 
 
-ea = ExpπAut()
+ea = ExpPiAut()
 print(exp)
 ea.pushCnt(exp)
 while not ea.emptyCnt():
@@ -263,8 +266,8 @@ while not ea.emptyCnt():
 # 
 # $\begin{array}{rcl}
 # Statement & ::= & Cmd \\
-# Exp       & ::= & Id(String) \\
-# Cmd       & ::= & Assign(Id, Exp) \mid Loop(BoolExp, Cmd) \mid CSeq(Cmd, Cmd)
+# Exp       & ::= & \mathtt{Id}(String) \\
+# Cmd       & ::= & \mathtt{Assign}(Id, Exp) \mid \mathtt{Loop}(BoolExp, Cmd) \mid \mathtt{CSeq}(Cmd, Cmd)
 # \end{array}$
 # 
 # Commands are language constructions that require both an environement and a memory store to be evaluated. 
@@ -274,7 +277,7 @@ while not ea.emptyCnt():
 # 
 # The enconding of the grammar for commands follows the same mapping of BNF rules as classes we used for expressions.
 
-# In[6]:
+# In[18]:
 
 
 ## Commands
@@ -282,46 +285,46 @@ class Cmd(Statement): pass
 class Id(Exp):
     def __init__(self, s):
         assert(isinstance(s, str))
-        super().__init__(s)
+        Exp.__init__(self, s)
 class Assign(Cmd):
     def __init__(self, i, e): 
         assert(isinstance(i, Id) and isinstance(e, Exp))
-        super().__init__(i, e)
+        Cmd.__init__(self, i, e)
 class Loop(Cmd):
     def __init__(self, be, c):
         assert(isinstance(be, BoolExp) and isinstance(c, Cmd))
-        super().__init__(be, c)
+        Cmd.__init__(self, be, c)
 class CSeq(Cmd):
     def __init__(self, c1, c2):
         assert(isinstance(c1, Cmd) and isinstance(c2, Cmd))
-        super().__init__(c1, c2)
+        Cmd.__init__(self, c1, c2)
 
 
-# In[7]:
+# In[19]:
 
 
-cmd = Assign(Id("x"), Num(1.0))
+cmd = Assign(Id("x"), Num(1))
 print(type(cmd))
 print(cmd)
 
 
 # ### Complete π Automaton for Commands in Python
 
-# In[8]:
+# In[21]:
 
 
 ## Commands
 class Env(dict): pass
-class Loc(float): pass
+class Loc(int): pass
 class Sto(dict): pass
 class CmdKW:
     ASSIGN = "#ASSIGN"
     LOOP = "#LOOP"
-class CmdπAut(ExpπAut): 
+class CmdPiAut(ExpPiAut): 
     def __init__(self):    
         self["env"] = Env()
         self["sto"] = Sto()
-        super().__init__()
+        ExpPiAut.__init__(self)
     def env(self):
         return self["env"]
     def getLoc(self, i):
@@ -385,7 +388,7 @@ class CmdπAut(ExpπAut):
             self.__evalCSeq(c)
         else:
             self.pushCnt(c)
-            super().eval()
+            ExpPiAut.eval(self)
 
 
 # ## π Lib Declarations
@@ -394,15 +397,15 @@ class CmdπAut(ExpπAut):
 # $
 # \begin{array}{rcl}
 # Statement & ::= & Dec \\
-# Exp       & ::= & Ref(Exp) \mid Cns(Exp) \\
-# Cmd       & ::= & Blk(Dec, Cmd) \\
-# Dec       & ::= & Bind(Id, Exp) \mid DSeq(Dec, Dec) 
+# Exp       & ::= & \mathtt{Ref}(Exp) \mid \mathtt{Cns}(Exp) \\
+# Cmd       & ::= & \mathtt{Blk}(Dec, Cmd) \\
+# Dec       & ::= & \mathtt{Bind}(Id, Exp) \mid \mathtt{DSeq}(Dec, Dec) 
 # \end{array}
 # $
 
 # ### Grammar for π Lib Declarations in Python
 
-# In[9]:
+# In[22]:
 
 
 ## Declarations
@@ -410,28 +413,28 @@ class Dec(Statement): pass
 class Bind(Dec):
     def __init__(self, i, e):
         assert(isinstance(i, Id) and isinstance(e, Exp))
-        super().__init__(i, e)
+        Dec.__init__(self, i, e)
 class Ref(Exp):
     def __init__(self, e):
         assert(isinstance(e, Exp))
-        super().__init__(e)
+        Exp.__init__(self, e)
 class Cns(Exp):
     def __init__(self, e):
         assert(isinstance(e, Exp))
-        super().__init__(e)
+        Exp.__init__(self, e)
 class Blk(Cmd):
     def __init__(self, d, c):
         assert(isinstance(d, Dec) and isinstance(c, Cmd))
-        super().__init__(d, c)
+        Cmd.__init__(self, d, c)
 class DSeq(Dec):
     def __init__(self, d1, d2):
         assert(isinstance(d1, Dec) and isinstance(d2, Dec))
-        super().__init__(d1, d2)
+        Dec.__init__(self, d1, d2)
 
 
 # ### Complete π Automaton for π Lib Declarations in Python
 
-# In[10]:
+# In[23]:
 
 
 ## Declarations
@@ -444,10 +447,10 @@ class DecCmdKW(CmdKW):
 class DecKW:
     BIND = "#BIND"
     DSEQ = "#DSEQ"
-class DecπAut(CmdπAut):
+class DecPiAut(CmdPiAut):
     def __init__(self):
         self["locs"] = []
-        super().__init__()
+        CmdPiAut.__init__(self)
     def locs(self):
         return self["locs"]
     def pushLoc(self, l):
@@ -495,7 +498,7 @@ class DecπAut(CmdπAut):
         ld = d.opr[0]
         c = d.opr[1]
         l = self.locs()
-        self.pushVal(l.copy())
+        self.pushVal(list(l))
         self.pushVal(c)
         self.pushCnt(DecCmdKW.BLKDEC)
         self.pushCnt(ld)
@@ -518,7 +521,7 @@ class DecπAut(CmdπAut):
         s = self.sto()
         s = {k:v for k,v in s.items() if k not in ls}
         self["sto"] = s
-        del ls
+        #del ls
         ols = self.popVal()
         self["locs"] = ols
     def eval(self):
@@ -543,24 +546,25 @@ class DecπAut(CmdπAut):
             self.__evalBlkCmdKW()
         else:
             self.pushCnt(d)
-            super().eval()
+            CmdPiAut.eval(self)
 
 
 # ### Factorial example
 
-# In[11]:
+# In[24]:
 
 
-dc = DecπAut()
-fac = Loop(Not(Eq(Id("y"), Num(0.0))), 
+dc = DecPiAut()
+fac = Loop(Not(Eq(Id("y"), Num(0))), 
         CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
-            Assign(Id("y"), Sub(Id("y"), Num(1.0)))))
-dec = DSeq(Bind(Id("x"), Ref(Num(1.0))), 
-           Bind(Id("y"), Ref(Num(2.0))))
+            Assign(Id("y"), Sub(Id("y"), Num(1)))))
+dec = DSeq(Bind(Id("x"), Ref(Num(1))), 
+           Bind(Id("y"), Ref(Num(200))))
 fac_blk = Blk(dec, fac)
 dc.pushCnt(fac_blk)
-print(dc)
 while not dc.emptyCnt():
+    aux = dc.copy() 
     dc.eval()
-    print(dc)
+    if dc.emptyCnt():
+        print(aux)
 
