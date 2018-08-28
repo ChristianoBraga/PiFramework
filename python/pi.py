@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 # # π$^2$: π Framework in Python
@@ -28,43 +27,61 @@
 
 # π Lib
 ## Statement
-class Statement: 
+class Statement:
     def __init__(self, *args):
         self.opr = args
+
     def __str__(self):
-        ret = str(self.__class__.__name__)+"("
+        ret = str(self.__class__.__name__) + "("
         for o in self.opr:
             ret += str(o)
         ret += ")"
         return ret
 
+
 ## Expressions
 class Exp(Statement): pass
+
+
 class ArithExp(Exp): pass
-class Num(ArithExp): 
-    def __init__(self, f): 
-        assert(isinstance(f, int))
-        ArithExp.__init__(self,f)
-class Sum(ArithExp): 
-    def __init__(self, e1, e2): 
-        assert(isinstance(e1, Exp) and isinstance(e2, Exp))
+
+
+class Num(ArithExp):
+    def __init__(self, f):
+        assert (isinstance(f, int))
+        ArithExp.__init__(self, f)
+
+
+class Sum(ArithExp):
+    def __init__(self, e1, e2):
+        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
         ArithExp.__init__(self, e1, e2)
-class Sub(ArithExp): 
-    def __init__(self, e1, e2): 
-        assert(isinstance(e1, Exp) and isinstance(e2, Exp))
+
+
+class Sub(ArithExp):
+    def __init__(self, e1, e2):
+        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
         ArithExp.__init__(self, e1, e2)
-class Mul(ArithExp): 
-    def __init__(self, e1, e2): 
-        assert(isinstance(e1, Exp) and isinstance(e2, Exp))
+
+
+class Mul(ArithExp):
+    def __init__(self, e1, e2):
+        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
         ArithExp.__init__(self, e1, e2)
+
+
 class BoolExp(Exp): pass
+
+
 class Eq(BoolExp):
     def __init__(self, e1, e2):
-        assert(isinstance(e1, Exp) and isinstance(e2, Exp))
+        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
         BoolExp.__init__(self, e1, e2)
+
+
 class Not(BoolExp):
     def __init__(self, e):
-        assert(isinstance(e, Exp))
+        assert (isinstance(e, Exp))
         BoolExp.__init__(self, e)
 
 
@@ -138,95 +155,120 @@ print(exp)
 
 ## Expressions
 class ValueStack(list): pass
+
+
 class ControlStack(list): pass
+
+
 class ExpKW:
     SUM = "#SUM"
     SUB = "#SUB"
     MUL = "#MUL"
     EQ = "#EQ"
     NOT = "#NOT"
+
+
 class ExpPiAut(dict):
-    def __init__(self):    
+    def __init__(self):
         self["val"] = ValueStack()
         self["cnt"] = ControlStack()
+
     def val(self):
         return self["val"]
+
     def cnt(self):
         return self["cnt"]
+
     def pushVal(self, v):
-        vs = self.val() 
+        vs = self.val()
         vs.append(v)
+
     def popVal(self):
         vs = self.val()
         v = vs[len(vs) - 1]
         vs.pop()
         return v
+
     def pushCnt(self, e):
         cnt = self.cnt()
         cnt.append(e)
+
     def popCnt(self):
         cs = self.cnt()
         c = cs[len(cs) - 1]
         cs.pop()
         return c
+
     def emptyCnt(self):
         return len(self.cnt()) == 0
+
     def __evalSum(self, e):
         e1 = e.opr[0]
         e2 = e.opr[1]
         self.pushCnt(ExpKW.SUM)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
     def __evalSumKW(self, e):
         v1 = self.popVal()
         v2 = self.popVal()
-        self.pushVal(v1+v2)
+        self.pushVal(v1 + v2)
+
     def __evalMul(self, e):
         e1 = e.opr[0]
         e2 = e.opr[1]
         self.pushCnt(ExpKW.MUL)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
     def __evalMulKW(self):
         v1 = self.popVal()
         v2 = self.popVal()
-        self.pushVal(v1*v2)
+        self.pushVal(v1 * v2)
+
     def __evalSub(self, e):
         e1 = e.opr[0]
         e2 = e.opr[1]
         self.pushCnt(ExpKW.SUB)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
     def __evalSubKW(self):
         v1 = self.popVal()
         v2 = self.popVal()
-        self.pushVal(v1-v2)
+        self.pushVal(v1 - v2)
+
     def __evalNum(self, n):
         f = n.opr[0]
         self.pushVal(f)
+
     def __evalEq(self, e):
         e1 = e.opr[0]
         e2 = e.opr[1]
         self.pushCnt(ExpKW.EQ)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
     def __evalEqKW(self):
         v1 = self.popVal()
         v2 = self.popVal()
-        self.pushVal(v1 == v2) 
+        self.pushVal(v1 == v2)
+
     def __evalNot(self, e):
         e = e.opr[0]
         self.pushCnt(ExpKW.NOT)
         self.pushCnt(e)
+
     def __evalNotKW(self):
         v = self.popVal()
-        self.pushVal(not v) 
+        self.pushVal(not v)
+
     def eval(self):
         e = self.popCnt()
         if isinstance(e, Sum):
-            self.__evalSum(e)  
+            self.__evalSum(e)
         elif e == ExpKW.SUM:
-            self.__evalSumKW(e)  
+            self.__evalSumKW(e)
         elif isinstance(e, Sub):
             self.__evalSub(e)
         elif e == ExpKW.SUB:
@@ -282,21 +324,29 @@ while not ea.emptyCnt():
 
 ## Commands
 class Cmd(Statement): pass
+
+
 class Id(Exp):
     def __init__(self, s):
-        assert(isinstance(s, str))
+        assert (isinstance(s, str))
         Exp.__init__(self, s)
+
+
 class Assign(Cmd):
-    def __init__(self, i, e): 
-        assert(isinstance(i, Id) and isinstance(e, Exp))
+    def __init__(self, i, e):
+        assert (isinstance(i, Id) and isinstance(e, Exp))
         Cmd.__init__(self, i, e)
+
+
 class Loop(Cmd):
     def __init__(self, be, c):
-        assert(isinstance(be, BoolExp) and isinstance(c, Cmd))
+        assert (isinstance(be, BoolExp) and isinstance(c, Cmd))
         Cmd.__init__(self, be, c)
+
+
 class CSeq(Cmd):
     def __init__(self, c1, c2):
-        assert(isinstance(c1, Cmd) and isinstance(c2, Cmd))
+        assert (isinstance(c1, Cmd) and isinstance(c2, Cmd))
         Cmd.__init__(self, c1, c2)
 
 
@@ -315,41 +365,57 @@ print(cmd)
 
 ## Commands
 class Env(dict): pass
+
+
 class Loc(int): pass
+
+
 class Sto(dict): pass
+
+
 class CmdKW:
     ASSIGN = "#ASSIGN"
     LOOP = "#LOOP"
-class CmdPiAut(ExpPiAut): 
-    def __init__(self):    
+
+
+class CmdPiAut(ExpPiAut):
+    def __init__(self):
         self["env"] = Env()
         self["sto"] = Sto()
         ExpPiAut.__init__(self)
+
     def env(self):
         return self["env"]
+
     def getLoc(self, i):
         en = self.env()
         return en[i]
+
     def sto(self):
         return self["sto"]
+
     def updateStore(self, l, v):
         st = self.sto()
         st[l] = v
-    def __evalAssign(self, c): 
+
+    def __evalAssign(self, c):
         i = c.opr[0]
         e = c.opr[1]
         self.pushVal(i.opr[0])
         self.pushCnt(CmdKW.ASSIGN)
         self.pushCnt(e)
+
     def __evalAssignKW(self):
         v = self.popVal()
         i = self.popVal()
         l = self.getLoc(i)
-        self.updateStore(l, v) 
+        self.updateStore(l, v)
+
     def __evalId(self, i):
         s = self.sto()
         l = self.getLoc(i)
         self.pushVal(s[l])
+
     def __evalLoop(self, c):
         be = c.opr[0]
         bl = c.opr[1]
@@ -357,6 +423,7 @@ class CmdPiAut(ExpPiAut):
         self.pushVal(bl)
         self.pushCnt(CmdKW.LOOP)
         self.pushCnt(be)
+
     def __evalLoopKW(self):
         t = self.popVal()
         if t:
@@ -367,12 +434,14 @@ class CmdPiAut(ExpPiAut):
         else:
             self.popVal()
             self.popVal()
+
     def __evalCSeq(self, c):
         c1 = c.opr[0]
         c2 = c.opr[1]
         self.pushCnt(c2)
         self.pushCnt(c1)
-    def eval(self): 
+
+    def eval(self):
         c = self.popCnt()
         if isinstance(c, Assign):
             self.__evalAssign(c)
@@ -410,25 +479,35 @@ class CmdPiAut(ExpPiAut):
 
 ## Declarations
 class Dec(Statement): pass
+
+
 class Bind(Dec):
     def __init__(self, i, e):
-        assert(isinstance(i, Id) and isinstance(e, Exp))
+        assert (isinstance(i, Id) and isinstance(e, Exp))
         Dec.__init__(self, i, e)
+
+
 class Ref(Exp):
     def __init__(self, e):
-        assert(isinstance(e, Exp))
+        assert (isinstance(e, Exp))
         Exp.__init__(self, e)
+
+
 class Cns(Exp):
     def __init__(self, e):
-        assert(isinstance(e, Exp))
+        assert (isinstance(e, Exp))
         Exp.__init__(self, e)
+
+
 class Blk(Cmd):
     def __init__(self, d, c):
-        assert(isinstance(d, Dec) and isinstance(c, Cmd))
+        assert (isinstance(d, Dec) and isinstance(c, Cmd))
         Cmd.__init__(self, d, c)
+
+
 class DSeq(Dec):
     def __init__(self, d1, d2):
-        assert(isinstance(d1, Dec) and isinstance(d2, Dec))
+        assert (isinstance(d1, Dec) and isinstance(d2, Dec))
         Dec.__init__(self, d1, d2)
 
 
@@ -441,59 +520,75 @@ class DSeq(Dec):
 class DecExpKW(ExpKW):
     REF = "#REF"
     CNS = "#CNS"
+
+
 class DecCmdKW(CmdKW):
     BLKDEC = "#BLKDEC"
     BLKCMD = "#BLKCMD"
+
+
 class DecKW:
     BIND = "#BIND"
     DSEQ = "#DSEQ"
+
+
 class DecPiAut(CmdPiAut):
     def __init__(self):
         self["locs"] = []
         CmdPiAut.__init__(self)
+
     def locs(self):
         return self["locs"]
+
     def pushLoc(self, l):
         ls = self.locs()
         ls.append(l)
+
     def __evalRef(self, e):
         ex = e.opr[0]
         self.pushCnt(DecExpKW.REF)
         self.pushCnt(ex)
+
     def __newLoc(self):
         sto = self.sto()
         if sto:
             return max(list(sto.keys())) + 1
         else:
             return 0.0
+
     def __evalRefKW(self):
         v = self.popVal()
         l = self.__newLoc()
         self.updateStore(l, v)
         self.pushLoc(l)
         self.pushVal(l)
-    def __evalBind(self, d): 
+
+    def __evalBind(self, d):
         i = d.opr[0]
         e = d.opr[1]
         self.pushVal(i)
         self.pushCnt(DecKW.BIND)
         self.pushCnt(e)
+
     def __evalBindKW(self):
         l = self.popVal()
         i = self.popVal()
         x = i.opr[0]
-        self.pushVal({x:l})
+        self.pushVal({x: l})
+
     def __evalDSeq(self, ds):
         d1 = ds.opr[0]
         d2 = ds.opr[1]
         self.pushCnt(DecKW.DSEQ)
         self.pushCnt(d2)
         self.pushCnt(d1)
+
     def __evalDSeqKW(self):
         d2 = self.popVal()
         d1 = self.popVal()
         d1.update(d2)
         self.pushVal(d1)
+
     def __evalBlk(self, d):
         ld = d.opr[0]
         c = d.opr[1]
@@ -502,6 +597,7 @@ class DecPiAut(CmdPiAut):
         self.pushVal(c)
         self.pushCnt(DecCmdKW.BLKDEC)
         self.pushCnt(ld)
+
     def __evalBlkDecKW(self):
         d = self.popVal()
         c = self.popVal()
@@ -514,16 +610,18 @@ class DecPiAut(CmdPiAut):
         self["env"] = ne
         self.pushCnt(DecCmdKW.BLKCMD)
         self.pushCnt(c)
+
     def __evalBlkCmdKW(self):
         en = self.popVal()
         ls = self.popVal()
         self["env"] = en
         s = self.sto()
-        s = {k:v for k,v in s.items() if k not in ls}
+        s = {k: v for k, v in s.items() if k not in ls}
         self["sto"] = s
-        #del ls
+        # del ls
         ols = self.popVal()
         self["locs"] = ols
+
     def eval(self):
         d = self.popCnt()
         if isinstance(d, Bind):
@@ -555,16 +653,118 @@ class DecPiAut(CmdPiAut):
 
 
 dc = DecPiAut()
-fac = Loop(Not(Eq(Id("y"), Num(0))), 
-        CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
-            Assign(Id("y"), Sub(Id("y"), Num(1)))))
-dec = DSeq(Bind(Id("x"), Ref(Num(1))), 
+fac = Loop(Not(Eq(Id("y"), Num(0))),
+           CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
+                Assign(Id("y"), Sub(Id("y"), Num(1)))))
+dec = DSeq(Bind(Id("x"), Ref(Num(1))),
            Bind(Id("y"), Ref(Num(200))))
 fac_blk = Blk(dec, fac)
 dc.pushCnt(fac_blk)
 while not dc.emptyCnt():
-    aux = dc.copy() 
+    aux = dc.copy()
     dc.eval()
     if dc.emptyCnt():
         print(aux)
 
+## LLVM Lite
+
+import llvmlite.ir as ir
+import llvmlite.binding as llvm
+
+
+class LLVMTypes:
+    INT = ir.IntType(64)
+    BOOL = ir.IntType(1)
+    VOID = ir.VoidType()
+
+
+class LLVMExp():
+    def __init__(self, function):
+        self.function = function
+        self.block = function.append_basic_block(name="entry")
+        self.builder = ir.IRBuilder(self.block)
+
+    def compile(self, node):
+        if isinstance(node, Num):
+            return self.compileNum(node)
+        elif isinstance(node, Sum):
+            return self.compileSum(node)
+        elif isinstance(node, Sub):
+            return self.compileSub(node)
+        elif isinstance(node, Mul):
+            return self.compileMul(node)
+
+    def compileNum(self, node):
+        return ir.Constant(LLVMTypes.INT, node.opr[0])
+
+    def compileSum(self, node):
+        lhs = self.compile(node.opr[0])
+        rhs = self.compile(node.opr[1])
+        return self.builder.add(lhs, rhs, "tmp_sum")
+
+    def compileSub(self, node):
+        lhs = self.compile(node.opr[0])
+        rhs = self.compile(node.opr[1])
+        return self.builder.sub(lhs, rhs, "tmp_sub")
+
+    def compileMul(self, node):
+        lhs = self.compile(node.opr[0])
+        rhs = self.compile(node.opr[1])
+        return  self.builder.mul(lhs, rhs, "tmp_mul")
+
+
+module = ir.Module('main_module')
+func_type = ir.FunctionType(LLVMTypes.INT, [], False)
+func = ir.Function(module, func_type, "main_function")
+
+llvm_exp = LLVMExp(func)
+llvm_exp.builder.ret(llvm_exp.compile(Sum(Sum(Num(1), Num(10)), Num(2))))
+print(module)
+
+from ctypes import CFUNCTYPE, c_void_p
+
+# All these initializations are required for code generation!
+llvm.initialize()
+llvm.initialize_native_target()
+llvm.initialize_native_asmprinter()  # yes, even this one
+
+
+def create_execution_engine():
+    """
+    Create an ExecutionEngine suitable for JIT code generation on
+    the host CPU.  The engine is reusable for an arbitrary number of
+    modules.
+    """
+    # Create a target machine representing the host
+    target = llvm.Target.from_default_triple()
+    target_machine = target.create_target_machine()
+    # And an execution engine with an empty backing module
+    backing_mod = llvm.parse_assembly("")
+    engine = llvm.create_mcjit_compiler(backing_mod, target_machine)
+    return engine
+
+
+def compile_ir(engine, llvm_ir):
+    """
+    Compile the LLVM IR string with the given engine.
+    The compiled module object is returned.
+    """
+    # Create a LLVM module object from the IR
+    mod = llvm.parse_assembly(llvm_ir)
+    mod.verify()
+    # Now add the module and make sure it is ready for execution
+    engine.add_module(mod)
+    engine.finalize_object()
+    return mod
+
+
+engine = create_execution_engine()
+mod = compile_ir(engine, str(module))
+
+# Look up the function pointer (a Python int)
+func_ptr = engine.get_function_address("main_function")
+
+# Run the function via ctypes
+cfunc = CFUNCTYPE(c_void_p)(func_ptr)
+res = cfunc()
+print("main_function() =", res)
