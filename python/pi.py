@@ -1,30 +1,65 @@
+### Conversor de python para nb
+
+from nbformat import v3, v4
+
+with open("pi.py") as fpin:
+    text = fpin.read()
+
+nbook = v3.reads_py(text)
+nbook = v4.upgrade(nbook)  # Upgrade v3 to v4
+
+jsonform = v4.writes(nbook) + "\n"
+with open("pi.ipynb", "w") as fpout:
+    fpout.write(jsonform)
+
+
+### pi.py com markups para notebook
+
 # coding: utf-8
 
+# <markdowncell>
 # # π$^2$: π Framework in Python
-# 
-# __Christiano Braga__  
-# __Universidade Federal Fluminense__  
-# 
+#
+# __Christiano Braga__
+# __Universidade Federal Fluminense__
+#
 # http://www.ic.uff.br/~cbraga
-# 
-# The π Framework is a simple framework for teaching compiler construction. It defines a set of common programming languages primitives (π Lib, inspired by `funcons` from the [Componenent Based Framework](https://plancomps.github.io/CBS-beta), by Peter D. Mosses) and their formal semantics (π Automata). In this notebook π is formally described. The syntax of π Lib is given as a BNF description. The π Automata for the dynamic semantics of π Lib is described in Maude syntax. We implement the π Framework in Python to start exploring notebook features together with different libraries available for the Python language such as ``llvm`` and ``SMV`` bindings.
+#
+# The π Framework is a simple framework for teaching compiler
+# construction. It defines a set of common programming languages
+# primitives (π Lib, inspired by `funcons` from the [Componenent Based
+# Framework](https://plancomps.github.io/CBS-beta), by Peter D. Mosses)
+# and their formal semantics (π Automata). In this notebook π is
+# formally described. The syntax of π Lib is given as a BNF description.
+# The π Automata for the dynamic semantics of π Lib is described in
+# Maude syntax. We implement the π Framework in Python to start
+# exploring notebook features together with different libraries
+# available for the Python language such as ``llvm`` and ``SMV``
+# bindings.
 
-# ## π Lib Expressions
+# <markdowncell>
+## π Lib Expressions
 # ### Grammar for π Lib Expressions
 # $\begin{array}{rcl}
 # Statement & ::= & Exp \\
 # Exp       & ::= & ArithExp \mid BoolExp \\
-# ArithExp  & ::= & \mathtt{Sum}(Exp, Exp)\mid \mathtt{Sub}(Exp, Exp) \mid \mathtt{Mul}(Exp, Exp) \\
+# ArithExp  & ::= & \mathtt{Sum}(Exp, Exp)\mid \mathtt{Sub}(Exp, Exp)
+# \mid \mathtt{Mul}(Exp, Exp) \\
 # BoolExp  & ::= & \mathtt{Eq}(Exp, Exp) \mid \mathtt{Not}(Exp)
 # \end{array}$
 
+# <markdowncell>
 # ### π Lib Expressions in Python
-# 
-# We encode BNF rules as classes in Python. Every non-terminal gives rise to a class. The reduction relation $::=$ is encoded as inheritance. Operands are encoded as cells in a list object attribute, whose types are enforced by `assert` predicates on `isinstace` calls. The operand list `opr` is declared in the `Statement` class, whose constructor initializes the `opr` attribute with as many parameters as the subclass constructor might have.
+#
+# We encode BNF rules as classes in Python. Every non-terminal gives
+# rise to a class. The reduction relation $::=$ is encoded as
+# inheritance. Operands are encoded as cells in a list object attribute,
+# whose types are enforced by `assert` predicates on `isinstace` calls.
+# The operand list `opr` is declared in the `Statement` class, whose
+# constructor initializes the `opr` attribute with as many parameters as
+# the subclass constructor might have.
 
-# In[14]:
-
-
+# <codecell>
 # π Lib
 ## Statement
 class Statement:
@@ -92,67 +127,81 @@ exp = Sum(Num(1), Mul(Num(2), Num(4)))
 print(exp)
 
 
+# <markdowncell>
 # However, if we create an ill-formed tree, an exception is raised.
-# 
+#
 # ```python
 # exp2 = Mul(2, 1)
-# 
+#
 # ---------------------------------------------------------------------------
 # AssertionError                            Traceback (most recent call last)
 # <ipython-input-3-de6e358a117c> in <module>()
 # ----> 1 exp2 = Mul(2.0, 1.0)
-# 
+#
 # <ipython-input-1-09d2d91ef407> in __init__(self, e1, e2)
 #      28 class Mul(ArithExp):
 #      29     def __init__(self, e1, e2):
 # ---> 30         assert(isinstance(e1, Exp) and isinstance(e2, Exp))
 #      31         super().__init__(e1, e2)
 #      32 class BoolExp(Exp): pass
-# 
-# AssertionError: 
+#
+# AssertionError:
 # ```
 
+# <markdowncell>
 # ### π Automaton for π Lib Expressions
 
-# The π automaton for π Lib Expressions is implemented in the `ExpPiAut` class. Instances of `ExpPiAut` are dictionaries, that come initialized with two entries: one for the value stack, at index `val`, and antother for the control stack, indexed `cnt`.
+# The π automaton for π Lib Expressions is implemented in the
+# `ExpPiAut` class. Instances of `ExpPiAut` are dictionaries, that come
+# initialized with two entries: one for the value stack, at index `val`,
+# and antother for the control stack, indexed `cnt`.
 # ```python
 # class ExpPiAut(dict):
-#     def __init__(self):    
+#     def __init__(self):
 #         self["val"] = ValueStack()
 #         self["cnt"] = ControlStack()
 # # ...
 # ```
 
-# Class `ExpπAut` encapsulates the encoding for π Lib Expression rules as private methods that are called by the public (polymorphic) `eval` method. In the following code snippet it calls the function that evaluates a `Sum` expression.
+# Class `ExpπAut` encapsulates the encoding for π Lib Expression rules
+# as private methods that are called by the public (polymorphic) `eval`
+# method. In the following code snippet it calls the function that
+# evaluates a `Sum` expression.
 # ```python
 # def eval(self):
 #     e = self.popCnt()
 #     if isinstance(e, Sum):
-#         self.__evalSum(e)  
+#         self.__evalSum(e)
 # # ...
 # ```
 
-# We use Maude syntax to specify π Automaton rules. This is the π rule for the evaluation of (floating point) numbers, described as an equation in Maude. It specifies that whenever a number is in the top of the control stack `C` is should be popped from `C` and pushed into the value stack `SK`.
+# We use Maude syntax to specify π Automaton rules. This is the π rule
+# for the evaluation of (floating point) numbers, described as an
+# equation in Maude. It specifies that whenever a number is in the top
+# of the control stack `C` is should be popped from `C` and pushed into
+# the value stack `SK`.
 
 # ```maude
-# eq [num-exp] : 
-#    < cnt : (num(f:Float) C:ControlStack), val : SK:ValueStack, ... > 
-#  = 
-#    < cnt : C:ControlStack, 
+# eq [num-exp] :
+#    < cnt : (num(f:Float) C:ControlStack), val : SK:ValueStack, ... >
+#  =
+#    < cnt : C:ControlStack,
 #      val : (val(f:Float) SK:ValueStack), ... > .```
 
-# π rule `num-exp` is encoded in function `__evalNum(self, n)`. It receives a `Num` object in `n` whose sole attribute has the floating point number that `n` denotes. Method `pushVal(.)` pushes the given argument into the value stack.  
-# ```python
+# π rule `num-exp` is encoded in function `__evalNum(self, n)`. It
+# receives a `Num` object in `n` whose sole attribute has the floating
+# point number that `n` denotes. Method `pushVal(.)` pushes the given
+# argument into the value stack.
+# # ```python
 # def __evalNum(self, n):
 #     f = n.opr[0]
 #     self.pushVal(f)
 # ```
 
+# <markdowncell>
 # ### The complete π Automaton for π Lib Expressions in Python
 
-# In[16]:
-
-
+# <codecell>
 ## Expressions
 class ValueStack(list): pass
 
@@ -291,8 +340,7 @@ class ExpPiAut(dict):
             raise Exception("Ill formed: ", e)
 
 
-# In[17]:
-
+# <codecell>
 
 ea = ExpPiAut()
 print(exp)
@@ -302,25 +350,30 @@ while not ea.emptyCnt():
     print(ea)
 
 
+# <markdowncell>
 # ## π Lib Commands
-# 
+#
 # ### Grammar for π Lib Commands
-# 
+#
 # $\begin{array}{rcl}
 # Statement & ::= & Cmd \\
 # Exp       & ::= & \mathtt{Id}(String) \\
-# Cmd       & ::= & \mathtt{Assign}(Id, Exp) \mid \mathtt{Loop}(BoolExp, Cmd) \mid \mathtt{CSeq}(Cmd, Cmd)
+# Cmd       & ::= & \mathtt{Assign}(Id, Exp) \mid
+# \mathtt{Loop}(BoolExp, Cmd) \mid \mathtt{CSeq}(Cmd, Cmd)
 # \end{array}$
-# 
-# Commands are language constructions that require both an environement and a memory store to be evaluated. 
-# From a syntactic standpoint, they extend statements and expressions, as an identifier is an expression.
+#
+# Commands are language constructions that require both an
+# environement and a memory store to be evaluated.
+# From a syntactic standpoint, they extend statements and expressions,
+# as an identifier is an expression.
 
+# <markdowncell>
 # ### Grammar for π Lib Commands in Python
-# 
-# The enconding of the grammar for commands follows the same mapping of BNF rules as classes we used for expressions.
+#
+# The enconding of the grammar for commands follows the same mapping
+# of BNF rules as classes we used for expressions.
 
-# In[18]:
-
+# <codecell>
 
 ## Commands
 class Cmd(Statement): pass
@@ -350,19 +403,16 @@ class CSeq(Cmd):
         Cmd.__init__(self, c1, c2)
 
 
-# In[19]:
-
-
+# <codecell>
 cmd = Assign(Id("x"), Num(1))
 print(type(cmd))
 print(cmd)
 
 
+# <markdowncell>
 # ### Complete π Automaton for Commands in Python
 
-# In[21]:
-
-
+# <codecell>
 ## Commands
 class Env(dict): pass
 
@@ -460,23 +510,23 @@ class CmdPiAut(ExpPiAut):
             ExpPiAut.eval(self)
 
 
+# <markdowncell>
 # ## π Lib Declarations
 # ### Grammar for π Lib Declarations
-# 
+#
 # $
 # \begin{array}{rcl}
 # Statement & ::= & Dec \\
 # Exp       & ::= & \mathtt{Ref}(Exp) \mid \mathtt{Cns}(Exp) \\
 # Cmd       & ::= & \mathtt{Blk}(Dec, Cmd) \\
-# Dec       & ::= & \mathtt{Bind}(Id, Exp) \mid \mathtt{DSeq}(Dec, Dec) 
+# Dec       & ::= & \mathtt{Bind}(Id, Exp) \mid \mathtt{DSeq}(Dec, Dec)
 # \end{array}
 # $
 
+# <markdowncell>
 # ### Grammar for π Lib Declarations in Python
 
-# In[22]:
-
-
+# <codecell>
 ## Declarations
 class Dec(Statement): pass
 
@@ -511,11 +561,10 @@ class DSeq(Dec):
         Dec.__init__(self, d1, d2)
 
 
+# <markdowncell>
 # ### Complete π Automaton for π Lib Declarations in Python
 
-# In[23]:
-
-
+# <codecell>
 ## Declarations
 class DecExpKW(ExpKW):
     REF = "#REF"
@@ -647,11 +696,10 @@ class DecPiAut(CmdPiAut):
             CmdPiAut.eval(self)
 
 
+# <markdowncell>
 # ### Factorial example
 
-# In[24]:
-
-
+# <codecell>
 dc = DecPiAut()
 fac = Loop(Not(Eq(Id("y"), Num(0))),
            CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
@@ -666,6 +714,7 @@ while not dc.emptyCnt():
     if dc.emptyCnt():
         print(aux)
 
+# <codecell>
 ## LLVM Lite
 
 import llvmlite.ir as ir
@@ -673,7 +722,7 @@ import llvmlite.binding as llvm
 
 
 class LLVMTypes:
-    INT = ir.IntType(64)
+    INT = ir.FloatType()
     BOOL = ir.IntType(1)
     VOID = ir.VoidType()
 
@@ -700,27 +749,34 @@ class LLVMExp():
     def compileSum(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        return self.builder.add(lhs, rhs, "tmp_sum")
+        res = self.builder.fadd(lhs, rhs, "tmp_sum")
+        return res
 
     def compileSub(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        return self.builder.sub(lhs, rhs, "tmp_sub")
+        res = self.builder.fsub(lhs, rhs, "tmp_sub")
+        return res
 
     def compileMul(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        return  self.builder.mul(lhs, rhs, "tmp_mul")
+        res = self.builder.fmul(lhs, rhs, "tmp_mul")
+        return res
 
 
+# <codecell>
 module = ir.Module('main_module')
 func_type = ir.FunctionType(LLVMTypes.INT, [], False)
 func = ir.Function(module, func_type, "main_function")
 
 llvm_exp = LLVMExp(func)
-llvm_exp.builder.ret(llvm_exp.compile(Sum(Sum(Num(1), Num(10)), Num(2))))
+res = llvm_exp.compile(Sub(Sum(Num(5), Num(5)), Sum(Num(6), Num(6))))
+print(res)
+llvm_exp.builder.ret(res)
 print(module)
 
+# <codecell>
 from ctypes import CFUNCTYPE, c_void_p
 
 # All these initializations are required for code generation!
