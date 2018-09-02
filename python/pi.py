@@ -722,9 +722,14 @@ import llvmlite.binding as llvm
 
 
 class LLVMTypes:
-    INT = ir.FloatType()
+    INT = ir.IntType(64)
     BOOL = ir.IntType(1)
     VOID = ir.VoidType()
+
+
+class LLVMConstants:
+    TRUE = ir.Constant(LLVMTypes.BOOL, 1)
+    FALSE = ir.Constant(LLVMTypes.BOOL, 0)
 
 
 class LLVMExp():
@@ -742,6 +747,10 @@ class LLVMExp():
             return self.compileSub(node)
         elif isinstance(node, Mul):
             return self.compileMul(node)
+        elif isinstance(node, Eq):
+            return self.compileEq(node)
+        elif isinstance(node, Not):
+            return self.compileNot(node)
 
     def compileNum(self, node):
         return ir.Constant(LLVMTypes.INT, node.opr[0])
@@ -749,29 +758,41 @@ class LLVMExp():
     def compileSum(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        res = self.builder.fadd(lhs, rhs, "tmp_sum")
+        res = self.builder.add(lhs, rhs, "tmp_sum")
         return res
 
     def compileSub(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        res = self.builder.fsub(lhs, rhs, "tmp_sub")
+        res = self.builder.sub(lhs, rhs, "tmp_sub")
         return res
 
     def compileMul(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        res = self.builder.fmul(lhs, rhs, "tmp_mul")
+        res = self.builder.mul(lhs, rhs, "tmp_mul")
+        return res
+
+    def compileEq(self, node):
+        lhs = self.compile(node.opr[0])
+        rhs = self.compile(node.opr[1])
+        res = self.builder.icmp_signed("==",lhs, rhs, "temp_eq")
+        return res
+
+    def compileNot(self, node):
+        lhs = self.compile(node.opr[0])
+        res = self.builder.neg(lhs, "temp_not")
         return res
 
 
 # <codecell>
 module = ir.Module('main_module')
-func_type = ir.FunctionType(LLVMTypes.INT, [], False)
+func_type = ir.FunctionType(LLVMTypes.BOOL, [], False)
 func = ir.Function(module, func_type, "main_function")
 
 llvm_exp = LLVMExp(func)
-res = llvm_exp.compile(Sub(Sum(Num(5), Num(5)), Sum(Num(6), Num(6))))
+# res = llvm_exp.compile(Sub(Sum(Num(5), Num(5)), Sum(Num(6), Num(6))))
+res = llvm_exp.compile(Not(Eq(Num(1), Num(0))))
 print(res)
 llvm_exp.builder.ret(res)
 print(module)
