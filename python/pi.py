@@ -399,7 +399,7 @@ class Loop(Cmd):
 
 class CSeq(Cmd):
     def __init__(self, c1, c2):
-        assert (isinstance(c1, Cmd) and isinstance(c2, Cmd))
+        # assert (isinstance(c1, Cmd) and isinstance(c2, Cmd))
         Cmd.__init__(self, c1, c2)
 
 
@@ -776,7 +776,7 @@ class LLVMExp():
     def compileEq(self, node):
         lhs = self.compile(node.opr[0])
         rhs = self.compile(node.opr[1])
-        res = self.builder.icmp_signed("==",lhs, rhs, "temp_eq")
+        res = self.builder.icmp_signed("==", lhs, rhs, "temp_eq")
         return res
 
     def compileNot(self, node):
@@ -785,16 +785,62 @@ class LLVMExp():
         return res
 
 
+class LLVMCmd(LLVMExp):
+    def __init__(self, function):
+        self.env = {}
+        LLVMExp.__init__(self, function)
+
+    def addEnv(self, id, pointer):
+        self.env.update({id: pointer})
+
+    def compileAssign(self, node):
+        id = self.compileAssingId(node.opr[0])
+        val = self.compile(node.opr[1])
+        return self.builder.store(val, id)
+
+    def compileAssingId(self, node):
+        id = node.opr[0]
+        if id in self.env:
+            ptr = self.env[id]
+        else:
+            ptr = self.builder.alloca(LLVMTypes.INT, None, "ptr")
+            self.addEnv(id, ptr)
+        return ptr
+
+    def compileId(self, node):
+        id = node.opr[0]
+        ptr = self.env[id]
+        return self.builder.load(ptr, "val")
+
+    def compileCSeq(self, node):
+        self.compile(node.opr[0])
+        self.compile(node.opr[1])
+
+    def compileLoop(self, node):
+        loop = self.builder.append_basic_block("loop")
+
+    def compile(self, node):
+        if isinstance(node, Assign):
+            return self.compileAssign(node)
+        elif isinstance(node, Id):
+            return self.compileId(node)
+        elif isinstance(node, CSeq):
+            return self.compileCSeq(node)
+        else:
+            return LLVMExp.compile(self, node)
+
+
 # <codecell>
 module = ir.Module('main_module')
-func_type = ir.FunctionType(LLVMTypes.BOOL, [], False)
+func_type = ir.FunctionType(LLVMTypes.INT, [], False)
 func = ir.Function(module, func_type, "main_function")
 
-llvm_exp = LLVMExp(func)
-# res = llvm_exp.compile(Sub(Sum(Num(5), Num(5)), Sum(Num(6), Num(6))))
-res = llvm_exp.compile(Not(Eq(Num(1), Num(0))))
+llvm_exp = LLVMCmd(func)
+
+res = llvm_exp.compile(CSeq(Assign(Id("x"), Num(1)), Assign(Id("x"), Num(7))))
+# res = llvm_exp.compile(Not(Eq(Num(1), Num(0))))
 print(res)
-llvm_exp.builder.ret(res)
+llvm_exp.builder.ret(llvm_exp.compile(Sum(Id("x"), Num(1))))
 print(module)
 
 # <codecell>
