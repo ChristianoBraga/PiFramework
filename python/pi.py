@@ -732,6 +732,7 @@ class LLVMConstants:
     FALSE = ir.Constant(LLVMTypes.BOOL, 0)
 
 
+# <codecell>
 class LLVMExp():
     def __init__(self, function):
         self.function = function
@@ -781,10 +782,10 @@ class LLVMExp():
 
     def compileNot(self, node):
         lhs = self.compile(node.opr[0])
-        res = self.builder.neg(lhs, "temp_not")
+        res = self.builder.not_(lhs, "temp_not")
         return res
 
-
+# <codecell>
 class LLVMCmd(LLVMExp):
     def __init__(self, function):
         self.env = {}
@@ -818,6 +819,14 @@ class LLVMCmd(LLVMExp):
 
     def compileLoop(self, node):
         loop = self.builder.append_basic_block("loop")
+        after_loop = self.builder.append_basic_block("after_loop")
+        self.builder.branch(loop)
+        with self.builder.goto_block(loop):
+            cond = self.compile(node.opr[0])
+            block = self.compile(node.opr[1])
+            self.builder.cbranch(cond, loop, after_loop)
+
+        self.builder.position_at_start(after_loop)
 
     def compile(self, node):
         if isinstance(node, Assign):
@@ -826,6 +835,8 @@ class LLVMCmd(LLVMExp):
             return self.compileId(node)
         elif isinstance(node, CSeq):
             return self.compileCSeq(node)
+        elif isinstance(node, Loop):
+            return self.compileLoop(node)
         else:
             return LLVMExp.compile(self, node)
 
@@ -835,13 +846,14 @@ module = ir.Module('main_module')
 func_type = ir.FunctionType(LLVMTypes.INT, [], False)
 func = ir.Function(module, func_type, "main_function")
 
-llvm_exp = LLVMCmd(func)
-
-res = llvm_exp.compile(CSeq(Assign(Id("x"), Num(1)), Assign(Id("x"), Num(7))))
-# res = llvm_exp.compile(Not(Eq(Num(1), Num(0))))
-print(res)
-llvm_exp.builder.ret(llvm_exp.compile(Sum(Id("x"), Num(1))))
+llvm_compiler = LLVMCmd(func)
+llvm_compiler.compile(CSeq(CSeq(Assign(Id("x"), Num(1)),
+           Assign(Id("y"), Num(10))),Loop(Not(Eq(Id("y"), Num(1))),
+        CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
+            Assign(Id("y"), Sub(Id("y"), Num(1)))))))
+llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Id("x"),Num(0))))
 print(module)
+
 
 # <codecell>
 from ctypes import CFUNCTYPE, c_void_p
