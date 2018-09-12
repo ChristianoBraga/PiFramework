@@ -847,10 +847,14 @@ func_type = ir.FunctionType(LLVMTypes.INT, [], False)
 func = ir.Function(module, func_type, "main_function")
 
 llvm_compiler = LLVMCmd(func)
-llvm_compiler.compile(CSeq(CSeq(Assign(Id("x"), Num(1)),
+
+llvm_compiler.compile(CSeq(CSeq(CSeq(Assign(Id("x"), Num(1)),
            Assign(Id("y"), Num(10))),Loop(Not(Eq(Id("y"), Num(1))),
         CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
-            Assign(Id("y"), Sub(Id("y"), Num(1)))))))
+            Assign(Id("y"), Sub(Id("y"), Num(1)))))),CSeq(CSeq(Assign(Id("x"), Num(1)),
+           Assign(Id("y"), Num(10))),Loop(Not(Eq(Id("y"), Num(1))),
+        CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
+            Assign(Id("y"), Sub(Id("y"), Num(1))))))))
 llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Id("x"),Num(0))))
 print(module)
 
