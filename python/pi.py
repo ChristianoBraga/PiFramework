@@ -66,10 +66,13 @@ class Statement:
     def __init__(self, *args):
         self.opr = args
 
-    def __str__(self):
+    def __repr__(self):
         ret = str(self.__class__.__name__) + "("
-        for o in self.opr:
-            ret += str(o)
+        for i, o in enumerate(self.opr):
+            if i == len(self.opr) - 1:
+                ret += str(o)
+            else:
+                ret += str(o) + ', '
         ret += ")"
         return ret
 
@@ -785,6 +788,7 @@ class LLVMExp():
         res = self.builder.not_(lhs, "temp_not")
         return res
 
+
 # <codecell>
 class LLVMCmd(LLVMExp):
     def __init__(self, function):
@@ -841,6 +845,30 @@ class LLVMCmd(LLVMExp):
             return LLVMExp.compile(self, node)
 
 
+class LLVMDcl(LLVMCmd):
+    def __init__(self, function):
+        self.locs = []
+        LLVMCmd.__init__(self, function)
+
+    def pushLoc(self, node):
+        pass
+
+    def compileRef(self, node):
+        pass
+
+    def compileBind(self, node):
+        pass
+
+    def compileDSeq(self, node):
+        pass
+
+    def compileBlk(self, node):
+        pass
+
+    def compile(self, node):
+        pass
+
+
 # <codecell>
 module = ir.Module('main_module')
 func_type = ir.FunctionType(LLVMTypes.INT, [], False)
@@ -848,16 +876,19 @@ func = ir.Function(module, func_type, "main_function")
 
 llvm_compiler = LLVMCmd(func)
 
-llvm_compiler.compile(CSeq(CSeq(CSeq(Assign(Id("x"), Num(1)),
-           Assign(Id("y"), Num(10))),Loop(Not(Eq(Id("y"), Num(1))),
-        CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
-            Assign(Id("y"), Sub(Id("y"), Num(1)))))),CSeq(CSeq(Assign(Id("x"), Num(1)),
-           Assign(Id("y"), Num(10))),Loop(Not(Eq(Id("y"), Num(1))),
-        CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
-            Assign(Id("y"), Sub(Id("y"), Num(1))))))))
-llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Id("x"),Num(0))))
-print(module)
+llvm_compiler.compile(
+                    CSeq(
+                        CSeq(
+                            Assign(Id("x"), Num(1)),
+                            Assign(Id("y"), Num(10))),
+                        Loop(
+                            Not(Eq(Id("y"), Num(1))),
+                            CSeq(
+                                Assign(Id("x"), Mul(Id("x"), Id("y"))),
+                                Assign(Id("y"), Sub(Id("y"), Num(1)))))))
 
+llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Id("x"), Num(0))))
+print(module)
 
 # <codecell>
 from ctypes import CFUNCTYPE, c_void_p
