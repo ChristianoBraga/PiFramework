@@ -847,26 +847,33 @@ class LLVMCmd(LLVMExp):
 
 class LLVMDcl(LLVMCmd):
     def __init__(self, function):
-        self.locs = []
         LLVMCmd.__init__(self, function)
-
-    def pushLoc(self, node):
-        pass
 
     def compileRef(self, node):
         pass
 
     def compileBind(self, node):
-        pass
+        id = self.compile(node.opr[0])
+        ref = self.compile(node.opr[1])
 
     def compileDSeq(self, node):
         pass
 
     def compileBlk(self, node):
-        pass
+        dec = self.compile(node.opr[0])
+        cmd = self.compile(node.opr[1])
 
     def compile(self, node):
-        pass
+        if isinstance(node, Ref):
+            return self.compileRef(node)
+        elif isinstance(node, Bind):
+            return self.compileRef(node)
+        elif isinstance(node, DSeq):
+            return self.compileDSeq(node)
+        elif isinstance(node, Blk):
+            return self.compileBlk(node)
+        else:
+            return LLVMCmd.compile(node)
 
 
 # <codecell>
