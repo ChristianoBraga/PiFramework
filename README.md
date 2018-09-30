@@ -1,9 +1,9 @@
 <p align="left">
-<img width=25% src="./logo/pi-logo.png">
+<img width=20% src="./logo/pi-logo.png">
 </p>
 
 The &pi; framework aims at being a simple formal framework for compiler construction. It is comprised of &pi;-lib and &pi;-automata. The &pi;-lib component is a library of basic programming languages constructs whose semantics are formally specified in &pi;-automata. To construct a compiler for a programming language one simply needs to define the &pi;-denotations of the statements of the given programming language in terms of &pi;-lib constructions. Using one of the implementations of &pi;-lib, one may then execute programs in the given language or validate it using formal verification tools. 
-At the moment, there are implementaitions of the &pi; frmaework in [Maude](http://maude.cs.uiuc.edu) language and Python, deloped by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
+At the moment, there are implementations of the &pi; frmaework in [Maude](http://maude.cs.uiuc.edu) and Python, both deloped by Christiano Braga (<http://www.ic.uff.br/~cbraga>).
 
 ## System requirements
 
