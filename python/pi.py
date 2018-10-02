@@ -742,20 +742,6 @@ class LLVMExp():
         self.block = function.append_basic_block(name="entry")
         self.builder = ir.IRBuilder(self.block)
 
-    def compile(self, node):
-        if isinstance(node, Num):
-            return self.compileNum(node)
-        elif isinstance(node, Sum):
-            return self.compileSum(node)
-        elif isinstance(node, Sub):
-            return self.compileSub(node)
-        elif isinstance(node, Mul):
-            return self.compileMul(node)
-        elif isinstance(node, Eq):
-            return self.compileEq(node)
-        elif isinstance(node, Not):
-            return self.compileNot(node)
-
     def compileNum(self, node):
         return ir.Constant(LLVMTypes.INT, node.opr[0])
 
@@ -788,6 +774,20 @@ class LLVMExp():
         res = self.builder.not_(lhs, "temp_not")
         return res
 
+    def compile(self, node):
+        if isinstance(node, Num):
+            return self.compileNum(node)
+        elif isinstance(node, Sum):
+            return self.compileSum(node)
+        elif isinstance(node, Sub):
+            return self.compileSub(node)
+        elif isinstance(node, Mul):
+            return self.compileMul(node)
+        elif isinstance(node, Eq):
+            return self.compileEq(node)
+        elif isinstance(node, Not):
+            return self.compileNot(node)
+
 
 # <codecell>
 class LLVMCmd(LLVMExp):
@@ -796,7 +796,10 @@ class LLVMCmd(LLVMExp):
         LLVMExp.__init__(self, function)
 
     def addEnv(self, id, pointer):
-        self.env.update({id: pointer})
+        self.env[id].append(pointer)
+
+    def getLoc(self, id):
+        return self.env[id][-1]
 
     def compileAssign(self, node):
         id = self.compileAssingId(node.opr[0])
@@ -805,8 +808,8 @@ class LLVMCmd(LLVMExp):
 
     def compileAssingId(self, node):
         id = node.opr[0]
-        if id in self.env:
-            ptr = self.env[id]
+        if self.env[id]:
+            ptr = self.getLoc(id)
         else:
             ptr = self.builder.alloca(LLVMTypes.INT, None, "ptr")
             self.addEnv(id, ptr)
@@ -814,7 +817,7 @@ class LLVMCmd(LLVMExp):
 
     def compileId(self, node):
         id = node.opr[0]
-        ptr = self.env[id]
+        ptr = self.getLoc(id)
         return self.builder.load(ptr, "val")
 
     def compileCSeq(self, node):
@@ -848,32 +851,59 @@ class LLVMCmd(LLVMExp):
 class LLVMDcl(LLVMCmd):
     def __init__(self, function):
         LLVMCmd.__init__(self, function)
+        self.locs = []
+
+    def cleanLocs(self):
+        for loc in self.locs[-1]:
+            if loc in self.env:
+                self.env[loc].pop()
+        self.locs.pop()
+
+    def pushLoc(self, id):
+        self.locs[-1].append(id)
 
     def compileRef(self, node):
-        pass
+        return self.compile(node.opr[0])
 
     def compileBind(self, node):
-        id = self.compile(node.opr[0])
+        id = self.compileBindId(node.opr[0])
         ref = self.compile(node.opr[1])
+        return self.builder.store(ref, id)
+
+    def compileBindId(self, node):
+        id = node.opr[0]
+        self.pushLoc(id)
+        if id in self.env:
+            return self.compileAssingId(node)
+        else:
+            self.env[id] = []
+            return self.compileAssingId(node)
 
     def compileDSeq(self, node):
-        pass
+        self.compile(node.opr[0])
+        self.compile(node.opr[1])
 
     def compileBlk(self, node):
+        self.locs.append([])
         dec = self.compile(node.opr[0])
         cmd = self.compile(node.opr[1])
+        self.compile(dec)
+        self.compile(cmd)
+        print("LOCS = " + self.locs.__repr__())
+        print("ENV = " + self.env.__repr__())
+        self.cleanLocs()
 
     def compile(self, node):
         if isinstance(node, Ref):
             return self.compileRef(node)
         elif isinstance(node, Bind):
-            return self.compileRef(node)
+            return self.compileBind(node)
         elif isinstance(node, DSeq):
             return self.compileDSeq(node)
         elif isinstance(node, Blk):
             return self.compileBlk(node)
         else:
-            return LLVMCmd.compile(node)
+            return LLVMCmd.compile(self, node)
 
 
 # <codecell>
@@ -881,20 +911,20 @@ module = ir.Module('main_module')
 func_type = ir.FunctionType(LLVMTypes.INT, [], False)
 func = ir.Function(module, func_type, "main_function")
 
-llvm_compiler = LLVMCmd(func)
+llvm_compiler = LLVMDcl(func)
 
 llvm_compiler.compile(
-                    CSeq(
-                        CSeq(
-                            Assign(Id("x"), Num(1)),
-                            Assign(Id("y"), Num(10))),
+                    Blk(
+                        DSeq(
+                            Bind(Id("x"), Ref(Num(1))),
+                            Bind(Id("y"), Ref(Num(10)))),
                         Loop(
                             Not(Eq(Id("y"), Num(1))),
                             CSeq(
                                 Assign(Id("x"), Mul(Id("x"), Id("y"))),
                                 Assign(Id("y"), Sub(Id("y"), Num(1)))))))
 
-llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Id("x"), Num(0))))
+llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Num(0), Num(0))))
 print(module)
 
 # <codecell>
