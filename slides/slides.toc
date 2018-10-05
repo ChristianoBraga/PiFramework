@@ -1,8 +1,0 @@
-\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
-\beamer@subsectionintoc {1}{1}{Example}{6}{0}{1}
-\beamer@sectionintoc {2}{$\uppi $ expressions}{15}{0}{2}
-\beamer@sectionintoc {3}{$\uppi $ commands}{17}{0}{3}
-\beamer@sectionintoc {4}{$\uppi $ declarations}{20}{0}{4}
-\beamer@sectionintoc {5}{$\uppi ^2$: $\uppi $ Framework in Python}{23}{0}{5}
-\beamer@subsectionintoc {5}{1}{Declarations}{42}{0}{5}
-\beamer@sectionintoc {6}{\textsc {IMP} language}{53}{0}{6}
