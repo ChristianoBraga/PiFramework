@@ -4,6 +4,7 @@
 from pi import *
 import llvmlite.ir as ir
 import llvmlite.binding as llvm
+from ctypes import CFUNCTYPE, c_void_p # For JIT support
 
 class LLVMTypes:
     INT = ir.IntType(64)
@@ -13,7 +14,6 @@ class LLVMTypes:
 class LLVMConstants:
     TRUE = ir.Constant(LLVMTypes.BOOL, 1)
     FALSE = ir.Constant(LLVMTypes.BOOL, 0)
-
 
 # <codecell>
 class LLVMExp():
@@ -67,7 +67,6 @@ class LLVMExp():
             return self.compileEq(node)
         elif isinstance(node, Not):
             return self.compileNot(node)
-
 
 # <codecell>
 class LLVMCmd(LLVMExp):
@@ -127,7 +126,6 @@ class LLVMCmd(LLVMExp):
         else:
             return LLVMExp.compile(self, node)
 
-
 class LLVMDcl(LLVMCmd):
     def __init__(self, function):
         LLVMCmd.__init__(self, function)
@@ -185,7 +183,6 @@ class LLVMDcl(LLVMCmd):
         else:
             return LLVMCmd.compile(self, node)
 
-
 # <codecell>
 def pi_llvm(pi_ast):
     module = ir.Module('main_module')
@@ -197,53 +194,49 @@ def pi_llvm(pi_ast):
     llvm_compiler.compile(pi_ast)
 
     # llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Num(0), Num(0))))
-    print(module)
+    return module
 
-# # <codecell>
-# from ctypes import CFUNCTYPE, c_void_p
+# <codecell>
+def create_execution_engine():
+    """
+    Create an ExecutionEngine suitable for JIT code generation on
+    the host CPU.  The engine is reusable for an arbitrary number of
+    modules.
+    """
+    # Create a target machine representing the host
+    target = llvm.Target.from_default_triple()
+    target_machine = target.create_target_machine()
+    # And an execution engine with an empty backing module
+    backing_mod = llvm.parse_assembly("")
+    engine = llvm.create_mcjit_compiler(backing_mod, target_machine)
+    return engine
 
-# # All these initializations are required for code generation!
-# llvm.initialize()
-# llvm.initialize_native_target()
-# llvm.initialize_native_asmprinter()  # yes, even this one
+def compile_ir(engine, llvm_ir):
+    """
+    Compile the LLVM IR string with the given engine.
+    The compiled module object is returned.
+    """
+    # Create a LLVM module object from the IR
+    mod = llvm.parse_assembly(llvm_ir)
+    mod.verify()
+    # Now add the module and make sure it is ready for execution
+    engine.add_module(mod)
+    engine.finalize_object()
+    return mod
 
+def pi_llvm_jit(module):
+    # All these initializations are required for code generation!
+    llvm.initialize()
+    llvm.initialize_native_target()
+    llvm.initialize_native_asmprinter()  # yes, even this one
 
-# def create_execution_engine():
-#     """
-#     Create an ExecutionEngine suitable for JIT code generation on
-#     the host CPU.  The engine is reusable for an arbitrary number of
-#     modules.
-#     """
-#     # Create a target machine representing the host
-#     target = llvm.Target.from_default_triple()
-#     target_machine = target.create_target_machine()
-#     # And an execution engine with an empty backing module
-#     backing_mod = llvm.parse_assembly("")
-#     engine = llvm.create_mcjit_compiler(backing_mod, target_machine)
-#     return engine
+    engine = create_execution_engine()
+    mod = compile_ir(engine, str(module))
 
+    # Look up the function pointer (a Python int)
+    func_ptr = engine.get_function_address("main_function")
 
-# def compile_ir(engine, llvm_ir):
-#     """
-#     Compile the LLVM IR string with the given engine.
-#     The compiled module object is returned.
-#     """
-#     # Create a LLVM module object from the IR
-#     mod = llvm.parse_assembly(llvm_ir)
-#     mod.verify()
-#     # Now add the module and make sure it is ready for execution
-#     engine.add_module(mod)
-#     engine.finalize_object()
-#     return mod
-
-
-# engine = create_execution_engine()
-# mod = compile_ir(engine, str(module))
-
-# # Look up the function pointer (a Python int)
-# func_ptr = engine.get_function_address("main_function")
-
-# # Run the function via ctypes
-# cfunc = CFUNCTYPE(c_void_p)(func_ptr)
-# res = cfunc()
-# print("main_function() =", res)
+    # Run the function via ctypes
+    cfunc = CFUNCTYPE(c_void_p)(func_ptr)
+    res = cfunc()
+    print("main_function() =", res)

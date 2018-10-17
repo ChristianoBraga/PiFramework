@@ -3,7 +3,7 @@ import tatsu                # Tatsu is the parser generator.
 from impiler import Impiler # Impiler is the compiler from Imπ to π lib.
 from pi import run          # pi is the Python implementation of the π framework
 import sys, getopt          # System and command line modules.
-from pillvm import pi_llvm 
+from pillvm import pi_llvm, pi_llvm_jit 
 
 def main(argv):    
     source = ''    
@@ -15,11 +15,12 @@ def main(argv):
     print_state = False
     print_last = False
     print_llvm = False
+    run_llvm_jit = False
     display_state = 0
     last_n_state = 0
 
     try:
-        opts, args = getopt.getopt(argv,"f:sapte", ['llvm', 'stats', 'state=', 'last='])
+        opts, args = getopt.getopt(argv,"f:sapte", ['llvm', 'llvm_jit', 'stats', 'state=', 'last='])
     except getopt.GetoptError:
         print('imp.py -f <impfile> [-s | -a | -p | -t] ')
         print('-s : Prints source code.')
@@ -30,6 +31,7 @@ def main(argv):
         print('--state n : Prints the nth state of the automaton.')
         print('--last n : Prints the (last - n)th state of the automaton.')
         print('--llvm : Prints LLVM code.')
+        print('--llvm_jit : Runs LLVM JIT code.')
         sys.exit(2)
 
     for opt, arg in opts:
@@ -53,6 +55,8 @@ def main(argv):
             last_n_state = int(arg)
         elif opt == '--llvm':
             print_llvm = True
+        elif opt == '--llvm_jit':
+            run_llvm_jit = True
 
 
     if print_source:
@@ -87,24 +91,28 @@ def main(argv):
         print('Evaluation error: ', e)
         exit()
 
-    if print_trace:
-        for state_number in range(len(tr)):
-            print('State #'+ str(state_number) + ' of the π automaton:')
-            print(tr[state_number])
+    if print_llvm or run_llvm_jit:
+        module = pi_llvm(pi_ast)
+        if print_llvm:
+            print(module)
+        if run_llvm_jit:
+            pi_llvm_jit(module)
     else:
-        if print_last:
-            display_state = len(tr) - (last_n_state + 1)
+        if print_trace:
+            for state_number in range(len(tr)):
+                print('State #'+ str(state_number) + ' of the π automaton:')
+                print(tr[state_number])
         else:
-            display_state = len(tr) - 1
-        print('State #'+ str(display_state) + ' of the π automaton:')
-        print(tr[display_state])
+            if print_last:
+                display_state = len(tr) - (last_n_state + 1)
+            else:
+                display_state = len(tr) - 1
+            print('State #'+ str(display_state) + ' of the π automaton:')
+            print(tr[display_state])
 
-    if print_stats:
-        print('Number of evaluation steps:', ns)
-        print('Evaluation time:', dt)
-
-    if print_llvm:
-        pi_llvm(pi_ast)
+        if print_stats:
+            print('Number of evaluation steps:', ns)
+            print('Evaluation time:', dt)       
     
 if __name__ == '__main__':
     main(sys.argv[1:])
