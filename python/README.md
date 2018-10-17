@@ -1,11 +1,14 @@
 # Imπ
 
-Imπ is a simple imperative programming language created to illustrate the use of the Python implementation of [π framework](http://github/ChristianoBraga/PiFraework).
+Imπ is a simple imperative programming language created to illustrate the use of the Python implementation of [π framework](http://github/ChristianoBraga/PiFraework), by [Christiano Braga](http://github.com/ChristianoBraga).
+
+Support for LLVM code generation being developed by [Fernando Mendes](https://github.com/fjmendes1994).
 
 ## Requirements
 
 * Python 3
 * [Tatsu](https://github.com/neogeny/TatSu) parser generator.
+* [LLVM lite](https://github.com/numba/llvmlite).
 
 ## Example
 
