@@ -1,0 +1,59 @@
+@@grammar::IMP
+
+start =  @:cmd $ ;
+
+cmd = let | assign | loop ;
+
+loop = op:'while' ~ e:expression 'do' { c:cmd }+ ;
+
+assign = id:identifier op:':=' ~ e:expression ;
+
+let = op:'let' ~ d:dec 'in' { c:cmd }+ ; 
+
+dec = op:'var' ~ id:identifier '=' e:expression ;
+
+expression = @:bool_expression ;
+
+bool_expression = negation | equality | conjunction | disjunction 
+                | lowereq | greatereq | lowerthan | greaterthan 
+                | add_expression ;
+
+equality = left:add_expression op:"==" ~ right:bool_expression ;
+
+conjunction = left:add_expression op:"and" ~ right:bool_expression ;
+
+disjunction = left:add_expression op:"or" ~ right:bool_expression ;
+
+lowereq = left:add_expression op:"<=" ~ right:add_expression ;
+
+greatereq = left:add_expression op:">=" ~ right:add_expression ;
+
+lowerthan = left:add_expression op:"<" ~ right:add_expression ;
+
+greaterthan = left:add_expression op:">" ~ right:add_expression ;
+
+parentesisexp = '(' ~ @:bool_expression ')' ;
+
+negation = op:'not' ~ b:bool_expression ;
+
+add_expression = addition | subtraction | @:mult_expression ;
+
+addition = left:mult_expression op:"+" ~ right:add_expression ;
+
+subtraction = left:mult_expression op:"-" ~ right:add_expression ;
+
+mult_expression = multiplication | division 
+                | atom 
+                | parentesisexp ;
+
+multiplication = left:atom op:"*" ~ right:mult_expression ;
+
+division = left:atom op:"/" ~ right:mult_expression ;
+
+atom = number | truth | identifier ;
+ 
+number = /\d+/ ;
+
+identifier = /(?!\d)\w+/ ;
+
+truth = 'True' | 'False' ;

@@ -1,184 +1,101 @@
-GRAMMAR = '''
-@@grammar::IMP
 
-start =  @:cmd $ ;
+import tatsu                # Tatsu is the parser generator.
+from impiler import Impiler # Impiler is the compiler from Imπ to π lib.
+from pi import run          # pi is the Python implementation of the π framework
+import sys, getopt          # System and command line modules.
 
-cmd = let | assign | loop ;
-
-loop = op:'while' ~ e:expression 'do' { c:cmd }+ ;
-
-assign = id:identifier op:':=' ~ e:expression ;
-
-let = op:'let' ~ d:dec 'in' { c:cmd }+ ; 
-
-dec = op:'var' ~ id:identifier '=' e:expression ;
-
-expression = @:bool_expression ;
-
-bool_expression = negation | equality | conjunction | disjunction 
-                | lowereq | greatereq | lowerthan | greaterthan 
-                | add_expression ;
-
-equality = left:add_expression op:"==" ~ right:bool_expression ;
-
-conjunction = left:add_expression op:"and" ~ right:bool_expression ;
-
-disjunction = left:add_expression op:"or" ~ right:bool_expression ;
-
-lowereq = left:add_expression op:"<=" ~ right:add_expression ;
-
-greatereq = left:add_expression op:">=" ~ right:add_expression ;
-
-lowerthan = left:add_expression op:"<" ~ right:add_expression ;
-
-greaterthan = left:add_expression op:">" ~ right:add_expression ;
-
-parentesisexp = '(' ~ @:bool_expression ')' ;
-
-negation = op:'not' ~ b:bool_expression ;
-
-add_expression = addition | subtraction | @:mult_expression ;
-
-addition = left:mult_expression op:"+" ~ right:add_expression ;
-
-subtraction = left:mult_expression op:"-" ~ right:add_expression ;
-
-mult_expression = multiplication | division 
-                | atom 
-                | parentesisexp ;
-
-multiplication = left:atom op:"*" ~ right:mult_expression ;
-
-division = left:atom op:"/" ~ right:mult_expression ;
-
-atom = number | truth | identifier ;
- 
-number = /\d+/ ;
-
-identifier = /(?!\d)\w+/ ;
-
-truth = 'True' | 'False' ;
-'''
-
-from tatsu.ast import AST
-import pi
-
-class Impiler(object):
-    def identifier(self, ast):
-        return pi.Id(str(ast))
-
-    def number(self, ast):
-        return pi.Num(int(ast))
-
-    def addition(self, ast):
-        return pi.Sum(ast.left, ast.right)
-
-    def subtraction(self, ast):
-        return pi.Sub(ast.left, ast.right)
-
-    def multiplication(self, ast):
-        return pi.Mul(ast.left, ast.right)
-
-    def division(self, ast):
-        return pi.Div(ast.left, ast.right)
-
-    def truth(self, ast):
-        return pi.Boo(bool(ast))
-
-    def negation(self, ast):
-        return pi.Not(ast.b)    
-
-    def equality(self, ast):
-        return pi.Eq(ast.left, ast.right)
-
-    def lowerthan(self,ast):
-        return pi.Lt(ast.left, ast.right)
-
-    def greaterthan(self,ast):
-        return pi.Gt(ast.left, ast.right)
-
-    def lowereq(self,ast):
-        return pi.Le(ast.left, ast.right)
-
-    def greatereq(self,ast):
-        return pi.Ge(ast.left, ast.right)
-
-    def conjunction(self, ast):
-        return pi.And(ast.left, ast.right)
-
-    def disjunction(self, ast):
-        return pi.Or(ast.left, ast.right)
-
-    def assign(self, ast):
-        return pi.Assign(ast.id, ast.e)
-
-    def dec(self, ast):
-        return pi.Bind(ast.id, pi.Ref(ast.e))
-
-    def let(self, ast):
-        if isinstance(ast.c, pi.Cmd):
-            return pi.Blk(ast.d, ast.c)
-        else:
-            cmd = ast.c[0]
-            for i in range(1, len(ast.c)):
-                cmd = pi.CSeq(cmd, ast.c[i])
-            return pi.Blk(ast.d, cmd)
-
-    def loop(self, ast):
-        if isinstance(ast.c, pi.Cmd):
-            return pi.Loop(ast.e, ast.c)
-        else:
-            cmd = ast.c[0]
-            for i in range(1, len(ast.c)):
-                cmd = pi.CSeq(cmd, ast.c[i])
-            return pi.Loop(ast.e, cmd)
-
-if __name__ == '__main__':
-    import tatsu
-    # grammar = open('calc.ebnf').read()
-    # parser = tatsu.compile(grammar)
-    parser = tatsu.compile(GRAMMAR)
-    # source = "xyzn < 1" 
-    # source = '2 * 3 + 5 / 4'
-    # source = '( not ( (2 * 3 + 5) < (2 + 3) ) ) or (0 < 1)'
-    # source = '(xyz + 1) > 0'
-    
-    source = \
-    ''' 
-    let var z = 1 
-    in 
-        let var y = 1000 
-        in 
-            while not (y == 0)
-            do 
-                z := z * y
-                y := y - 1'''
-    
-    print('Imπ source code: \n', source, '\n')
+def main(argv):    
+    source = ''    
+    print_ast = False
+    print_pilib_ast = False
+    print_source = False
+    print_trace = False
+    print_stats = False
+    print_state = False
+    print_last = False
+    display_state = 0
+    last_n_state = 0
 
     try:
-        ast = parser.parse(source)
-        print('AST: ', ast)
+        opts, args = getopt.getopt(argv,"f:sapte", ['state=', 'stats', 'last='])
+    except getopt.GetoptError:
+        print('imp.py -f <impfile> [-s | -a | -p | -t] ')
+        print('-s : Prints source code.')
+        print('-a : Prints syntax tree.')
+        print('-p : Prints π lib abstract syntax tree.')
+        print('-t : Prints full trace.')
+        print('--stats : Prints execution statistics.')
+        print('--state n : Prints the nth state of the automaton.')
+        print('--last n : Prints the (last - n)th state of the automaton.')
+        sys.exit(2)
+
+    for opt, arg in opts:
+        if opt == '-f':
+            source = open(arg).read()
+        elif opt == '-s':
+            print_source = True
+        elif opt == '-a':
+            print_ast = True
+        elif opt == '-p':
+            print_pilib_ast = True
+        elif opt == '-t':
+            print_trace = True
+        elif opt == '--stats':
+            print_stats = True
+        elif opt == '--state':
+            print_state = True
+            display_state = int(arg)
+        elif opt == '--last':
+            print_last = True
+            last_n_state = int(arg)
+
+    if print_source:
+        print('Imπ source code: ')
+        print(source)
         print()
-    except Exception as e:
-        print('Parser error: ' + str(e))
-        exit()
+
+    imp_grammar = open('imp.ebnf').read()
+    parser = tatsu.compile(imp_grammar)
+
+    if print_ast:
+        try:
+            ast = parser.parse(source)
+            print('AST: ', ast)
+            print()
+        except Exception as e:
+            print('Parser error: ' + str(e))
+            exit()
 
     try:
         pi_ast = parser.parse(source, semantics=Impiler())
-        print('π lib AST:', pi_ast)
-        print()
+        if print_pilib_ast:
+            print('π lib AST:', pi_ast)
+            print()
     except Exception as e:
         print('Compilation error: ' + str(e))
         exit()
 
     try:
-        (tr, ns, dt) = pi.run(pi_ast)
+        (tr, ns, dt) = run(pi_ast)
     except Exception as e:
         print('Evaluation error: ', e)
         exit()
 
-    print('State #'+ str(len(tr) - 2) + ' of the π automaton:')
-    print(tr[len(tr) - 2])
-    print('Number of evaluation steps:', ns)
-    print('Execution time:', dt)
+    if print_trace:
+        for state_number in range(len(tr)):
+            print('State #'+ str(state_number) + ' of the π automaton:')
+            print(tr[state_number])
+    else:
+        if print_last:
+            display_state = len(tr) - (last_n_state + 1)
+        else:
+            display_state = len(tr) - 1
+        print('State #'+ str(display_state) + ' of the π automaton:')
+        print(tr[display_state])
+
+    if print_stats:
+        print('Number of evaluation steps:', ns)
+        print('Evaluation time:', dt)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
