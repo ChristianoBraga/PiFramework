@@ -3,6 +3,7 @@ import tatsu                # Tatsu is the parser generator.
 from impiler import Impiler # Impiler is the compiler from Imπ to π lib.
 from pi import run          # pi is the Python implementation of the π framework
 import sys, getopt          # System and command line modules.
+from pillvm import pi_llvm 
 
 def main(argv):    
     source = ''    
@@ -13,11 +14,12 @@ def main(argv):
     print_stats = False
     print_state = False
     print_last = False
+    print_llvm = False
     display_state = 0
     last_n_state = 0
 
     try:
-        opts, args = getopt.getopt(argv,"f:sapte", ['state=', 'stats', 'last='])
+        opts, args = getopt.getopt(argv,"f:sapte", ['llvm', 'stats', 'state=', 'last='])
     except getopt.GetoptError:
         print('imp.py -f <impfile> [-s | -a | -p | -t] ')
         print('-s : Prints source code.')
@@ -27,6 +29,7 @@ def main(argv):
         print('--stats : Prints execution statistics.')
         print('--state n : Prints the nth state of the automaton.')
         print('--last n : Prints the (last - n)th state of the automaton.')
+        print('--llvm : Prints LLVM code.')
         sys.exit(2)
 
     for opt, arg in opts:
@@ -48,6 +51,9 @@ def main(argv):
         elif opt == '--last':
             print_last = True
             last_n_state = int(arg)
+        elif opt == '--llvm':
+            print_llvm = True
+
 
     if print_source:
         print('Imπ source code: ')
@@ -97,5 +103,8 @@ def main(argv):
         print('Number of evaluation steps:', ns)
         print('Evaluation time:', dt)
 
+    if print_llvm:
+        pi_llvm(pi_ast)
+    
 if __name__ == '__main__':
     main(sys.argv[1:])
