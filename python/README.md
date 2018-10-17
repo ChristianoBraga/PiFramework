@@ -1,6 +1,6 @@
 # Imπ
 
-Imπ is a simple imperative programming language created to illustrate the use of the [π framework](http://github/ChristianoBraga/PiFraework).
+Imπ is a simple imperative programming language created to illustrate the use of the Python implementation of [π framework](http://github/ChristianoBraga/PiFraework).
 
 ## Requirements
 
