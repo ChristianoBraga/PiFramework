@@ -1,3 +1,6 @@
+# Author: Christiano Braga
+# http://github.com/ChristianoBraga
+
 import pi
 
 class Impiler(object):
@@ -46,16 +49,19 @@ class Impiler(object):
     def disjunction(self, ast):
         return pi.Or(ast.left, ast.right)
 
+    def nop(self, ast):
+        return pi.Nop()
+
     def assign(self, ast):
         return pi.Assign(ast.id, ast.e)
 
-    def dec(self, ast):
+    def var(self, ast):
         return pi.Bind(ast.id, pi.Ref(ast.e))
 
     def let(self, ast):
         if isinstance(ast.c, pi.Cmd):
             return pi.Blk(ast.d, ast.c)
-        else:
+        elif type(ast.c, list):
             cmd = ast.c[0]
             for i in range(1, len(ast.c)):
                 cmd = pi.CSeq(cmd, ast.c[i])
@@ -69,3 +75,29 @@ class Impiler(object):
             for i in range(1, len(ast.c)):
                 cmd = pi.CSeq(cmd, ast.c[i])
             return pi.Loop(ast.e, cmd)
+
+    def __makeAbs(self, f, c):
+        if isinstance(c, pi.Blk):
+            body = c
+        else:
+            body = pi.Blk(c)
+
+        if f == []:
+            return pi.Abs(pi.Formals(), body)
+        else:
+            formals = []
+            for k,v in f.items():
+                if not v == None:
+                    formals.append(v)
+            return pi.Abs(formals, body)
+
+    def fn(self, ast):
+        abs = self.__makeAbs(ast.f, ast.c)
+        return pi.BindAbs(ast.id, abs)
+
+    def call(self, ast):
+        actuals = []
+        for k,v in ast.a.items():
+            if not v == None:
+                actuals.append(v)
+        return pi.Call(ast.i, actuals)

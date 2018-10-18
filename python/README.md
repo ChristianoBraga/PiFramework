@@ -7,7 +7,7 @@ Support for LLVM code generation being developed by [Fernando Mendes](https://gi
 ## Requirements
 
 * Python 3
-* [Tatsu](https://github.com/neogeny/TatSu) parser generator.
+* [竜 Tatsu](https://github.com/neogeny/TatSu) parser generator.
 * [LLVM lite](https://github.com/numba/llvmlite).
 
 ## Example

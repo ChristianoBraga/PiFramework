@@ -1,3 +1,4 @@
+# The classic iterative factorial example
 let var z = 1 
 in 
     let var y = 10 

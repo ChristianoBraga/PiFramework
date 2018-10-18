@@ -1,9 +1,28 @@
 
-import tatsu                # Tatsu is the parser generator.
-from impiler import Impiler # Impiler is the compiler from Imπ to π lib.
-from pi import run          # pi is the Python implementation of the π framework
-import sys, getopt          # System and command line modules.
+# Author: Christiano Braga
+# http://github.com/ChristianoBraga
+
+import tatsu                            # Tatsu is the parser generator.
+from impiler import Impiler             # Impiler is the compiler from Imπ to π lib.
+from pi import run                      # pi is the Python implementation of the π framework
+import sys, traceback, getopt           # System and command line modules.
 from pillvm import pi_llvm, pi_llvm_jit 
+
+def print_help():
+    print('Imπ compiler, Oct. 16 2018')
+    print('http://github.com/ChristianoBraga/PiFramework')
+    print('imp.py -f <impfile> [-s | -a | -p | -t | --at | --pt | --stats | --state n | --last n | --llvm | llvm_jit]')
+    print('-s : Prints source code.')
+    print('-a : Prints syntax tree.')
+    print('-p : Prints π lib abstract syntax tree.')
+    print('-t : Prints full trace.')
+    print('-at : Prints the syntax tree and terminates.')
+    print('-pt : Prints π lib abstract syntax tree and terminates.')
+    print('--stats : Prints execution statistics.')
+    print('--state n : Prints the nth state of the automaton.')
+    print('--last n : Prints the (last - n)th state of the automaton.')
+    print('--llvm : Prints LLVM code.')
+    print('--llvm_jit : Runs LLVM JIT code.')
 
 def main(argv):    
     source = ''    
@@ -16,22 +35,14 @@ def main(argv):
     print_last = False
     print_llvm = False
     run_llvm_jit = False
+    terminate = False
     display_state = 0
     last_n_state = 0
 
     try:
-        opts, args = getopt.getopt(argv,"f:sapte", ['llvm', 'llvm_jit', 'stats', 'state=', 'last='])
+        opts, args = getopt.getopt(argv,"f:sapte", ['at', 'pt', 'llvm', 'llvm_jit', 'stats', 'state=', 'last='])
     except getopt.GetoptError:
-        print('imp.py -f <impfile> [-s | -a | -p | -t] ')
-        print('-s : Prints source code.')
-        print('-a : Prints syntax tree.')
-        print('-p : Prints π lib abstract syntax tree.')
-        print('-t : Prints full trace.')
-        print('--stats : Prints execution statistics.')
-        print('--state n : Prints the nth state of the automaton.')
-        print('--last n : Prints the (last - n)th state of the automaton.')
-        print('--llvm : Prints LLVM code.')
-        print('--llvm_jit : Runs LLVM JIT code.')
+        print_help()
         sys.exit(2)
 
     for opt, arg in opts:
@@ -45,6 +56,12 @@ def main(argv):
             print_pilib_ast = True
         elif opt == '-t':
             print_trace = True
+        elif opt == '--at':
+            print_ast = True
+            terminate = True
+        elif opt == '--pt':
+            print_pilib_ast = True
+            terminate = True
         elif opt == '--stats':
             print_stats = True
         elif opt == '--state':
@@ -58,6 +75,9 @@ def main(argv):
         elif opt == '--llvm_jit':
             run_llvm_jit = True
 
+    if not source:
+        print_help()
+        exit(2)
 
     if print_source:
         print('Imπ source code: ')
@@ -70,26 +90,42 @@ def main(argv):
     if print_ast:
         try:
             ast = parser.parse(source)
-            print('AST: ', ast)
+            print('竜 Tatsu ST: ', ast)
+            if terminate:
+                exit(1)
             print()
         except Exception as e:
             print('Parser error: ' + str(e))
-            exit()
+            exit(2)
 
     try:
         pi_ast = parser.parse(source, semantics=Impiler())
         if print_pilib_ast:
             print('π lib AST:', pi_ast)
-            print()
+            if terminate:
+                exit(1)
+        print()
     except Exception as e:
-        print('Compilation error: ' + str(e))
-        exit()
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        print('Imπ compilation error: ')
+        tbl = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        imp_tb = [e for e in tbl if 'PiFramework' in e]
+        for ex in imp_tb:
+            print(ex)
+        print(exc_value)
+        exit(2)
 
     try:
         (tr, ns, dt) = run(pi_ast)
     except Exception as e:
-        print('Evaluation error: ', e)
-        exit()
+        exc_type, exc_value, exc_traceback = sys.exc_info()
+        print('Imπ evaluation error: ')
+        tbl = traceback.format_exception(exc_type, exc_value, exc_traceback)
+        imp_tb = [e for e in tbl if 'PiFramework' in e]
+        for ex in imp_tb:
+            print(ex)
+        print(exc_value)
+        exit(2)
 
     if print_llvm or run_llvm_jit:
         module = pi_llvm(pi_ast)

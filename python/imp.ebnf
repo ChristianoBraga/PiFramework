@@ -1,8 +1,15 @@
 @@grammar::IMP
+@@eol_comments :: /#.*?$/
 
 start =  @:cmd $ ;
 
-cmd = let | assign | loop ;
+cmd = nop | let | assign | loop | call ;
+
+call = i:identifier '(' { a:actual }* ')' ;
+
+actual = e1:expression { ',' e2:expression }* | {} ;
+
+nop = 'nop' ;
 
 loop = op:'while' ~ e:expression 'do' { c:cmd }+ ;
 
@@ -10,7 +17,13 @@ assign = id:identifier op:':=' ~ e:expression ;
 
 let = op:'let' ~ d:dec 'in' { c:cmd }+ ; 
 
-dec = op:'var' ~ id:identifier '=' e:expression ;
+dec = var | fn ;
+    
+var = op:'var' ~ id:identifier '=' e:expression ;
+
+fn = op:'fn' ~ id:identifier '(' f:formal ')' '=' c:cmd ;
+
+formal = i1:identifier { ',' i2:identifier }* | {} ;
 
 expression = @:bool_expression ;
 

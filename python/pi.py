@@ -577,6 +577,8 @@ class ExpPiAut(PiAutomaton):
 class Cmd(Statement):
     pass
 
+class Nop(Cmd):
+    pass
 
 class Id(ArithExp, BoolExp):
     def __init__(self, s):
@@ -765,6 +767,8 @@ class CmdPiAut(ExpPiAut):
             self.__evalAssign(c)
         elif c == CmdKW.ASSIGN:
             self.__evalAssignKW()
+        elif isinstance(c, Nop):
+            return
         elif isinstance(c, Id):
             self.__evalId(c.id())
         elif isinstance(c, Loop):
@@ -798,14 +802,22 @@ class Dec(Statement):
 
 
 class Bind(Dec):
-    def __init__(self, i, e):
-        if isinstance(i, Id):
-            if isinstance(e, Exp):
-                Dec.__init__(self, i, e)
-            else:
-                raise IllFormed(self, e)
+    def __init__(self, *args):
+        if args == ():
+            Dec.__init__(self, ())
         else:
-            raise IllFormed(self, i)
+            if len(args) == 2:
+                i = args[0]
+                e = args[1]
+                if isinstance(i, Id):
+                    if isinstance(e, Exp):
+                        Dec.__init__(self, i, e)
+                    else:
+                        raise IllFormed(self, e)
+                else:
+                    raise IllFormed(self, i)
+            else:
+                raise IllFormed(self, args)
 
     def id(self):
         return self.operand(0)
@@ -838,20 +850,41 @@ class Cns(Exp):
 
 class Blk(Cmd):
 
-    def __init__(self, d, c):
-        if isinstance(d, Dec):
-            if isinstance(c, Cmd):
-                Cmd.__init__(self, d, c)
+    def __init__(self, *args):
+        # Blocks with declarations
+        if len(args) == 2:
+            d = args[0]
+            c = args[1]
+            if isinstance(d, Dec):
+                if isinstance(c, Cmd):
+                    Cmd.__init__(self, d, c)
+                else:
+                    raise IllFormed(self, c)
             else:
                 raise IllFormed(self, c)
-        else:
-            raise IllFormed(self, c)
+        # Blocks with no declarations
+        elif len(args) == 1:
+            c = args[0] 
+            if isinstance(c, Cmd):
+                Cmd.__init__(self, c)
+            else:
+                raise IllFormed(self, c)
 
     def dec(self):
-        return self.operand(0)
+        if self.arity() == 1:
+            return None
+        elif self.arity() == 2:    
+            return self.operand(0)
+        else:
+            raise IllFormed(self)
 
     def cmd(self):
-        return self.operand(1)
+        if self.arity() == 1:
+            return self.operand(0)
+        elif self.arity() == 2:    
+            return self.operand(1)
+        else:
+            raise IllFormed(self)
 
 class DSeq(Dec):
 
@@ -943,9 +976,20 @@ class DecPiAut(CmdPiAut):
         l = self.locs()
         self.pushVal(list(l.copy()))
         self["locs"] = []
-        self.pushVal(c)
-        self.pushCnt(DecCmdKW.BLKDEC)
-        self.pushCnt(ld)
+        if ld:
+            self.pushCnt(DecCmdKW.BLKDEC)
+            self.pushCnt(ld)
+            self.pushVal(c)
+        else:
+            # If the block has no declarations
+            # we need to save the environment because the
+            # evaluation of BLOCKCMD restores it.
+            # There could be an opcode to capture this 
+            # semantics such that saving and restoring an unchanged
+            # environment does not happen, as it is now.
+            self.pushVal(self.env())
+            self.pushCnt(DecCmdKW.BLKCMD)
+            self.pushCnt(c)
 
     def __evalBlkDecKW(self):
         d = self.popVal()
@@ -1005,15 +1049,18 @@ class DecPiAut(CmdPiAut):
 # <codecell>
 
 class Formals(list):
-    def __init__(self, *f):
-        for a in f:
-            if not isinstance(a, Id):
-                raise IllFormed(self, a)
-        self.append(f)
+    def __init__(self, f):
+        if isinstance(f, list): 
+            for a in f:
+                if not isinstance(a, Id):
+                    raise IllFormed(self, a)
+            self.append(f)
+        else:
+            raise IllFormed(self, f)
 
 class Abs:
     def __init__(self, f, b):
-        if isinstance(f, Formals):
+        if isinstance(f, list):
             if isinstance(b, Blk):
                 self._opr = [f, b]
             else:
@@ -1054,19 +1101,22 @@ class BindAbs(Bind):
             raise IllFormed(self, i)
 
 class Actuals(list):
-    def __init__(self, *a):
-        for e in a:
-            if not isinstance(e, Exp):
-                raise IllFormed(self, e)
-        self.append(a)
+    def __init__(self, a):
+        if isinstance(a, list):
+            for e in a:
+                if not isinstance(e, Exp):
+                    raise IllFormed(self, e)
+            self.append(a)
+        else:
+            raise IllFormed(self, a)
 
 class Call(Cmd):
-    def __init__(self, f, e):
+    def __init__(self, f, actuals):
         if isinstance(f, Id):
-            if isinstance(e, Actuals):
-                Cmd.__init__(self, f, e)
+            if isinstance(actuals, list):
+                Cmd.__init__(self, f, actuals)
             else:
-                raise IllFormed(self, e)
+                raise IllFormed(self, actuals)
         else:
             raise IllFormed(self, f)
 
@@ -1082,7 +1132,7 @@ class Call(Cmd):
 # <codecell>
 class Closure(dict):
     def __init__(self, f, b, e):
-        if isinstance(f, Formals):
+        if isinstance(f, list):
             if isinstance(b, Blk):
                 # I wanted to write assert(isinstance(e, Env)) but it fails.
                 if isinstance(e, dict):
@@ -1138,19 +1188,21 @@ class AbsPiAut(DecPiAut):
         Given a list of formal parameters and a list of actual parameters,
         it returns an environment relating the elements of the former with the latter.
         '''
-        if isinstance(f, Formals):
-            if isinstance(a, Actuals):
+        if isinstance(f, list):
+            if isinstance(a, list):
+                if len(f) == 0:
+                    return {}
                 if len(f) == len(a) and len(f) > 0:
                 # For some reason, f[0] is a tuple, not an Id.
-                    f0 = f[0][0]
-                    a0 = a[0][0]
+                    f0 = f[0]
+                    a0 = a[0]
                     b0 = {f0.id(): a0.num()}
                 if len(f) == 1:
                     return b0
                 else:
                     # For some reason, f[0] is a tuple, not an Id.
-                    f1 = f[1][0]
-                    a1 = a[1][0]
+                    f1 = f[1]
+                    a1 = a[1]
                     b1 = {f1.id(): a1.num()}
                     e = b0.update(b1)
                     for i in range(2, len(f)):
