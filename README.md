@@ -7,8 +7,8 @@ At the moment, there are implementations of the &pi; framework in [Maude](http:/
 
 ## System requirements
 
-* This version of &pi;-lib runs on version 2.7.1 of the [Maude](http://maude.cs.uiuc.edu) system. 
-* [iTerm 2](https://www.iterm2.com) on [macOS](https://www.apple.com/br/macos/) produces a nicer experience.
+* This version of &pi;-lib runs on version 2.7.1 of the [Maude](http://maude.cs.uiuc.edu) system and on [Python 3](http://python.org).
+* [iTerm 2](https://www.iterm2.com) on [macOS](https://www.apple.com/br/macos/) produces a nicer experience for the Maude implementation.
 
 ## Acknowledgements
 
