@@ -9,4 +9,4 @@ in
             do 
                 z := z * y
                 y := y - 1
-    in f(1000)
+    in f(10)
