@@ -1282,25 +1282,25 @@ def run(ast):
     t1 = datetime.datetime.now()
     return (trace, step, (t1 - t0))
 
-if __name__ == '__main__':
-    # The classic iterative factorial example within a function.
-    bl1 = Blk(Bind(Id("y"), Ref(Num(1))),
-            CSeq(Assign(Id("y"), Id("x")),
-                Loop(Not(Eq(Id("y"), Num(0))),
-                    CSeq(Assign(Id("z"), Mul(Id("z"), Id("y"))),
-                        Assign(Id("y"), Sub(Id("y"), Num(1)))))))
+# if __name__ == '__main__':
+#     # The classic iterative factorial example within a function.
+#     bl1 = Blk(Bind(Id("y"), Ref(Num(1))),
+#             CSeq(Assign(Id("y"), Id("x")),
+#                 Loop(Not(Eq(Id("y"), Num(0))),
+#                     CSeq(Assign(Id("z"), Mul(Id("z"), Id("y"))),
+#                         Assign(Id("y"), Sub(Id("y"), Num(1)))))))
 
-    abs = Abs(Formals(Id("x")), bl1)
-    ba = BindAbs(Id("fac"), abs)
-    ast = Blk(Bind(Id("z"), Ref(Num(1))), Blk(ba, Call(Id("fac"), Actuals(Num(1500)))))
+#     abs = Abs(Formals(Id("x")), bl1)
+#     ba = BindAbs(Id("fac"), abs)
+#     ast = Blk(Bind(Id("z"), Ref(Num(1))), Blk(ba, Call(Id("fac"), Actuals(Num(1500)))))
 
-    try:
-        (tr, ns, dt) = run(ast)
-    except Exception as e:
-        print('Evaluation error: ', e)
-        exit()
+#     try:
+#         (tr, ns, dt) = run(ast)
+#     except Exception as e:
+#         print('Evaluation error: ', e)
+#         exit()
 
-    print('Last state of the π automaton:')
-    print(tr[len(tr) - 2])
-    print('Number of evaluation steps:', ns)
-    print('Evaluation time:', dt)
+#     print('Last state of the π automaton:')
+#     print(tr[len(tr) - 2])
+#     print('Number of evaluation steps:', ns)
+#     print('Evaluation time:', dt)
