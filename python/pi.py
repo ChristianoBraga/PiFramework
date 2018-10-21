@@ -1,4 +1,5 @@
-### Conversor de python para nb
+# <htmlcell>
+# <!-- pi.py with Jupyter Notebook markups. Run py2nb.py to generate a pi notebook. -->
 
 from nbformat import v3, v4
 
@@ -27,203 +28,79 @@ with open("pi.ipynb", "w") as fpout:
 #
 # The π Framework is a simple framework for teaching compiler
 # construction. It defines a set of common programming languages
-# primitives (π Lib, inspired by `funcons` from the [Componenent Based
+# primitives (π lib, inspired by `funcons` from the [Componenent Based
 # Framework](https://plancomps.github.io/CBS-beta), by Peter D. Mosses)
 # and their formal semantics (π Automata). In this notebook π is
-# formally described. The syntax of π Lib is given as a BNF description.
-# The π Automata for the dynamic semantics of π Lib is described in
-# Maude syntax. We implement the π Framework in Python to start
-# exploring notebook features together with different libraries
-# available for the Python language such as ``llvm`` and ``SMV``
-# bindings.
+# implemented in Python.
 
 # <markdowncell>
-## π Lib Expressions
-# ### Grammar for π Lib Expressions
-# $\begin{array}{rcl}
-# Statement & ::= & Exp \\
-# Exp       & ::= & ArithExp \mid BoolExp \\
-# ArithExp  & ::= & \mathtt{Sum}(Exp, Exp)\mid \mathtt{Sub}(Exp, Exp)
-# \mid \mathtt{Mul}(Exp, Exp) \\
-# BoolExp  & ::= & \mathtt{Eq}(Exp, Exp) \mid \mathtt{Not}(Exp)
-# \end{array}$
-
-# <markdowncell>
-# ### π Lib Expressions in Python
-#
-# We encode BNF rules as classes in Python. Every non-terminal gives
-# rise to a class. The reduction relation $::=$ is encoded as
-# inheritance. Operands are encoded as cells in a list object attribute,
-# whose types are enforced by `assert` predicates on `isinstace` calls.
-# The operand list `opr` is declared in the `Statement` class, whose
-# constructor initializes the `opr` attribute with as many parameters as
-# the subclass constructor might have.
+# # π lib Statements
 
 # <codecell>
-# π Lib
-## Statement
+
+
+class IllFormed(Exception):
+    def __str__(self):
+        return "π lib exception - ill formed AST: " + str(self.args)
+
+
 class Statement:
     def __init__(self, *args):
-        self.opr = args
+        self._opr = args
 
-    def __repr__(self):
+    def __str__(self):
         ret = str(self.__class__.__name__) + "("
-        for i, o in enumerate(self.opr):
-            if i == len(self.opr) - 1:
-                ret += str(o)
-            else:
-                ret += str(o) + ', '
+        if len(self._opr) > 0:
+            ret += str(self._opr[0])
+            if len(self._opr) > 1:
+                for i in range(1, len(self._opr)):
+                    ret += ", "
+                    ret += str(self._opr[i])
         ret += ")"
         return ret
 
+    def arity(self):
+        return len(self._opr)
 
-## Expressions
-class Exp(Statement): pass
+    def operand(self, n):
+        if self.arity() > 0:
+            return self._opr[n]
+        else:
+            raise IllFormed("Call to 'operand' on " +
+                        str(self) + ": " + "No operands.")
 
-
-class ArithExp(Exp): pass
-
-
-class Num(ArithExp):
-    def __init__(self, f):
-        assert (isinstance(f, int))
-        ArithExp.__init__(self, f)
-
-
-class Sum(ArithExp):
-    def __init__(self, e1, e2):
-        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
-        ArithExp.__init__(self, e1, e2)
-
-
-class Sub(ArithExp):
-    def __init__(self, e1, e2):
-        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
-        ArithExp.__init__(self, e1, e2)
-
-
-class Mul(ArithExp):
-    def __init__(self, e1, e2):
-        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
-        ArithExp.__init__(self, e1, e2)
-
-
-class BoolExp(Exp): pass
-
-
-class Eq(BoolExp):
-    def __init__(self, e1, e2):
-        assert (isinstance(e1, Exp) and isinstance(e2, Exp))
-        BoolExp.__init__(self, e1, e2)
-
-
-class Not(BoolExp):
-    def __init__(self, e):
-        assert (isinstance(e, Exp))
-        BoolExp.__init__(self, e)
-
-
-# In[15]:
-
-
-exp = Sum(Num(1), Mul(Num(2), Num(4)))
-print(exp)
-
+    def operator(self):
+        return str(self.__class__.__name__)
 
 # <markdowncell>
-# However, if we create an ill-formed tree, an exception is raised.
-#
-# ```python
-# exp2 = Mul(2, 1)
-#
-# ---------------------------------------------------------------------------
-# AssertionError                            Traceback (most recent call last)
-# <ipython-input-3-de6e358a117c> in <module>()
-# ----> 1 exp2 = Mul(2.0, 1.0)
-#
-# <ipython-input-1-09d2d91ef407> in __init__(self, e1, e2)
-#      28 class Mul(ArithExp):
-#      29     def __init__(self, e1, e2):
-# ---> 30         assert(isinstance(e1, Exp) and isinstance(e2, Exp))
-#      31         super().__init__(e1, e2)
-#      32 class BoolExp(Exp): pass
-#
-# AssertionError:
-# ```
-
-# <markdowncell>
-# ### π Automaton for π Lib Expressions
-
-# The π automaton for π Lib Expressions is implemented in the
-# `ExpPiAut` class. Instances of `ExpPiAut` are dictionaries, that come
-# initialized with two entries: one for the value stack, at index `val`,
-# and antother for the control stack, indexed `cnt`.
-# ```python
-# class ExpPiAut(dict):
-#     def __init__(self):
-#         self["val"] = ValueStack()
-#         self["cnt"] = ControlStack()
-# # ...
-# ```
-
-# Class `ExpπAut` encapsulates the encoding for π Lib Expression rules
-# as private methods that are called by the public (polymorphic) `eval`
-# method. In the following code snippet it calls the function that
-# evaluates a `Sum` expression.
-# ```python
-# def eval(self):
-#     e = self.popCnt()
-#     if isinstance(e, Sum):
-#         self.__evalSum(e)
-# # ...
-# ```
-
-# We use Maude syntax to specify π Automaton rules. This is the π rule
-# for the evaluation of (floating point) numbers, described as an
-# equation in Maude. It specifies that whenever a number is in the top
-# of the control stack `C` is should be popped from `C` and pushed into
-# the value stack `SK`.
-
-# ```maude
-# eq [num-exp] :
-#    < cnt : (num(f:Float) C:ControlStack), val : SK:ValueStack, ... >
-#  =
-#    < cnt : C:ControlStack,
-#      val : (val(f:Float) SK:ValueStack), ... > .```
-
-# π rule `num-exp` is encoded in function `__evalNum(self, n)`. It
-# receives a `Num` object in `n` whose sole attribute has the floating
-# point number that `n` denotes. Method `pushVal(.)` pushes the given
-# argument into the value stack.
-# # ```python
-# def __evalNum(self, n):
-#     f = n.opr[0]
-#     self.pushVal(f)
-# ```
-
-# <markdowncell>
-# ### The complete π Automaton for π Lib Expressions in Python
+# # π automaton
 
 # <codecell>
-## Expressions
-class ValueStack(list): pass
 
 
-class ControlStack(list): pass
+class ValueStack(list):
+    pass
 
 
-class ExpKW:
-    SUM = "#SUM"
-    SUB = "#SUB"
-    MUL = "#MUL"
-    EQ = "#EQ"
-    NOT = "#NOT"
+class ControlStack(list):
+    pass
 
 
-class ExpPiAut(dict):
+class EvaluationError(Exception):
+    def __str__(self):
+        return "π automaton error: " + str(self.args)
+
+class PiAutomaton(dict):
+
     def __init__(self):
         self["val"] = ValueStack()
         self["cnt"] = ControlStack()
+
+    def __str__(self):
+        ret = ""
+        for k, v in self.items():
+            ret = ret + str(k) + " : " + str(v) + "\n"
+        return ret
 
     def val(self):
         return self["val"]
@@ -237,9 +114,13 @@ class ExpPiAut(dict):
 
     def popVal(self):
         vs = self.val()
-        v = vs[len(vs) - 1]
-        vs.pop()
-        return v
+        if len(vs) > 0:
+            v = vs[len(vs) - 1]
+            vs.pop()
+            return v
+        else:
+            raise IllFormed(
+                "Call to 'popVal' on empty value stack: <" + str(self) + ">.")
 
     def pushCnt(self, e):
         cnt = self.cnt()
@@ -247,73 +128,402 @@ class ExpPiAut(dict):
 
     def popCnt(self):
         cs = self.cnt()
-        c = cs[len(cs) - 1]
-        cs.pop()
-        return c
+        if len(cs) > 0:
+            c = cs[len(cs) - 1]
+            cs.pop()
+            return c
+        else:
+            raise IllFormed(
+                "Call to 'popCnt' on empty control stack: <" + str(self) + ">.")
+
 
     def emptyCnt(self):
         return len(self.cnt()) == 0
 
+# <markdowncell>
+# # π lib Expressions
+
+# <codecell>
+
+
+class Exp(Statement):
+
+
+    def left_operand(self):
+        if self.arity() == 2:
+            return self.operand(0)
+        else:
+            raise IllFormed("Call to 'left_operand' on " +
+                            str(self) + ": " + "Operator is not binary.")
+
+
+    def right_operand(self):
+        if self.arity() == 2:
+            return self.operand(1)
+        else:
+            raise IllFormed("Call to 'right_operand' on " +
+                            str(self) + ": " + "Operator is not binary.")
+
+
+class ArithExp(Exp):
+    pass
+
+
+class Num(ArithExp):
+    def __init__(self, n):
+        if isinstance(n, int):
+            ArithExp.__init__(self, n)
+        else:
+            raise IllFormed(self, n)
+
+    def num(self):
+        return self.operand(0)
+
+
+class Sum(ArithExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, Exp):
+            if isinstance(e2, Exp):
+                ArithExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Sub(ArithExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, Exp):
+            if isinstance(e2, Exp):
+                ArithExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Mul(ArithExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, Exp):
+            if isinstance(e2, Exp):
+                ArithExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Div(ArithExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, Exp):
+            if isinstance(e2, Exp):
+                ArithExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class BoolExp(Exp):
+    pass
+
+
+class Boo(BoolExp):
+    def __init__(self, t):
+        if isinstance(t, bool):
+            BoolExp.__init__(self, t)
+        else:
+            raise IllFormed(self, t)
+
+    def boo(self):
+        return self.operand(0)
+
+
+class Eq(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, Exp):
+            if isinstance(e2, Exp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Lt(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, ArithExp):
+            if isinstance(e2, ArithExp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Le(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, ArithExp):
+            if isinstance(e2, ArithExp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Gt(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, ArithExp):
+            if isinstance(e2, ArithExp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Ge(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, ArithExp):
+            if isinstance(e2, ArithExp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class And(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, BoolExp):
+            if isinstance(e2, BoolExp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Or(BoolExp):
+    def __init__(self, e1, e2):
+        if isinstance(e1, BoolExp):
+            if isinstance(e2, BoolExp):
+                BoolExp.__init__(self, e1, e2)
+            else:
+                raise IllFormed(self, e2)
+        else:
+            raise IllFormed(self, e1)
+
+
+class Not(BoolExp):
+    def __init__(self, e):
+        if isinstance(e, BoolExp):
+            BoolExp.__init__(self, e)
+        else:
+            raise IllFormed(self, e)
+
+# <markdowncell>
+# # π automaton for π lib Expressions
+
+# <codecell>
+
+
+class ExpKW:
+    SUM = "#SUM"
+    SUB = "#SUB"
+    MUL = "#MUL"
+    DIV = "#DIV"
+    EQ = "#EQ"
+    LT = "#LT"
+    LE = "#LE"
+    GT = "#GT"
+    GE = "#GE"
+    AND = "#AND"
+    OR = "#OR"
+    NOT = "#NOT"
+
+
+class ExpPiAut(PiAutomaton):
+
+
     def __evalSum(self, e):
-        e1 = e.opr[0]
-        e2 = e.opr[1]
+        e1 = e.left_operand()
+        e2 = e.right_operand()
         self.pushCnt(ExpKW.SUM)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
 
     def __evalSumKW(self, e):
         v1 = self.popVal()
         v2 = self.popVal()
         self.pushVal(v1 + v2)
 
+
+    def __evalDiv(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.DIV)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalDivKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        if v2 == 0:
+            raise EvaluationError(self, "Division by zero.")
+        else:
+            self.pushVal(v1 / v2)
+
+
     def __evalMul(self, e):
-        e1 = e.opr[0]
-        e2 = e.opr[1]
+        e1 = e.left_operand()
+        e2 = e.right_operand()
         self.pushCnt(ExpKW.MUL)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
 
     def __evalMulKW(self):
         v1 = self.popVal()
         v2 = self.popVal()
         self.pushVal(v1 * v2)
 
+
     def __evalSub(self, e):
-        e1 = e.opr[0]
-        e2 = e.opr[1]
+        e1 = e.left_operand()
+        e2 = e.right_operand()
         self.pushCnt(ExpKW.SUB)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
 
     def __evalSubKW(self):
         v1 = self.popVal()
         v2 = self.popVal()
         self.pushVal(v1 - v2)
 
+
     def __evalNum(self, n):
-        f = n.opr[0]
+        f = n.num()
         self.pushVal(f)
 
+
+    def __evalBoo(self, t):
+        th = t.boo()
+        self.pushVal(th)
+
+
     def __evalEq(self, e):
-        e1 = e.opr[0]
-        e2 = e.opr[1]
+        e1 = e.left_operand()
+        e2 = e.right_operand()
         self.pushCnt(ExpKW.EQ)
         self.pushCnt(e1)
         self.pushCnt(e2)
+
 
     def __evalEqKW(self):
         v1 = self.popVal()
         v2 = self.popVal()
         self.pushVal(v1 == v2)
 
+
+    def __evalLt(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.LT)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalLtKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        self.pushVal(v1 < v2)
+
+
+    def __evalGt(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.GT)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalGtKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        self.pushVal(v1 > v2)
+
+
+    def __evalLe(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.LE)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalLeKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        self.pushVal(v1 <= v2)
+
+
+    def __evalGe(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.GE)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalGeKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        self.pushVal(v1 >= v2)
+
+
+    def __evalAnd(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.AND)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalAndKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        self.pushVal(v1 and v2)
+
+
+    def __evalOr(self, e):
+        e1 = e.left_operand()
+        e2 = e.right_operand()
+        self.pushCnt(ExpKW.OR)
+        self.pushCnt(e1)
+        self.pushCnt(e2)
+
+
+    def __evalOrKW(self):
+        v1 = self.popVal()
+        v2 = self.popVal()
+        self.pushVal(v1 or v2)
+
+
     def __evalNot(self, e):
-        e = e.opr[0]
+        e = e.operand(0)
         self.pushCnt(ExpKW.NOT)
         self.pushCnt(e)
+
 
     def __evalNotKW(self):
         v = self.popVal()
         self.pushVal(not v)
+
 
     def eval(self):
         e = self.popCnt()
@@ -329,101 +539,140 @@ class ExpPiAut(dict):
             self.__evalMul(e)
         elif e == ExpKW.MUL:
             self.__evalMulKW()
+        elif isinstance(e, Div):
+            self.__evalDiv(e)
+        elif e == ExpKW.DIV:
+            self.__evalDivKW()
         elif isinstance(e, Num):
             self.__evalNum(e)
+        elif isinstance(e, Boo):
+            self.__evalBoo(e)
         elif isinstance(e, Eq):
             self.__evalEq(e)
         elif e == ExpKW.EQ:
             self.__evalEqKW()
+        elif isinstance(e, Lt):
+            self.__evalLt(e)
+        elif e == ExpKW.LT:
+            self.__evalLtKW()
+        elif isinstance(e, Le):
+            self.__evalLe(e)
+        elif e == ExpKW.LE:
+            self.__evalLeKW()
+        elif isinstance(e, Gt):
+            self.__evalGt(e)
+        elif e == ExpKW.GT:
+            self.__evalGtKW()
+        elif isinstance(e, Ge):
+            self.__evalGe(e)
+        elif e == ExpKW.GE:
+            self.__evalGeKW()
+        elif isinstance(e, And):
+            self.__evalAnd(e)
+        elif e == ExpKW.AND:
+            self.__evalAndKW()
+        elif isinstance(e, Or):
+            self.__evalOr(e)
+        elif e == ExpKW.OR:
+            self.__evalOrKW()
         elif isinstance(e, Not):
             self.__evalNot(e)
         elif e == ExpKW.NOT:
             self.__evalNotKW()
         else:
-            raise Exception("Ill formed: ", e)
+            raise EvaluationError(
+                "Call to 'eval' on " + str(self) + ": " + "Ill formed expression " + str(e))
 
+# <markdowncell>
+# # π lib Commands
 
 # <codecell>
 
-ea = ExpPiAut()
-print(exp)
-ea.pushCnt(exp)
-while not ea.emptyCnt():
-    ea.eval()
-    print(ea)
 
+class Cmd(Statement):
+    pass
 
-# <markdowncell>
-# ## π Lib Commands
-#
-# ### Grammar for π Lib Commands
-#
-# $\begin{array}{rcl}
-# Statement & ::= & Cmd \\
-# Exp       & ::= & \mathtt{Id}(String) \\
-# Cmd       & ::= & \mathtt{Assign}(Id, Exp) \mid
-# \mathtt{Loop}(BoolExp, Cmd) \mid \mathtt{CSeq}(Cmd, Cmd)
-# \end{array}$
-#
-# Commands are language constructions that require both an
-# environement and a memory store to be evaluated.
-# From a syntactic standpoint, they extend statements and expressions,
-# as an identifier is an expression.
+class Nop(Cmd):
+    pass
 
-# <markdowncell>
-# ### Grammar for π Lib Commands in Python
-#
-# The enconding of the grammar for commands follows the same mapping
-# of BNF rules as classes we used for expressions.
-
-# <codecell>
-
-## Commands
-class Cmd(Statement): pass
-
-
-class Id(Exp):
+class Id(ArithExp, BoolExp):
     def __init__(self, s):
-        assert (isinstance(s, str))
-        Exp.__init__(self, s)
+        if isinstance(s, str):
+            Exp.__init__(self, s)
+        else:
+            raise IllFormed(self, s)
+
+    def id(self):
+        return self.operand(0)
 
 
 class Assign(Cmd):
+
     def __init__(self, i, e):
-        assert (isinstance(i, Id) and isinstance(e, Exp))
-        Cmd.__init__(self, i, e)
+        if isinstance(i, Id):
+            if isinstance(e, Exp):
+                Cmd.__init__(self, i, e)
+            else:
+                raise IllFormed(self, e)
+        else:
+            raise IllFormed(self, i)
+
+
+    def lvalue(self):
+        return self.operand(0)
+
+
+    def rvalue(self):
+        return self.operand(1)
 
 
 class Loop(Cmd):
     def __init__(self, be, c):
-        assert (isinstance(be, BoolExp) and isinstance(c, Cmd))
-        Cmd.__init__(self, be, c)
+        if isinstance(be, BoolExp):
+            if isinstance(c, Cmd):
+                Cmd.__init__(self, be, c)
+            else:
+                raise IllFormed(self, c)
+        else:
+            raise IllFormed(self, be)
+
+    def cond(self):
+        return self.operand(0)
+
+    def body(self):
+        return self.operand(1)
 
 
 class CSeq(Cmd):
     def __init__(self, c1, c2):
-        # assert (isinstance(c1, Cmd) and isinstance(c2, Cmd))
-        Cmd.__init__(self, c1, c2)
+        if isinstance(c1, Cmd):
+            if isinstance(c2, Cmd):
+                Cmd.__init__(self, c1, c2)
+            else:
+                raise IllFormed(self, c2)
+        else:
+            raise IllFormed(self, c1)
 
+    def left_cmd(self):
+        return self.operand(0)
+
+    def right_cmd(self):
+        return self.operand(1)
 
 # <codecell>
-cmd = Assign(Id("x"), Num(1))
-print(type(cmd))
-print(cmd)
+# # π automaton for π lib Commands
 
 
-# <markdowncell>
-# ### Complete π Automaton for Commands in Python
-
-# <codecell>
-## Commands
-class Env(dict): pass
+class Env(dict):
+    pass
 
 
-class Loc(int): pass
+class Loc(int):
+    pass
 
 
-class Sto(dict): pass
+class Sto(dict):
+    pass
 
 
 class CmdKW:
@@ -432,50 +681,81 @@ class CmdKW:
 
 
 class CmdPiAut(ExpPiAut):
+
+
     def __init__(self):
         self["env"] = Env()
         self["sto"] = Sto()
         ExpPiAut.__init__(self)
 
+
     def env(self):
         return self["env"]
 
-    def getLoc(self, i):
+
+    def getBindable(self, i):
         en = self.env()
-        return en[i]
+        if i in en.keys():
+            return en[i]
+        else:
+            raise EvaluationError(self, "Identifier ", i, "not in environment.")
+
 
     def sto(self):
         return self["sto"]
 
+    def __newLoc(self):
+        sto = self.sto()
+        if sto:
+            return Loc(max(list(sto.keys())) + 1)
+        else:
+            return Loc()
+
+    def extendStore(self, v):
+        st = self.sto()
+        l = self.__newLoc()
+        st[l] = v
+        return l
+
     def updateStore(self, l, v):
         st = self.sto()
-        st[l] = v
+        if st[l]:
+            st[l] = v
+        else:
+            raise EvaluationError(self, "Call to updateStore woth location", l, "not in store.")
 
     def __evalAssign(self, c):
-        i = c.opr[0]
-        e = c.opr[1]
-        self.pushVal(i.opr[0])
+        i = c.lvalue()
+        e = c.rvalue()
+        self.pushVal(i.id())
         self.pushCnt(CmdKW.ASSIGN)
         self.pushCnt(e)
+
 
     def __evalAssignKW(self):
         v = self.popVal()
         i = self.popVal()
-        l = self.getLoc(i)
+        l = self.getBindable(i)
         self.updateStore(l, v)
+
 
     def __evalId(self, i):
         s = self.sto()
-        l = self.getLoc(i)
-        self.pushVal(s[l])
+        b = self.getBindable(i)
+        if isinstance(b, Loc):
+            self.pushVal(s[b])
+        else:
+            self.pushVal(b)
+
 
     def __evalLoop(self, c):
-        be = c.opr[0]
-        bl = c.opr[1]
+        be = c.cond()
+        bl = c.body()
         self.pushVal(Loop(be, bl))
         self.pushVal(bl)
         self.pushCnt(CmdKW.LOOP)
         self.pushCnt(be)
+
 
     def __evalLoopKW(self):
         t = self.popVal()
@@ -488,11 +768,13 @@ class CmdPiAut(ExpPiAut):
             self.popVal()
             self.popVal()
 
+
     def __evalCSeq(self, c):
-        c1 = c.opr[0]
-        c2 = c.opr[1]
+        c1 = c.left_cmd()
+        c2 = c.right_cmd()
         self.pushCnt(c2)
         self.pushCnt(c1)
+
 
     def eval(self):
         c = self.popCnt()
@@ -500,8 +782,10 @@ class CmdPiAut(ExpPiAut):
             self.__evalAssign(c)
         elif c == CmdKW.ASSIGN:
             self.__evalAssignKW()
+        elif isinstance(c, Nop):
+            return
         elif isinstance(c, Id):
-            self.__evalId(c.opr[0])
+            self.__evalId(c.id())
         elif isinstance(c, Loop):
             self.__evalLoop(c)
         elif c == CmdKW.LOOP:
@@ -512,10 +796,9 @@ class CmdPiAut(ExpPiAut):
             self.pushCnt(c)
             ExpPiAut.eval(self)
 
-
 # <markdowncell>
-# ## π Lib Declarations
-# ### Grammar for π Lib Declarations
+# # π lib Declarations
+# ## Grammar for π lib Declarations
 #
 # $
 # \begin{array}{rcl}
@@ -526,65 +809,134 @@ class CmdPiAut(ExpPiAut):
 # \end{array}
 # $
 
-# <markdowncell>
-# ### Grammar for π Lib Declarations in Python
-
 # <codecell>
-## Declarations
-class Dec(Statement): pass
+
+
+class Dec(Statement):
+    pass
 
 
 class Bind(Dec):
-    def __init__(self, i, e):
-        assert (isinstance(i, Id) and isinstance(e, Exp))
-        Dec.__init__(self, i, e)
+    def __init__(self, *args):
+        if args == ():
+            Dec.__init__(self, ())
+        else:
+            if len(args) == 2:
+                i = args[0]
+                e = args[1]
+                if isinstance(i, Id):
+                    if isinstance(e, Exp):
+                        Dec.__init__(self, i, e)
+                    else:
+                        raise IllFormed(self, e)
+                else:
+                    raise IllFormed(self, i)
+            else:
+                raise IllFormed(self, args)
+
+    def id(self):
+        return self.operand(0)
+
+    def bindable(self):
+        return self.operand(1)
 
 
 class Ref(Exp):
     def __init__(self, e):
-        assert (isinstance(e, Exp))
-        Exp.__init__(self, e)
+        if isinstance(e, Exp):
+            Exp.__init__(self, e)
+        else:
+            raise IllFormed(self, e)
+
+    def exp(self):
+        return self.operand(0)
 
 
 class Cns(Exp):
     def __init__(self, e):
-        assert (isinstance(e, Exp))
-        Exp.__init__(self, e)
+        if isinstance(e, Exp):
+            Exp.__init__(self, e)
+        else:
+            raise IllFormed(self, e)
+
+    def exp(self):
+        return self.operand(0)
 
 
 class Blk(Cmd):
-    def __init__(self, d, c):
-        assert (isinstance(d, Dec) and isinstance(c, Cmd))
-        Cmd.__init__(self, d, c)
 
+    def __init__(self, *args):
+        # Blocks with declarations
+        if len(args) == 2:
+            d = args[0]
+            c = args[1]
+            if isinstance(d, Dec):
+                if isinstance(c, Cmd):
+                    Cmd.__init__(self, d, c)
+                else:
+                    raise IllFormed(self, c)
+            else:
+                raise IllFormed(self, c)
+        # Blocks with no declarations
+        elif len(args) == 1:
+            c = args[0] 
+            if isinstance(c, Cmd):
+                Cmd.__init__(self, c)
+            else:
+                raise IllFormed(self, c)
+
+    def dec(self):
+        if self.arity() == 1:
+            return None
+        elif self.arity() == 2:    
+            return self.operand(0)
+        else:
+            raise IllFormed(self)
+
+    def cmd(self):
+        if self.arity() == 1:
+            return self.operand(0)
+        elif self.arity() == 2:    
+            return self.operand(1)
+        else:
+            raise IllFormed(self)
 
 class DSeq(Dec):
-    def __init__(self, d1, d2):
-        assert (isinstance(d1, Dec) and isinstance(d2, Dec))
-        Dec.__init__(self, d1, d2)
 
+    def __init__(self, d1, d2):
+        if isinstance(d1, Dec):
+            if isinstance(d2, Dec):
+                Dec.__init__(self, d1, d2)
+            else:
+                raise IllFormed(self, d2)
+        else:
+            raise IllFormed(self, d1)
+
+    def left_dec(self):
+        return self.operand(0)
+
+    def right_dec(self):
+        return self.operand(1)
 
 # <markdowncell>
-# ### Complete π Automaton for π Lib Declarations in Python
+# # π Automaton for π lib Declarations
 
 # <codecell>
-## Declarations
+
 class DecExpKW(ExpKW):
     REF = "#REF"
     CNS = "#CNS"
-
 
 class DecCmdKW(CmdKW):
     BLKDEC = "#BLKDEC"
     BLKCMD = "#BLKCMD"
 
-
 class DecKW:
     BIND = "#BIND"
     DSEQ = "#DSEQ"
 
-
 class DecPiAut(CmdPiAut):
+
     def __init__(self):
         self["locs"] = []
         CmdPiAut.__init__(self)
@@ -597,27 +949,19 @@ class DecPiAut(CmdPiAut):
         ls.append(l)
 
     def __evalRef(self, e):
-        ex = e.opr[0]
+        ex = e.exp()
         self.pushCnt(DecExpKW.REF)
         self.pushCnt(ex)
 
-    def __newLoc(self):
-        sto = self.sto()
-        if sto:
-            return max(list(sto.keys())) + 1
-        else:
-            return 0.0
-
     def __evalRefKW(self):
         v = self.popVal()
-        l = self.__newLoc()
-        self.updateStore(l, v)
+        l = self.extendStore(v)
         self.pushLoc(l)
         self.pushVal(l)
 
     def __evalBind(self, d):
-        i = d.opr[0]
-        e = d.opr[1]
+        i = d.id()
+        e = d.bindable()
         self.pushVal(i)
         self.pushCnt(DecKW.BIND)
         self.pushCnt(e)
@@ -625,12 +969,12 @@ class DecPiAut(CmdPiAut):
     def __evalBindKW(self):
         l = self.popVal()
         i = self.popVal()
-        x = i.opr[0]
+        x = i.id()
         self.pushVal({x: l})
 
     def __evalDSeq(self, ds):
-        d1 = ds.opr[0]
-        d2 = ds.opr[1]
+        d1 = ds.left_dec()
+        d2 = ds.right_dec()
         self.pushCnt(DecKW.DSEQ)
         self.pushCnt(d2)
         self.pushCnt(d1)
@@ -642,19 +986,29 @@ class DecPiAut(CmdPiAut):
         self.pushVal(d1)
 
     def __evalBlk(self, d):
-        ld = d.opr[0]
-        c = d.opr[1]
+        ld = d.dec()
+        c = d.cmd()
         l = self.locs()
-        self.pushVal(list(l))
-        self.pushVal(c)
-        self.pushCnt(DecCmdKW.BLKDEC)
-        self.pushCnt(ld)
+        self.pushVal(list(l.copy()))
+        self["locs"] = []
+        if ld:
+            self.pushCnt(DecCmdKW.BLKDEC)
+            self.pushCnt(ld)
+            self.pushVal(c)
+        else:
+            # If the block has no declarations
+            # we need to save the environment because the
+            # evaluation of BLOCKCMD restores it.
+            # There could be an opcode to capture this 
+            # semantics such that saving and restoring an unchanged
+            # environment does not happen, as it is now.
+            self.pushVal(self.env())
+            self.pushCnt(DecCmdKW.BLKCMD)
+            self.pushCnt(c)
 
     def __evalBlkDecKW(self):
         d = self.popVal()
         c = self.popVal()
-        l = self.locs()
-        self.pushVal(l)
         en = self.env()
         ne = en.copy()
         ne.update(d)
@@ -664,15 +1018,19 @@ class DecPiAut(CmdPiAut):
         self.pushCnt(c)
 
     def __evalBlkCmdKW(self):
+        # Retrieves the environment prior to the block evaluation.
         en = self.popVal()
-        ls = self.popVal()
+        # Restores the environment prior to the block evaluation.
         self["env"] = en
+        # Retrieves the locations prior to the block evaluation.
+        cl = self.locs()
         s = self.sto()
-        s = {k: v for k, v in s.items() if k not in ls}
+        s = {k: v for k, v in s.items() if k not in cl}
+        # Removes the locations created in the terminating block from the store.
         self["sto"] = s
-        # del ls
-        ols = self.popVal()
-        self["locs"] = ols
+        # Retrieves the locations prior to the start of the execution of the block.
+        ls = self.popVal()
+        self["locs"] = ls            
 
     def eval(self):
         d = self.popCnt()
@@ -698,280 +1056,266 @@ class DecPiAut(CmdPiAut):
             self.pushCnt(d)
             CmdPiAut.eval(self)
 
+# <markdowncell>
+# # π lib Abstractions
+
+# To give semantics to functions with _static bindings_, we use the concept of _closures_ which essentially create a "proto" enviroment for the evaluation of given expressions.
+
+# <codecell>
+
+class Formals(list):
+    def __init__(self, f):
+        if isinstance(f, list): 
+            for a in f:
+                if not isinstance(a, Id):
+                    raise IllFormed(self, a)
+            self.append(f)
+        else:
+            raise IllFormed(self, f)
+
+class Abs:
+    def __init__(self, f, b):
+        if isinstance(f, list):
+            if isinstance(b, Blk):
+                self._opr = [f, b]
+            else:
+                raise IllFormed(self, b)
+        else:
+            raise IllFormed(self, f)
+
+    def formals(self):
+        return self._opr[0]
+
+    def blk(self):
+        return self._opr[1]
+
+    def __str__(self):
+        ret = str(self.__class__.__name__) + "("
+        formals = self.formals()
+        ret += str(formals[0])              # First formal argument
+        for i in range(1, len(formals)):
+            ret += ", "
+            ret += str(formals[i])          # Remaining formal arguments
+        ret += ", "
+        ret += str(self.blk())              # Abstraction block
+        ret += ")"
+        return ret
+
+class BindAbs(Bind):
+    '''
+    BindAbs is a form of bind but that receives an Abs instead of an
+    expression.
+    '''
+    def __init__(self, i, p):
+        if isinstance(i, Id):
+            if isinstance(p, Abs):
+                Dec.__init__(self, i, p)
+            else:
+                raise IllFormed(self, p)
+        else:
+            raise IllFormed(self, i)
+
+class Actuals(list):
+    def __init__(self, a):
+        if isinstance(a, list):
+            for e in a:
+                if not isinstance(e, Exp):
+                    raise IllFormed(self, e)
+            self.append(a)
+        else:
+            raise IllFormed(self, a)
+
+class Call(Cmd):
+    def __init__(self, f, actuals):
+        if isinstance(f, Id):
+            if isinstance(actuals, list):
+                Cmd.__init__(self, f, actuals)
+            else:
+                raise IllFormed(self, actuals)
+        else:
+            raise IllFormed(self, f)
+
+    def caller(self):
+        return self.operand(0)
+
+    def actuals(self):
+        return self.operand(1)
 
 # <markdowncell>
-# ### Factorial example
+# # π Automaton for π lib Abstractions
 
 # <codecell>
-dc = DecPiAut()
-fac = Loop(Not(Eq(Id("y"), Num(0))),
-           CSeq(Assign(Id("x"), Mul(Id("x"), Id("y"))),
-                Assign(Id("y"), Sub(Id("y"), Num(1)))))
-dec = DSeq(Bind(Id("x"), Ref(Num(1))),
-           Bind(Id("y"), Ref(Num(200))))
-fac_blk = Blk(dec, fac)
-dc.pushCnt(fac_blk)
-while not dc.emptyCnt():
-    aux = dc.copy()
-    dc.eval()
-    if dc.emptyCnt():
-        print(aux)
-
-# <codecell>
-## LLVM Lite
-
-import llvmlite.ir as ir
-import llvmlite.binding as llvm
-
-
-class LLVMTypes:
-    INT = ir.IntType(64)
-    BOOL = ir.IntType(1)
-    VOID = ir.VoidType()
-
-
-class LLVMConstants:
-    TRUE = ir.Constant(LLVMTypes.BOOL, 1)
-    FALSE = ir.Constant(LLVMTypes.BOOL, 0)
-
-
-# <codecell>
-class LLVMExp():
-    def __init__(self, function):
-        self.function = function
-        self.block = function.append_basic_block(name="entry")
-        self.builder = ir.IRBuilder(self.block)
-
-    def compileNum(self, node):
-        return ir.Constant(LLVMTypes.INT, node.opr[0])
-
-    def compileSum(self, node):
-        lhs = self.compile(node.opr[0])
-        rhs = self.compile(node.opr[1])
-        res = self.builder.add(lhs, rhs, "tmp_sum")
-        return res
-
-    def compileSub(self, node):
-        lhs = self.compile(node.opr[0])
-        rhs = self.compile(node.opr[1])
-        res = self.builder.sub(lhs, rhs, "tmp_sub")
-        return res
-
-    def compileMul(self, node):
-        lhs = self.compile(node.opr[0])
-        rhs = self.compile(node.opr[1])
-        res = self.builder.mul(lhs, rhs, "tmp_mul")
-        return res
-
-    def compileEq(self, node):
-        lhs = self.compile(node.opr[0])
-        rhs = self.compile(node.opr[1])
-        res = self.builder.icmp_signed("==", lhs, rhs, "temp_eq")
-        return res
-
-    def compileNot(self, node):
-        lhs = self.compile(node.opr[0])
-        res = self.builder.not_(lhs, "temp_not")
-        return res
-
-    def compile(self, node):
-        if isinstance(node, Num):
-            return self.compileNum(node)
-        elif isinstance(node, Sum):
-            return self.compileSum(node)
-        elif isinstance(node, Sub):
-            return self.compileSub(node)
-        elif isinstance(node, Mul):
-            return self.compileMul(node)
-        elif isinstance(node, Eq):
-            return self.compileEq(node)
-        elif isinstance(node, Not):
-            return self.compileNot(node)
-
-
-# <codecell>
-class LLVMCmd(LLVMExp):
-    def __init__(self, function):
-        self.env = {}
-        LLVMExp.__init__(self, function)
-
-    def addEnv(self, id, pointer):
-        self.env[id].append(pointer)
-
-    def getLoc(self, id):
-        return self.env[id][-1]
-
-    def compileAssign(self, node):
-        id = self.compileAssingId(node.opr[0])
-        val = self.compile(node.opr[1])
-        return self.builder.store(val, id)
-
-    def compileAssingId(self, node):
-        id = node.opr[0]
-        if self.env[id]:
-            ptr = self.getLoc(id)
+class Closure(dict):
+    def __init__(self, f, b, e):
+        if isinstance(f, list):
+            if isinstance(b, Blk):
+                # I wanted to write assert(isinstance(e, Env)) but it fails.
+                if isinstance(e, dict):
+                    self["for"] = f             # Formal parameters
+                    self["env"] = e             # Current environment
+                    self["block"] = b           # Procedure block
+                else:
+                    raise IllFormed(self, e)
+            else:
+                raise IllFormed(self, b)
         else:
-            ptr = self.builder.alloca(LLVMTypes.INT, None, "ptr")
-            self.addEnv(id, ptr)
-        return ptr
+            raise IllFormed(self, f)
 
-    def compileId(self, node):
-        id = node.opr[0]
-        ptr = self.getLoc(id)
-        return self.builder.load(ptr, "val")
+    def __str__(self):
+        ret = str(self.__class__.__name__) + "("
+        formals = self.formals()
+        fst_formal = formals[0]     # First formal argument
+        ret += str(fst_formal)
+        for i in range(1, len(formals)):
+            ret += ", "
+            formal = formals[i]     # Remaining formal arguments
+            ret += str(formal)
+        ret += ", "
+        ret += str(self.blk())      # Closure block
+        ret += ")"
+        return ret
 
-    def compileCSeq(self, node):
-        self.compile(node.opr[0])
-        self.compile(node.opr[1])
+    def formals(self):
+        return self['for']
 
-    def compileLoop(self, node):
-        loop = self.builder.append_basic_block("loop")
-        after_loop = self.builder.append_basic_block("after_loop")
-        self.builder.branch(loop)
-        with self.builder.goto_block(loop):
-            cond = self.compile(node.opr[0])
-            block = self.compile(node.opr[1])
-            self.builder.cbranch(cond, loop, after_loop)
+    def env(self):
+        return self['env']
 
-        self.builder.position_at_start(after_loop)
+    def blk(self):
+        return self['block']
 
-    def compile(self, node):
-        if isinstance(node, Assign):
-            return self.compileAssign(node)
-        elif isinstance(node, Id):
-            return self.compileId(node)
-        elif isinstance(node, CSeq):
-            return self.compileCSeq(node)
-        elif isinstance(node, Loop):
-            return self.compileLoop(node)
+class AbsPiAut(DecPiAut):
+    def __evalAbs(self, a):
+        if not isinstance(a, Abs):  # p must be an abstraction
+            raise EvaluationError(self, "Function __evalAbs called with no abstraction but with ", a, " instead.")
         else:
-            return LLVMExp.compile(self, node)
+            f = a.formals()             # Formal parameters
+            b = a.blk()                 # Body
+            e = self.env()              # Current environment
+            # Closes the given abs. with the current env
+            c = Closure(f, b, e)
+            # Closure c is pushed to the value stack such that
+            self.pushVal(c)
+            # a BIND may create a new binding to a given identifier.
 
-
-class LLVMDcl(LLVMCmd):
-    def __init__(self, function):
-        LLVMCmd.__init__(self, function)
-        self.locs = []
-
-    def cleanLocs(self):
-        for loc in self.locs[-1]:
-            if loc in self.env:
-                self.env[loc].pop()
-        self.locs.pop()
-
-    def pushLoc(self, id):
-        self.locs[-1].append(id)
-
-    def compileRef(self, node):
-        return self.compile(node.opr[0])
-
-    def compileBind(self, node):
-        id = self.compileBindId(node.opr[0])
-        ref = self.compile(node.opr[1])
-        return self.builder.store(ref, id)
-
-    def compileBindId(self, node):
-        id = node.opr[0]
-        self.pushLoc(id)
-        if id in self.env:
-            return self.compileAssingId(node)
+    def __match(self, f, a):
+        '''
+        Given a list of formal parameters and a list of actual parameters,
+        it returns an environment relating the elements of the former with the latter.
+        '''
+        if isinstance(f, list):
+            if isinstance(a, list):
+                if len(f) == 0:
+                    return {}
+                if len(f) == len(a) and len(f) > 0:
+                # For some reason, f[0] is a tuple, not an Id.
+                    f0 = f[0]
+                    a0 = a[0]
+                    b0 = {f0.id(): a0.num()}
+                if len(f) == 1:
+                    return b0
+                else:
+                    # For some reason, f[0] is a tuple, not an Id.
+                    f1 = f[1]
+                    a1 = a[1]
+                    b1 = {f1.id(): a1.num()}
+                    e = b0.update(b1)
+                    for i in range(2, len(f)):
+                        fi = f[i][0]
+                        ai = a[i][0]
+                        e.update({fi.id(): ai.num()})
+                    return e
+            else:
+                raise EvaluationError("Call to '__match' on " + str(self) + ": " + "formals and actuals differ in size.")
         else:
-            self.env[id] = []
-            return self.compileAssingId(node)
+            raise EvaluationError("Call to '__match' on " + str(self) + ": " + " no formals, but with ", f, " instead.")
 
-    def compileDSeq(self, node):
-        self.compile(node.opr[0])
-        self.compile(node.opr[1])
-
-    def compileBlk(self, node):
-        self.locs.append([])
-        dec = self.compile(node.opr[0])
-        cmd = self.compile(node.opr[1])
-        self.compile(dec)
-        self.compile(cmd)
-        print("LOCS = " + self.locs.__repr__())
-        print("ENV = " + self.env.__repr__())
-        self.cleanLocs()
-
-    def compile(self, node):
-        if isinstance(node, Ref):
-            return self.compileRef(node)
-        elif isinstance(node, Bind):
-            return self.compileBind(node)
-        elif isinstance(node, DSeq):
-            return self.compileDSeq(node)
-        elif isinstance(node, Blk):
-            return self.compileBlk(node)
+    def __evalCall(self, c):
+        '''
+        Essentially, a call is translated into a block.
+        If we were progrmming pi in a symbolic language,
+        we could simply crete a proper block and push it to the control stack.
+        However, the environment is not symbolic: is a dictionary of objects.
+        To create a block we would need to "pi-lib-fy" it, that is, recreate the
+        pi lib tree from the concrete environmnet and joint it with matches created
+        also at pi lib level. These would be pushed back into the control stack and
+        reobjectifyed. Thus, to avoid pi-libfication and reevaluatuation of the
+        environment we manipulate it at the object level, which is dangerous but
+        seems to be correct.
+        '''
+        if not isinstance(c, Call):    # c must be a Call object
+            raise EvaluationError("Call to __evalCall with no Call object but with ", c, " instead.")
         else:
-            return LLVMCmd.compile(self, node)
+            # Procedure to be called
+            caller = c.caller()            
+            # Retrieves the current environment.
+            e = self.env()                 
+            # Retrieves the closure associated with the caller function.
+            clos = e[caller.id()]
+            # Retrieves the actual parameters from the call.
+            a = c.actuals()
+            # Retrieves the formal parameters from the closure.
+            f = clos.formals()
+            # Matches formals and actuals, creating an environment.
+            d = self.__match(f, a)
+            # Retrives the closure's environment.
+            ce = clos.env()      
+            # The caller's block must run on the closures environment
+            # overwritten with the matches.
+            d.update(ce)
+            self["env"] = d
+            self.pushVal(self.locs())
+            # Saves the current environment in the value stack.
+            self.pushVal(e)
+            # Pushes the keyword BLKCMD for block completion.
+            self.pushCnt(DecCmdKW.BLKCMD)
+            # Pushes the body of the caller function into the control stack.
+            self.pushCnt(clos.blk())
 
+    def eval(self):
+        d = self.popCnt()
+        if isinstance(d, Abs):
+            self.__evalAbs(d)
+        elif isinstance(d, Call):
+            self.__evalCall(d)
+        else:
+            self.pushCnt(d)
+            DecPiAut.eval(self)
 
-# <codecell>
-module = ir.Module('main_module')
-func_type = ir.FunctionType(LLVMTypes.INT, [], False)
-func = ir.Function(module, func_type, "main_function")
+import datetime
 
-llvm_compiler = LLVMDcl(func)
+def run(ast):
+    aut = AbsPiAut()
+    aut.pushCnt(ast)
+    step = 0
+    t0 = datetime.datetime.now()
+    trace = []
+    while not aut.emptyCnt():
+        aut.eval()
+        trace.append(str(aut))
+        step = step + 1
+    t1 = datetime.datetime.now()
+    return (trace, step, (t1 - t0))
 
-llvm_compiler.compile(
-                    Blk(
-                        DSeq(
-                            Bind(Id("x"), Ref(Num(1))),
-                            Bind(Id("y"), Ref(Num(10)))),
-                        Loop(
-                            Not(Eq(Id("y"), Num(1))),
-                            CSeq(
-                                Assign(Id("x"), Mul(Id("x"), Id("y"))),
-                                Assign(Id("y"), Sub(Id("y"), Num(1)))))))
+# if __name__ == '__main__':
+#     # The classic iterative factorial example within a function.
+#     bl1 = Blk(Bind(Id("y"), Ref(Num(1))),
+#             CSeq(Assign(Id("y"), Id("x")),
+#                 Loop(Not(Eq(Id("y"), Num(0))),
+#                     CSeq(Assign(Id("z"), Mul(Id("z"), Id("y"))),
+#                         Assign(Id("y"), Sub(Id("y"), Num(1)))))))
 
-llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Num(0), Num(0))))
-print(module)
+#     abs = Abs(Formals(Id("x")), bl1)
+#     ba = BindAbs(Id("fac"), abs)
+#     ast = Blk(Bind(Id("z"), Ref(Num(1))), Blk(ba, Call(Id("fac"), Actuals(Num(1500)))))
 
-# <codecell>
-from ctypes import CFUNCTYPE, c_void_p
+#     try:
+#         (tr, ns, dt) = run(ast)
+#     except Exception as e:
+#         print('Evaluation error: ', e)
+#         exit()
 
-# All these initializations are required for code generation!
-llvm.initialize()
-llvm.initialize_native_target()
-llvm.initialize_native_asmprinter()  # yes, even this one
-
-
-def create_execution_engine():
-    """
-    Create an ExecutionEngine suitable for JIT code generation on
-    the host CPU.  The engine is reusable for an arbitrary number of
-    modules.
-    """
-    # Create a target machine representing the host
-    target = llvm.Target.from_default_triple()
-    target_machine = target.create_target_machine()
-    # And an execution engine with an empty backing module
-    backing_mod = llvm.parse_assembly("")
-    engine = llvm.create_mcjit_compiler(backing_mod, target_machine)
-    return engine
-
-
-def compile_ir(engine, llvm_ir):
-    """
-    Compile the LLVM IR string with the given engine.
-    The compiled module object is returned.
-    """
-    # Create a LLVM module object from the IR
-    mod = llvm.parse_assembly(llvm_ir)
-    mod.verify()
-    # Now add the module and make sure it is ready for execution
-    engine.add_module(mod)
-    engine.finalize_object()
-    return mod
-
-
-engine = create_execution_engine()
-mod = compile_ir(engine, str(module))
-
-# Look up the function pointer (a Python int)
-func_ptr = engine.get_function_address("main_function")
-
-# Run the function via ctypes
-cfunc = CFUNCTYPE(c_void_p)(func_ptr)
-res = cfunc()
-print("main_function() =", res)
+#     print('Last state of the π automaton:')
+#     print(tr[len(tr) - 2])
+#     print('Number of evaluation steps:', ns)
+#     print('Evaluation time:', dt)
