@@ -186,6 +186,7 @@ class LLVMDcl(LLVMCmd):
 # <codecell>
 def pi_llvm(pi_ast):
     module = ir.Module('main_module')
+    module.triple = llvm.get_default_triple()
     func_type = ir.FunctionType(LLVMTypes.INT, [], False)
     func = ir.Function(module, func_type, "main_function")
 
@@ -193,7 +194,8 @@ def pi_llvm(pi_ast):
 
     llvm_compiler.compile(pi_ast)
 
-    # llvm_compiler.builder.ret(llvm_compiler.compile(Sum(Num(0), Num(0))))
+    llvm_compiler.builder.ret(llvm_compiler.compile(Num(0)))
+
     return module
 
 # <codecell>
