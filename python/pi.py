@@ -6,7 +6,7 @@
 # <markdowncell>
 # # π$^2$: π Framework in Python
 #
-# __Christiano Braga__
+# __Christiano Braga__  
 # __Universidade Federal Fluminense__
 #
 # http://www.ic.uff.br/~cbraga
