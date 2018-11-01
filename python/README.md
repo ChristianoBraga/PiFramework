@@ -81,7 +81,7 @@ LLVM code is generated using option `--llvm` as in
 `python imp.py -f iter-fact.imp --llvm`
 producing the following output:
 
-```shell
+```llvm
 ; ModuleID = "main_module"
 target triple = "x86_64-apple-darwin18.0.0"
 target datalayout = ""
