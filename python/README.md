@@ -7,7 +7,7 @@ Support for LLVM code generation being developed by [Fernando Mendes](https://gi
 ## Documentation
 
 * Christiano Braga, Notes on formal compiler construction with the π Framework, Oct. 2018, ([slides](https://github.com/ChristianoBraga/PiFramework/blob/master/slides/slides.pdf)).
-* Fernando Mendes, Geração de código LLVM - π Framework, 25/10/2018 ([slides](http://github/ChristianoBraga/PiFramework/blob/master/python/Pi_Framework___LLVM.pdf)).
+* Fernando Mendes, Geração de código LLVM - π Framework, 25/10/2018 ([slides](http://github.com/ChristianoBraga/PiFramework/blob/master/python/Pi_Framework___LLVM.pdf)).
 
 ## Requirements
 
