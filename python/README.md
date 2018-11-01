@@ -8,6 +8,23 @@ Support for LLVM code generation being developed by [Fernando Mendes](https://gi
 
 * Christiano Braga, Notes on formal compiler construction with the π Framework, Oct. 2018 ([slides](https://github.com/ChristianoBraga/PiFramework/blob/master/slides/slides.pdf)).
 * Fernando Mendes, Geração de código LLVM - π Framework, 25/10/2018 ([slides](http://github.com/ChristianoBraga/PiFramework/blob/master/python/Pi_Framework___LLVM.pdf), in Portuguese).
+* Command line options for the Imπ compiler: `python imp.py`
+```shell
+Imπ compiler, Oct. 16 2018
+http://github.com/ChristianoBraga/PiFramework
+imp.py -f <impfile> [-s | -a | -p | -t | --at | --pt | --stats | --state n | --last n | --llvm | llvm_jit]
+-s : Prints source code.
+-a : Prints syntax tree.
+-p : Prints π lib abstract syntax tree.
+-t : Prints full trace.
+-at : Prints the syntax tree and terminates.
+-pt : Prints π lib abstract syntax tree and terminates.
+--stats : Prints execution statistics.
+--state n : Prints the nth state of the automaton.
+--last n : Prints the (last - n)th state of the automaton.
+--llvm : Prints LLVM code.
+--llvm_jit : Runs LLVM JIT code.
+```
 
 ## Requirements
 
