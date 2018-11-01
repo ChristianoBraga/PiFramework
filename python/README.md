@@ -4,6 +4,11 @@ Imπ is a simple imperative programming language created to illustrate the use o
 
 Support for LLVM code generation being developed by [Fernando Mendes](https://github.com/fjmendes1994).
 
+## Documentation
+
+* Christiano Braga, Notes on formal compiler construction with the π Framework, Oct. 2018, ([slides](https://github.com/ChristianoBraga/PiFramework/blob/master/slides/slides.pdf)).
+* Fernando Mendes, Geração de código LLVM - π Framework, 25/10/2018 ([slides](http://github/ChristianoBraga/PiFramework/blob/master/python/Pi_Framework___LLVM.pdf)).
+
 ## Requirements
 
 * Python 3
@@ -16,7 +21,7 @@ Running the command line
 
 `python imp.py -f iter-fact.imp --last 1 -s --stats` 
 
-should produce the following output:
+produces the following output:
 
 ```shell
 Imπ source code:
@@ -70,4 +75,38 @@ cnt : ['#BLKCMD']
 
 Number of evaluation steps: 242
 Evaluation time: 0:00:00.006342
+```
+
+LLVM code is generated using option `--llvm` as in
+`python imp.py -f iter-fact.imp --llvm`
+producing the following output:
+
+```shell
+; ModuleID = "main_module"
+target triple = "x86_64-apple-darwin18.0.0"
+target datalayout = ""
+
+define i64 @"main_function"()
+{
+entry:
+  %"ptr" = alloca i64
+  store i64 1, i64* %"ptr"
+  %"ptr.1" = alloca i64
+  store i64 10, i64* %"ptr.1"
+  br label %"loop"
+loop:
+  %"val" = load i64, i64* %"ptr.1"
+  %"temp_eq" = icmp eq i64 %"val", 0
+  %"temp_not" = xor i1 %"temp_eq", -1
+  %"val.1" = load i64, i64* %"ptr"
+  %"val.2" = load i64, i64* %"ptr.1"
+  %"tmp_mul" = mul i64 %"val.1", %"val.2"
+  store i64 %"tmp_mul", i64* %"ptr"
+  %"val.3" = load i64, i64* %"ptr.1"
+  %"tmp_sub" = sub i64 %"val.3", 1
+  store i64 %"tmp_sub", i64* %"ptr.1"
+  br i1 %"temp_not", label %"loop", label %"after_loop"
+after_loop:
+  ret i64 0
+}
 ```
