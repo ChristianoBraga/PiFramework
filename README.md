@@ -12,6 +12,6 @@ At the moment, there are implementations of the &pi; framework in [Maude](http:/
 
 ## Acknowledgements
 
-The &Pi; framework is a result of a collaboration with [Fabrício Chalub](http://fcbr.github.io), [José Meseguer](https://dblp.uni-trier.de/pers/hd/m/Meseguer:Jos=eacute=) and [Peter D. Mosses](http://www.cs.swan.ac.uk/~cspdm/). The signature of &pi;-lib has the same roots as the [Component Based Semantics](https://plancomps.csle.cs.rhul.ac.uk/taosd2015/) in the [Programming Language Components and Specifications project](https://plancomps.csle.cs.rhul.ac.uk/). The &pi;-automata formalism is a generalization of Plotkin's Interpreting Automata.
+The &pi; framework is a result of a collaboration with [Fabrício Chalub](http://fcbr.github.io), [José Meseguer](https://dblp.uni-trier.de/pers/hd/m/Meseguer:Jos=eacute=) and [Peter D. Mosses](http://www.cs.swan.ac.uk/~cspdm/). The signature of &pi;-lib has the same roots as the [Component Based Semantics](https://plancomps.csle.cs.rhul.ac.uk/taosd2015/) in the [Programming Language Components and Specifications project](https://plancomps.csle.cs.rhul.ac.uk/). The &pi;-automata formalism is a generalization of Plotkin's Interpreting Automata.
 
 
