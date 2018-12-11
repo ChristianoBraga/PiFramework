@@ -44,6 +44,9 @@ class Statement:
         ret += ")"
         return ret
 
+    def __repr__(self):
+        return str(self)
+
     def arity(self):
         return len(self._opr)
 
@@ -588,10 +591,6 @@ class Id(ArithExp, BoolExp):
 
     def id(self):
         return self.operand(0)
-
-    def __str__(self):
-        return Exp.__str__(self)
-
 
 class Assign(Cmd):
 
