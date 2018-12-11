@@ -133,7 +133,6 @@ class PiAutomaton(dict):
 
 class Exp(Statement):
 
-
     def left_operand(self):
         if self.arity() == 2:
             return self.operand(0)
@@ -590,6 +589,9 @@ class Id(ArithExp, BoolExp):
     def id(self):
         return self.operand(0)
 
+    def __str__(self):
+        return Exp.__str__(self)
+
 
 class Assign(Cmd):
 
@@ -704,10 +706,10 @@ class CmdPiAut(ExpPiAut):
 
     def updateStore(self, l, v):
         st = self.sto()
-        if st[l]:
+        if l in st.keys():
             st[l] = v
         else:
-            raise EvaluationError(self, "Call to updateStore woth location", l, "not in store.")
+            raise EvaluationError(self, "Call to updateStore with location", l, "not in store.")
 
     def __evalAssign(self, c):
         i = c.lvalue()
@@ -1188,32 +1190,33 @@ class AbsPiAut(DecPiAut):
         Given a list of formal parameters and a list of actual parameters,
         it returns an environment relating the elements of the former with the latter.
         '''
-        if isinstance(f, list):
-            if isinstance(a, list):
+        if isinstance(f, list) and isinstance(a, list):
                 if len(f) == 0:
                     return {}
-                if len(f) == len(a) and len(f) > 0:
-                # For some reason, f[0] is a tuple, not an Id.
-                    f0 = f[0]
-                    a0 = a[0]
-                    b0 = {f0.id(): a0.num()}
-                if len(f) == 1:
-                    return b0
                 else:
+                    if len(f) == len(a):
                     # For some reason, f[0] is a tuple, not an Id.
-                    f1 = f[1]
-                    a1 = a[1]
-                    b1 = {f1.id(): a1.num()}
-                    e = b0.update(b1)
-                    for i in range(2, len(f)):
-                        fi = f[i][0]
-                        ai = a[i][0]
-                        e.update({fi.id(): ai.num()})
-                    return e
-            else:
-                raise EvaluationError("Call to '__match' on " + str(self) + ": " + "formals and actuals differ in size.")
+                        f0 = f[0]
+                        a0 = a[0]
+                        b0 = {f0.id(): a0.num()}
+                        if len(f) == 1:
+                            return b0
+                        else:
+                        # For some reason, f[0] is a tuple, not an Id.
+                            e = b0
+                            f1 = f[1]
+                            a1 = a[1]
+                            b1 = {f1.id(): a1.num()}
+                            e.update(b1)
+                            for i in range(2, len(f)):
+                                fi = f[i][0]
+                                ai = a[i][0]
+                                e.update({fi.id(): ai.num()})
+                            return e
+                    else:
+                        raise EvaluationError("Call to '__match' on " + str(self) + ": " + "formals and actuals differ in size.")
         else:
-            raise EvaluationError("Call to '__match' on " + str(self) + ": " + " no formals, but with ", f, " instead.")
+            raise EvaluationError("Call to '__match' on " + str(self) + "with formals", f, "and actuals", a)
 
     def __evalCall(self, c):
         '''
@@ -1243,6 +1246,8 @@ class AbsPiAut(DecPiAut):
             f = clos.formals()
             # Matches formals and actuals, creating an environment.
             d = self.__match(f, a)
+            if not d:
+                raise EvaluationError("Call to __match failed with formals"+str(f)+"and actuals"+str(a))
             # Retrives the closure's environment.
             ce = clos.env()      
             # The caller's block must run on the closures environment
