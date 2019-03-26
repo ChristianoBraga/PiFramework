@@ -7,5 +7,5 @@ nbook = v3.reads_py(text)
 nbook = v4.upgrade(nbook)  # Upgrade v3 to v4
 
 jsonform = v4.writes(nbook) + "\n"
-with open("pi.ipynb", "w") as fpout:
+with open("notebook/pi.ipynb", "w") as fpout:
     fpout.write(jsonform)
