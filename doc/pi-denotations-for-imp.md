@@ -90,7 +90,7 @@ in
         while not (y == 0)
         do 
             z := z * y
-y := y - 1
+            y := y - 1
 ```
 
 ```
