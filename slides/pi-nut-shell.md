@@ -1,17 +1,10 @@
----
-documentclass: llncs
-classoptions: a4paper
-title: Π Framework in a nutshell 
-author: Christiano Braga
-institute: Universidade Federal Fluminense
-abstract: |
-        We succintely describe π IR constructions and their π automata semantics.
-colorlinks: blue
-header-includes:
-    - "\\usepackage{fourier}"
-    - "\\usepackage[utf8]{inputenc}"
-    - "\\pagestyle{plain}"
----
+# Π in a nutshell
+
+Christiano Braga  
+Universidade Federal Fluminense  
+http://www.ic.uff.br/~cbraga  
+\
+http://github.com/ChristianoBraga/PiFramework
 
 ## π IR
 
