@@ -80,6 +80,34 @@ A compiler for the Imπ language is defined by means of functions mapping constr
 <truth> ::= 'True' | 'False' 
 ```
 
+### Imπ examples
+```
+# The classic iterative factorial example
+let var z = 1 
+in 
+    let var y = 10 
+    in 
+        while not (y == 0)
+        do 
+            z := z * y
+y := y - 1
+```
+
+```
+# In this example we encapsulate the iterative calculation
+# of the factorial within a function call.
+let var z = 1
+in 
+    let fn f(x) =    
+        let var y = x
+        in      
+            while not (y == 0)
+            do 
+                z := z * y
+                y := y - 1
+in f(10)
+```
+
 ## Π denotations
 
 A π denotation for the Imπ language is a function 
