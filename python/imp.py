@@ -3,7 +3,7 @@
 # http://github.com/ChristianoBraga
 
 import tatsu                            # Tatsu is the parser generator.
-from impiler import Impiler             # Impiler is the compiler from Imπ to π lib.
+from impiler import Impiler             # Impiler is the compiler from Imπ to π IR.
 from pi import run                      # pi is the Python implementation of the π framework
 import sys, traceback, getopt           # System and command line modules.
 from pillvm import pi_llvm, pi_llvm_jit 
@@ -14,10 +14,10 @@ def print_help():
     print('imp.py -f <impfile> [-s | -a | -p | -t | --at | --pt | --stats | --state n | --last n | --llvm | llvm_jit]')
     print('-s : Prints source code.')
     print('-a : Prints syntax tree.')
-    print('-p : Prints π lib abstract syntax tree.')
+    print('-p : Prints π IR abstract syntax tree.')
     print('-t : Prints full trace.')
     print('-at : Prints the syntax tree and terminates.')
-    print('-pt : Prints π lib abstract syntax tree and terminates.')
+    print('-pt : Prints π IR abstract syntax tree and terminates.')
     print('--stats : Prints execution statistics.')
     print('--state n : Prints the nth state of the automaton.')
     print('--last n : Prints the (last - n)th state of the automaton.')
@@ -101,7 +101,7 @@ def main(argv):
     try:
         pi_ast = parser.parse(source, semantics=Impiler())
         if print_pilib_ast:
-            print('π lib AST:', pi_ast)
+            print('π IR AST:', pi_ast)
             if terminate:
                 exit(1)
         print()

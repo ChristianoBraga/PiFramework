@@ -765,6 +765,27 @@ class Loop(Cmd):
     def body(self):
         return self.operand(1)
 
+class Cond(Cmd):
+    def __init__(self, be, c1, c2):
+        if isinstance(be, BoolExp):
+            if isinstance(c1, Cmd):
+                if isinstance(c2, Cmd):                
+                    Cmd.__init__(self, be, c1, c2)
+                else:
+                    raise IllFormed(self, c2)
+            else:
+                raise IllFormed(self, c1)
+        else:
+            raise IllFormed(self, be)
+
+    def cond(self):
+        return self.operand(0)
+
+    def then_branch(self):
+        return self.operand(1)
+
+    def else_branch(self):
+        return self.operand(2)
 
 class CSeq(Cmd):
     def __init__(self, c1, c2):
@@ -800,8 +821,8 @@ class Sto(dict):
 
 class CmdKW:
     ASSIGN = "#ASSIGN"
-    LOOP = "#LOOP"
-
+    LOOP   = "#LOOP"
+    COND   = "#COND"
 
 class CmdPiAut(ExpPiAut):
 
@@ -870,7 +891,20 @@ class CmdPiAut(ExpPiAut):
         else:
             self.pushVal(b)
 
+    def __evalCond(self, c):
+        be = c.cond()
+        self.pushVal(c)
+        self.pushCnt(CmdKW.COND)
+        self.pushCnt(be)
 
+    def __evalCondKW(self):
+        t = self.popVal()
+        c = self.popVal()
+        if t:
+            self.pushCnt(c.then_branch())
+        else:
+            self.pushCnt(c.else_branch())            
+        
     def __evalLoop(self, c):
         be = c.cond()
         bl = c.body()
@@ -909,6 +943,10 @@ class CmdPiAut(ExpPiAut):
             return
         elif isinstance(c, Id):
             self.__evalId(c.id())
+        elif isinstance(c, Cond):
+            self.__evalCond(c)
+        elif c == CmdKW.COND:
+            self.__evalCondKW()
         elif isinstance(c, Loop):
             self.__evalLoop(c)
         elif c == CmdKW.LOOP:
@@ -1408,20 +1446,20 @@ class AbsPiAut(DecPiAut):
             self.pushCnt(d)
             DecPiAut.eval(self)
 
-# import datetime
+import datetime
 
-# def run(ast):
-#     aut = AbsPiAut()
-#     aut.pushCnt(ast)
-#     step = 0
-#     t0 = datetime.datetime.now()
-#     trace = []
-#     while not aut.emptyCnt():
-#         aut.eval()
-#         trace.append(str(aut))
-#         step = step + 1
-#     t1 = datetime.datetime.now()
-#     return (trace, step, (t1 - t0))
+def run(ast):
+    aut = AbsPiAut()
+    aut.pushCnt(ast)
+    step = 0
+    t0 = datetime.datetime.now()
+    trace = []
+    while not aut.emptyCnt():
+        aut.eval()
+        trace.append(str(aut))
+        step = step + 1
+    t1 = datetime.datetime.now()
+    return (trace, step, (t1 - t0))
 
 # if __name__ == '__main__':
 #     # The classic iterative factorial example within a function.

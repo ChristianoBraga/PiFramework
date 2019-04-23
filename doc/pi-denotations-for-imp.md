@@ -185,3 +185,26 @@ and _mkAct : `<actual>` → `<Exp>*`_ be as follows
 1. _⟦ loop(ast) ⟧ = Loop(⟦ left(ast) ⟧, mkCSeq(right(ast)))_, if _right(ast) ∈ `<cmd>+`_
 
 1. _⟦ call(ast) ⟧ = Call(⟦ left(ast) ⟧, mkAct(right(ast)))_
+
+### Example application of π denotations for Imπ
+
+* For the iteractive factorial:
+```
+π lib AST: Blk(Bind(Id(z), Ref(Num(1))), 
+            Blk(Bind(Id(y), Ref(Num(10))), 
+                Loop(Not(Eq(Id(y), Num(0))), 
+                     CSeq(Assign(Id(z), Mul(Id(z), Id(y))), 
+                          Assign(Id(y), Sub(Id(y), Num(1)))))))
+```
+
+* For the functional factorial:
+```
+π lib AST: Blk(Bind(Id(z), Ref(Num(1))), 
+            Blk(BindAbs(Id(f), 
+                        Abs(Id(x), 
+                            Blk(Bind(Id(y), Ref(Id(x))), 
+                                Loop(Not(Eq(Id(y), Num(0))), 
+                                     CSeq(Assign(Id(z), Mul(Id(z), Id(y))), 
+                                          Assign(Id(y), Sub(Id(y), Num(1)))))))), 
+                Call(Id(f), [Num(10)])))
+```

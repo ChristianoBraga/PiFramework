@@ -61,7 +61,7 @@ class Impiler(object):
     def let(self, ast):
         if isinstance(ast.c, pi.Cmd):
             return pi.Blk(ast.d, ast.c)
-        elif type(ast.c, list):
+        elif isinstance(ast.c, list):
             cmd = ast.c[0]
             for i in range(1, len(ast.c)):
                 cmd = pi.CSeq(cmd, ast.c[i])
@@ -76,6 +76,22 @@ class Impiler(object):
                 cmd = pi.CSeq(cmd, ast.c[i])
             return pi.Loop(ast.e, cmd)
 
+        
+    def cond(self, ast):
+        cmd1 = ast.c1
+        cmd2 = ast.c2
+
+        if not(isinstance(cmd1, pi.Cmd)):
+            for i in range(1, len(ast.c1)):
+                cmd1 = pi.CSeq(cmd1, ast.c1[i])
+
+        if not(isinstance(cmd2, pi.Cmd)):
+            for i in range(1, len(ast.c2)):
+                cmd2 = pi.CSeq(cmd2, ast.c2[i])
+
+        return pi.Cond(ast.e, cmd1, cmd2)
+        
+        
     def __makeAbs(self, f, c):
         if isinstance(c, pi.Blk):
             body = c
