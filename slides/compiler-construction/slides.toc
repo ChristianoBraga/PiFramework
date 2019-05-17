@@ -1,0 +1,25 @@
+\beamer@sectionintoc {1}{Introduction}{3}{0}{1}
+\beamer@subsectionintoc {1}{1}{Example}{6}{0}{1}
+\beamer@sectionintoc {2}{$\uppi $ IR expressions}{15}{0}{2}
+\beamer@subsectionintoc {2}{1}{Grammar}{15}{0}{2}
+\beamer@subsectionintoc {2}{2}{Automaton}{16}{0}{2}
+\beamer@sectionintoc {3}{$\uppi $ commands}{17}{0}{3}
+\beamer@subsectionintoc {3}{1}{Grammar}{17}{0}{3}
+\beamer@subsectionintoc {3}{2}{Automaton}{18}{0}{3}
+\beamer@sectionintoc {4}{$\uppi $ IR declarations}{20}{0}{4}
+\beamer@subsectionintoc {4}{1}{Grammar}{20}{0}{4}
+\beamer@subsectionintoc {4}{2}{Automaton}{21}{0}{4}
+\beamer@sectionintoc {5}{$\uppi $ IR abstractions}{23}{0}{5}
+\beamer@subsectionintoc {5}{1}{Grammar}{23}{0}{5}
+\beamer@subsectionintoc {5}{2}{Automaton}{24}{0}{5}
+\beamer@sectionintoc {6}{$\uppi $ IR recursive abstractions}{28}{0}{6}
+\beamer@subsectionintoc {6}{1}{Grammar}{28}{0}{6}
+\beamer@subsectionintoc {6}{2}{Automaton}{29}{0}{6}
+\beamer@sectionintoc {7}{$\uppi ^2$: $\uppi $ Framework in Python}{32}{0}{7}
+\beamer@subsectionintoc {7}{1}{Expressions}{32}{0}{7}
+\beamer@subsectionintoc {7}{2}{Commands}{41}{0}{7}
+\beamer@subsectionintoc {7}{3}{Declarations}{51}{0}{7}
+\beamer@subsectionintoc {7}{4}{Abstractions}{62}{0}{7}
+\beamer@sectionintoc {8}{\textsc {IMP} language}{75}{0}{8}
+\beamer@subsectionintoc {8}{1}{Grammar}{75}{0}{8}
+\beamer@subsectionintoc {8}{2}{Examples}{79}{0}{8}
