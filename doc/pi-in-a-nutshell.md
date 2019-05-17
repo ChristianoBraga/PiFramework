@@ -114,7 +114,7 @@ Commands are language constructions that require a _memory store_ to be evaluate
 ```
 <Statement> ::= <Cmd> 
 
-<Cmd>       ::= Nop | Assign(<Id>, <Exp>) | Loop(<BoolExp>, <Cmd>) | 
+<Cmd>       ::= Id(<String>) | Nop | Assign(<Id>, <Exp>) | Loop(<BoolExp>, <Cmd>) | 
                 CSeq(<Cmd>, <Cmd>) | Cond(<BoolExp>, <Cmd>, <Cmd>)
 ```
 
@@ -156,7 +156,7 @@ _δ(CSeq(M₁, M₂) :: C, V, E, S) = δ(M₁ :: M₂ :: C, V, E, S)_.
 ```
 <Statement> ::= <Dec> 
 
-<Exp>       ::= Id(<String>) | Ref(<Exp>)> | DeRef(<Id>) | ValRef(<Id>)
+<Exp>       ::= Ref(<Exp>)> | DeRef(<Id>) | ValRef(<Id>)
 
 <Dec>       ::= Bind(<Id>, <Exp>) | DSeq(<Dec>, <Dec>)
 
@@ -222,7 +222,7 @@ Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_,
 
 _δ(Abs(F, B) :: C, V, E, S, L) = δ(C, Closure(F, B, E) :: V, E, S, L)_   
 
-_δ(Call(I, [X₁, X₂, ..., Xn])) :: C, V, E, S, L) =   
+_δ(Call(I, [X₁, X₂, ..., Xn])) :: C & , V, E, S, L) =   
     δ(Xn :: Xn-1 :: ... :: X_1 :: #CALL(I, n) :: C, V, E, S, L)_   
 _δ(#CALL(I, n) ::C, [V₁, V₂, ..., Vn] :: V, [I ↦ Closure(F, B, E₁)] E₂, S, L) =_  
     _δ(B :: #BLKCMD :: C, E₂ :: V, (E₁ / match(F, [V₁, V₂, ..., Vn])), S, L)_   
