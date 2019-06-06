@@ -114,6 +114,7 @@ Commands are language constructions that require a _memory store_ to be evaluate
 ```
 <Statement> ::= <Cmd> 
 
+<Exp>       ::= Id(<String>) 
 <Cmd>       ::= Nop | Assign(<Id>, <Exp>) | Loop(<BoolExp>, <Cmd>) | 
                 CSeq(<Cmd>, <Cmd>) | Cond(<BoolExp>, <Cmd>, <Cmd>)
 ```
@@ -156,7 +157,7 @@ _δ(CSeq(M₁, M₂) :: C, V, E, S) = δ(M₁ :: M₂ :: C, V, E, S)_.
 ```
 <Statement> ::= <Dec> 
 
-<Exp>       ::= Id(<String>) | Ref(<Exp>)> | DeRef(<Id>) | ValRef(<Id>)
+<Exp>       ::= Ref(<Exp>)> | DeRef(<Id>) | ValRef(<Id>)
 
 <Dec>       ::= Bind(<Id>, <Exp>) | DSeq(<Dec>, <Dec>)
 
@@ -182,13 +183,13 @@ _δ(ValRef(Id(W)) :: C, V, E, S, L) = δ(C, T :: V, E, S, L)_, where _T = S[S[E[
 
 _δ(Bind(Id(W), X) :: C, V, E, S, L) = δ(X :: #BIND :: C, W :: V, E, S, L)_,   
 _δ(#BIND :: C, B :: W :: E' :: V, E, S, L) = δ(C, ([W ↦ B] ∪ E') :: V, E, S, L)_, where _E' ∈ Env_,  
-_δ(#BIND :: C, B :: W :: H :: V, E, S, L) = δ(C, [W ↦ B] :: V, E, S, L)_, where _H ∉ Env_,  
+_δ(#BIND :: C, B :: W :: H :: V, E, S, L) = δ(C, [W ↦ B] :: H :: V, E, S, L)_, where _H ∉ Env_,  
 
 _δ(DSeq(D₁, D₂), X) :: C, V, E, S, L) = δ(D₁ :: D₂ :: C, V, E, S, L)_, 
 
 _δ(Blk(D, M) :: C, V, E, S, L) = δ(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅)_,   
-_δ(#DEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L)_,   
-_δ(#BLK :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L)_, where _S' = S / L_.
+_δ(#BLKDEC :: C, E' :: V, E, S, L) = δ(C, E :: V, E / E', S, L)_,   
+_δ(#BLKCMD :: C, E :: L :: V, E', S, L') = δ(C, V, E, S', L)_, where _S' = S / L_.
 
 ## π IR abstractions
 
