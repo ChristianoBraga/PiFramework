@@ -27,43 +27,46 @@ fn = op:'fn' ~ id:identifier '(' f:formal ')' '=' c:cmd ;
 
 formal = i1:identifier { ',' i2:identifier }* | {} ;
 
-expression = @:bool_expression | @:arith_expression ;
+expression = @:bool_expression ;
 
-bool_expression =  negation | equality | conjunction | disjunction 
-                | lowereq | greatereq | lowerthan | greaterthan | par_bool_expression ;
+bool_expression = negation | equality | conjunction | disjunction 
+                | lowereq | greatereq | lowerthan | greaterthan 
+                | add_expression ;
 
-equality = left:expression op:"==" right:expression ;
+equality = left:add_expression op:"==" ~ right:bool_expression ;
 
-conjunction = left:bool_expression op:"and" ~ right:bool_expression ;
+conjunction = left:add_expression op:"and" ~ right:bool_expression ;
 
-disjunction = left:bool_expression op:"or" ~ right:bool_expression ;
+disjunction = left:add_expression op:"or" ~ right:bool_expression ;
 
-lowereq = left:arith_expression op:"<=" ~ right:arith_expression ;
+lowereq = left:add_expression op:"<=" ~ right:add_expression ;
 
-greatereq = left:arith_expression op:">=" ~ right:arith_expression ;
+greatereq = left:add_expression op:">=" ~ right:add_expression ;
 
-lowerthan = left:arith_expression op:"<" ~ right:arith_expression ;
+lowerthan = left:add_expression op:"<" ~ right:add_expression ;
 
-greaterthan = left:arith_expression op:">" ~ right:arith_expression ;
+greaterthan = left:add_expression op:">" ~ right:add_expression ;
 
-par_bool_expression = '(' @:bool_expression ')' | truth ;
-
-arith_expression = addition | subtraction | term ;
+parentesisexp = '(' ~ @:bool_expression ')' ;
 
 negation = op:'not' ~ b:bool_expression ;
 
-addition = left:arith_expression op:"+" ~ right:term ;
+add_expression = addition | subtraction | @:mult_expression ;
 
-subtraction = left:arith_expression op:"-" ~ right:term ;
+addition = left:mult_expression op:"+" ~ right:add_expression ;
 
-term = multiplication | division | factor ;
+subtraction = left:mult_expression op:"-" ~ right:add_expression ;
 
-multiplication = left:term op:"*" ~ right:factor ;
+mult_expression = multiplication | division 
+                | atom 
+                | parentesisexp ;
 
-division = left:term op:"/" ~ right:factor ;
+multiplication = left:atom op:"*" ~ right:mult_expression ;
 
-factor = '(' ~ @:expression ')' | number ;
+division = left:atom op:"/" ~ right:mult_expression ;
 
+atom = number | truth | identifier ;
+ 
 number = /\d+/ ;
 
 identifier = /(?!\d)\w+/ ;
