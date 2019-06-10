@@ -28,8 +28,10 @@ A compiler for the Imπ language is defined by means of functions mapping constr
 
 <let> ::= 'let' <dec> 'in' <cmd>+  
 
-<dec> ::= <var> | <fn>
+<dec> ::= <cnst> | <var> | <fn>
     
+<var> ::= 'cnst' <identifier> '=' <expression>
+
 <var> ::= 'var' <identifier> '=' <expression>
 
 <fn> ::= 'fn' <identifier> '(' <formal> ')' '=' <cmd>
@@ -162,7 +164,9 @@ and _mkFor : `<identifier>*` → `<Id>*`_
 > _mkFor([]) = []  
 > _mkFor(h :: ls) = ⟦ h ⟧ :: mkFor(ls)_
 
-1. _⟦ var(ast) ⟧ = Bind(⟦ left(ast) ⟧, ⟦ right(ast) ⟧)_
+1. _⟦ var(ast) ⟧ = Bind(⟦ left(ast) ⟧, Ref(⟦ right(ast) ⟧))_
+
+1. _⟦ cnst(ast) ⟧ = Bind(⟦ left(ast) ⟧, ⟦ right(ast) ⟧)_
 
 1. _⟦ fn(ast) ⟧ = Bind(⟦ fst(ast) ⟧, mkAbs(snd(ast), trd(ast))_
 
