@@ -2,7 +2,7 @@
 <img width=20% src="./logo/pi-logo.png">
 </p>
 
-https://travis-ci.com/ChristianoBraga/PiFramework.svg?branch=master
+[![Build Status](https://travis-ci.com/ChristianoBraga/PiFramework.svg?branch=master)](https://travis-ci.com/ChristianoBraga/PiFramework)
 
 The &Pi; framework aims at being a simple formal framework for
 compiler construction. It is comprised of &Pi; IR and
