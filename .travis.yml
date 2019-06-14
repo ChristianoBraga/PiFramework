@@ -1,4 +1,6 @@
 language: python
 install:
 - pip3 install tatsu llvmlite
-script: python3 python/imp.py -f python/iter-fact.imp 
+before_script:
+- cd python
+script: python3 imp.py -f iter-fact.imp 
