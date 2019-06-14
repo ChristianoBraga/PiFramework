@@ -7,6 +7,7 @@ from impiler import Impiler             # Impiler is the compiler from Imπ to �
 from pi import run                      # pi is the Python implementation of the π framework
 import sys, traceback, getopt           # System and command line modules.
 from pillvm import pi_llvm, pi_llvm_jit 
+import pprint
 
 def print_help():
     print('Imπ compiler, Oct. 16 2018')
@@ -82,7 +83,6 @@ def main(argv):
     if print_source:
         print('Imπ source code: ')
         print(source)
-        print()
 
     imp_grammar = open('imp.ebnf').read()
     parser = tatsu.compile(imp_grammar)
@@ -90,7 +90,8 @@ def main(argv):
     if print_ast:
         try:
             ast = parser.parse(source)
-            print('竜 Tatsu ST: ', ast)
+            print('Concrete syntax tree: ')            
+            pprint.pprint(ast, indent=2, width=20)
             if terminate:
                 exit(1)
             print()
@@ -101,7 +102,8 @@ def main(argv):
     try:
         pi_ast = parser.parse(source, semantics=Impiler())
         if print_pilib_ast:
-            print('π IR AST:', pi_ast)
+            print('π IR syntax tree:')            
+            pprint.pprint(pi_ast,indent=2, width=20)
             if terminate:
                 exit(1)
         print()

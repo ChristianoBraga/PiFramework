@@ -1037,7 +1037,7 @@ class Blk(Cmd):
                 else:
                     raise IllFormed(self, c)
             else:
-                raise IllFormed(self, c)
+                raise IllFormed(self, d)
         # Blocks with no declarations
         elif len(args) == 1:
             c = args[0] 
@@ -1345,6 +1345,9 @@ class Closure(dict):
     def blk(self):
         return self['block']
 
+class CallKW(CmdKW):
+    CALL = "#CALL"
+    
 class AbsPiAut(DecPiAut):
     def __evalAbs(self, a):
         if not isinstance(a, Abs):  # p must be an abstraction
@@ -1404,6 +1407,8 @@ class AbsPiAut(DecPiAut):
         reobjectifyed. Thus, to avoid pi-IRfication and reevaluatuation of the
         environment we manipulate it at the object level, which is dangerous but
         seems to be correct.
+
+        There is no support for expressions in actuals and recursive call yet.
         '''
         if not isinstance(c, Call):    # c must be a Call object
             raise EvaluationError("Call to __evalCall with no Call object but with ", c, " instead.")
@@ -1411,17 +1416,18 @@ class AbsPiAut(DecPiAut):
             # Procedure to be called
             caller = c.caller()            
             # Retrieves the current environment.
-            e = self.env()                 
+            e = self.env()
             # Retrieves the closure associated with the caller function.
             clos = e[caller.id()]
             # Retrieves the actual parameters from the call.
-            a = c.actuals()
+            acs = c.actuals()
+            print(acs)
             # Retrieves the formal parameters from the closure.
             f = clos.formals()
             # Matches formals and actuals, creating an environment.
-            d = self.__match(f, a)
+            d = self.__match(f, acs)
             if not d:
-                raise EvaluationError("Call to __match failed with formals"+str(f)+"and actuals"+str(a))
+                raise EvaluationError("Call to __match failed with formals"+str(f)+"and actuals"+str(acs))
             # Retrives the closure's environment.
             ce = clos.env()      
             # The caller's block must run on the closure's environment
