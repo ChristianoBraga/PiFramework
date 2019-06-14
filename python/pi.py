@@ -1086,7 +1086,6 @@ class DSeq(Dec):
 
 class DecExpKW(ExpKW):
     REF = "#REF"
-    CNS = "#CNS"
 
 class DecCmdKW(CmdKW):
     BLKDEC = "#BLKDEC"

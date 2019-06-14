@@ -166,7 +166,7 @@ _δ(CSeq(M₁, M₂) :: C, V, E, S) = δ(M₁ :: M₂ :: C, V, E, S)_.
 
 ### Opcodes
 ```
-<DecOC>     ::= #REF | #CNS | #BLKDEC | #BLKCMD | #BIND | #DSEQ
+<DecOC>     ::= #REF | #BLKDEC | #BLKCMD | #BIND | #DSEQ
 ```
 
 ### Automaton
