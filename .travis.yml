@@ -1,4 +1,4 @@
 language: python
 install:
-	- pip3 install tatsu
+- pip3 install tatsu
 script: python3 python/imp.py -f iter-fact.imp 
