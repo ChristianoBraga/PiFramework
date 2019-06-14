@@ -2,6 +2,8 @@
 <img width=20% src="./logo/pi-logo.png">
 </p>
 
+https://travis-ci.com/ChristianoBraga/PiFramework.svg?branch=master
+
 The &Pi; framework aims at being a simple formal framework for
 compiler construction. It is comprised of &Pi; IR and
 &Pi; automata. The &Pi; IR component is a simple language with basic
