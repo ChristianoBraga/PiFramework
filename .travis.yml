@@ -3,4 +3,6 @@ install:
 - pip3 install tatsu llvmlite
 before_script:
 - cd python
-script: python3 imp.py -f iter-fact.imp 
+script:
+- python3 imp.py -f iter-fact.imp
+- python3 imp.py -f fun-fact.imp 
