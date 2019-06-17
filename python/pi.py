@@ -13,7 +13,7 @@
 
 # <markdowncell>
 # ## Introduction
-# The π Framework is a simple framework for teaching compiler
+# The π  Framework is a simple framework for teaching compiler
 # construction. It is comprised by π IR, a language of common programming languages
 # primitives, that has a formal semantics given in π Automata, a simple stack machine. 
 # In this notebook we introduce the π Framework in a tutoralistic way using Python as
@@ -158,13 +158,13 @@
 
 
 # <markdowncell>
-# ## π IR Statements
+# ## Π IR Statements
 
 # <codecell>
 
 class IllFormed(Exception):
     def __str__(self):
-        return "π IR exception - ill formed AST: " + str(self.args)
+        return "Π IR exception - ill formed AST: " + str(self.args)
 
 class Statement:
     def __init__(self, *args):
@@ -198,7 +198,7 @@ class Statement:
         return str(self.__class__.__name__)
 
 # <markdowncell>
-# # π automaton
+# # Π automaton
 
 # <codecell>
 
@@ -213,7 +213,7 @@ class ControlStack(list):
 
 class EvaluationError(Exception):
     def __str__(self):
-        return "π automaton error: " + str(self.args)
+        return "Π automaton error: " + str(self.args)
 
 class PiAutomaton(dict):
 
@@ -266,7 +266,7 @@ class PiAutomaton(dict):
         return len(self.cnt()) == 0
 
 # <markdowncell>
-# # π IR Expressions
+# # Π IR Expressions
 
 # <codecell>
 
@@ -448,7 +448,7 @@ class Not(BoolExp):
             raise IllFormed(self, e)
 
 # <markdowncell>
-# # π automaton for π IR Expressions
+# # Π automaton for Π IR Expressions
 
 # <codecell>
 
@@ -708,7 +708,7 @@ class ExpPiAut(PiAutomaton):
                 "Call to 'eval' on " + str(self) + ": " + "Ill formed expression " + str(e))
 
 # <markdowncell>
-# # π IR Commands
+# # Π IR Commands
 
 # <codecell>
 
@@ -804,7 +804,7 @@ class CSeq(Cmd):
         return self.operand(1)
 
 # <codecell>
-# # π automaton for π IR Commands
+# # Π automaton for Π IR Commands
 
 
 class Env(dict):
@@ -958,8 +958,8 @@ class CmdPiAut(ExpPiAut):
             ExpPiAut.eval(self)
 
 # <markdowncell>
-# # π IR Declarations
-# ## Grammar for π IR Declarations
+# # Π IR Declarations
+# ## Grammar for Π IR Declarations
 #
 # $
 # \begin{array}{rcl}
@@ -1080,12 +1080,13 @@ class DSeq(Dec):
         return self.operand(1)
 
 # <markdowncell>
-# # π Automaton for π IR Declarations
+# # Π Automaton for Π IR Declarations
 
 # <codecell>
 
 class DecExpKW(ExpKW):
     REF = "#REF"
+    CNS = "#CNS"
 
 class DecCmdKW(CmdKW):
     BLKDEC = "#BLKDEC"
@@ -1217,7 +1218,7 @@ class DecPiAut(CmdPiAut):
             CmdPiAut.eval(self)
 
 # <markdowncell>
-# # π IR Abstractions
+# # Π IR Abstractions
 
 # To give semantics to functions with _static bindings_, we use the concept of _closures_ which essentially create a "proto" enviroment for the evaluation of given expressions.
 
@@ -1302,7 +1303,7 @@ class Call(Cmd):
         return self.operand(1)
 
 # <markdowncell>
-# # π Automaton for π IR Abstractions
+# # Π Automaton for Π IR Abstractions
 
 # <codecell>
 class Closure(dict):
@@ -1483,7 +1484,7 @@ def run(ast):
 #         print('Evaluation error: ', e)
 #         exit()
 
-#     print('Last state of the π automaton:')
+#     print('Last state of the Π automaton:')
 #     print(tr[len(tr) - 2])
 #     print('Number of evaluation steps:', ns)
 #     print('Evaluation time:', dt)

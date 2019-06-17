@@ -1,24 +1,23 @@
-
 # Author: Christiano Braga
 # http://github.com/ChristianoBraga
 
 import tatsu                            # Tatsu is the parser generator.
-from impiler import Impiler             # Impiler is the compiler from Imπ to π IR.
+from impiler import Impiler             # Impiler is the compiler from Imπ to Π IR.
 from pi import run                      # pi is the Python implementation of the π framework
 import sys, traceback, getopt           # System and command line modules.
 from pillvm import pi_llvm, pi_llvm_jit 
 import pprint
 
 def print_help():
-    print('Imπ compiler, Oct. 16 2018')
+    print('Imπ compiler, Jun. 2019')
     print('http://github.com/ChristianoBraga/PiFramework')
     print('imp.py -f <impfile> [-s | -a | -p | -t | --at | --pt | --stats | --state n | --last n | --llvm | llvm_jit]')
     print('-s : Prints source code.')
     print('-a : Prints syntax tree.')
-    print('-p : Prints π IR abstract syntax tree.')
+    print('-p : Prints Π IR abstract syntax tree.')
     print('-t : Prints full trace.')
     print('-at : Prints the syntax tree and terminates.')
-    print('-pt : Prints π IR abstract syntax tree and terminates.')
+    print('-pt : Prints Π IR abstract syntax tree and terminates.')
     print('--stats : Prints execution statistics.')
     print('--state n : Prints the nth state of the automaton.')
     print('--last n : Prints the (last - n)th state of the automaton.')
@@ -81,7 +80,7 @@ def main(argv):
         exit(2)
 
     if print_source:
-        print('Imπ source code: ')
+        print('Imπsource code: ')
         print(source)
 
     imp_grammar = open('imp.ebnf').read()
@@ -102,7 +101,7 @@ def main(argv):
     try:
         pi_ast = parser.parse(source, semantics=Impiler())
         if print_pilib_ast:
-            print('π IR syntax tree:')            
+            print('Π IR syntax tree:')            
             pprint.pprint(pi_ast,indent=2, width=20)
             if terminate:
                 exit(1)
@@ -138,14 +137,14 @@ def main(argv):
     else:
         if print_trace:
             for state_number in range(len(tr)):
-                print('State #'+ str(state_number) + ' of the π automaton:')
+                print('State #'+ str(state_number) + ' of the Π automaton:')
                 print(tr[state_number])
         else:
             if print_last:
                 display_state = len(tr) - (last_n_state + 1)
             else:
                 display_state = len(tr) - 1
-            print('State #'+ str(display_state) + ' of the π automaton:')
+            print('State #'+ str(display_state) + ' of the Π automaton:')
             print(tr[display_state])
 
         if print_stats:
