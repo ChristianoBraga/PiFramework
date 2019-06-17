@@ -1420,7 +1420,6 @@ class AbsPiAut(DecPiAut):
             clos = e[caller.id()]
             # Retrieves the actual parameters from the call.
             acs = c.actuals()
-            print(acs)
             # Retrieves the formal parameters from the closure.
             f = clos.formals()
             # Matches formals and actuals, creating an environment.
