@@ -63,7 +63,7 @@ the memory.
 
 ### Automaton
     
-Recall that _𝛅 : L(G)* × L(G)* × Store \to Q_, and let _N, Nᵢ ∈ ℕ_ ,
+Recall that _𝛅 : L(G)* × L(G)* × Store ⟶   Q_, and let _N, Nᵢ ∈ ℕ_ ,
 _B, Bᵢ ∈ Bool_, _C, V ∈ L(G)*_, _S ∈ Store_,
 
 _𝛅(Num(N) :: C, V, S) = 𝛅(C, N :: V, S)_  
@@ -136,18 +136,22 @@ Commands are language constructions that require a _memory store_ to be evaluate
 ### Automaton
 
 * A location _l ∈ Loc_ denotes a memory cell.
-* _Storable_ and _Bindable_ sets denote the data that may be mapped to by identifiers and locations on the memory and environment respectively. 
-* _Store = Id ↦ Storable_, _Env = Loc ↦ Bindable_, _Loc ⊆ Store_, _ℕ ⊆ Loc_, _ℕ ⊆ Bindable_.
+* _Storable_ and _Bindable_ sets denote the data that may be mapped to
+  by identifiers and locations on the memory and environment
+  respectively.
+* _Store = Id ↦ Storable_, _Env = Loc ↦ Bindable_, where A ↦ B denotes the
+  finite map between sets A and B.
+* _Loc ⊆ Storable_, _ℕ ⊆ Storable_, and _ℕ ⊆ Bindable_.
 * The transition function is _𝛅 : L(G)* × L(G)* × Env × Store ⟶   Q_,
   and let _W ∈ String_, _C, V ∈ L(G)*_, _S ∈ Store_, _E ∈ Env_, _B ∈
   Bindable_, _l ∈ Loc_, _T ∈ Storable_, _X ∈ `<Exp>`_, _M, M₁, M₂ ∈
-  `<Cmd>`_,and expression _S' = S/[l ↦ N]_ means that _S'_ equals to
-  _S_ in all indices but _I_ that is bound to _N_,
+  `<Cmd>`_,and expression _S' = S/(l ↦ N)_ means that _S'_ equals to
+  _S_ in all indices but _l_ where it is bound to _N_,
 
 _𝛅(Id(W) :: C, V, E, S) = 𝛅(C, B :: V, E, S)_, where _E[W] = l ∧ S[l] = B_,
 
 _𝛅(Assign(W, X) :: C, V, E, S) =  𝛅(X :: #ASSIGN :: C, W :: V, E, S')_,   
-_𝛅(#ASSIGN :: C, T :: W :: V, E, S) = 𝛅(C, V, E, S')_, where _E[W] = l ∧ S' = S/[l ↦ T]_, 
+_𝛅(#ASSIGN :: C, T :: W :: V, E, S) = 𝛅(C, V, E, S')_, where _E[W] = l ∧ S' = S/(l ↦ T)_, 
 
 _𝛅(Loop(X, M) :: C, V, E, S) =  𝛅(X :: #LOOP :: C, Loop(X, M) :: V, E, S)_,  
 _𝛅(#LOOP :: C, Boo(true) :: Loop(X, M) :: V, E, S) = 𝛅(M :: Loop(X, M) :: C, V, E, S)_,  
@@ -186,8 +190,8 @@ _𝛅(CSeq(M₁, M₂) :: C, V, E, S) = 𝛅(M₁ :: M₂ :: C, V, E, S)_.
 
 Let _BlockLocs_ = 𝒫(Loc), the transition function be _𝛅 : L(G)* ×
 L(G)* × Env × Store × BlockLocs ⟶   Q_, and let _L, L' ∈ BlockLocs_,
-_Loc_ ⊆ Storable_, and _S / L_ mean the store _S_ without the
-locations in _L_,
+_Loc_ ⊆ Storable_, and _S / L = { l ↦ T | l ↦ T ∈ S ∧ l ∉ L}_, that
+is, the store _S_ without the mappings whose locations are in _L_,
 
 _𝛅(Ref(X) :: C, V, E, S, L) = 𝛅(X :: #REF :: C, V, E, S, L)_,   
 _𝛅(#REF :: C, T :: V, E, S, L) = 𝛅(C, l :: V, E, S', L')_, where _S' = S ∪ [l ↦ T], l ∉ S, L' = L ∪ {l}_, 
@@ -197,8 +201,8 @@ _𝛅(DeRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, l :: V, E, S, L)_, where _l = E[W
 _𝛅(ValRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, T :: V, E, S, L)_, where _T = S[S[E[W]]]_,  
 
 _𝛅(Bind(Id(W), X) :: C, V, E, S, L) = 𝛅(X :: #BIND :: C, W :: V, E, S, L)_,   
-_𝛅(#BIND :: C, B :: W :: E' :: V, E, S, L) = 𝛅(C, ([W ↦ B] ∪ E') :: V, E, S, L)_, where _E' ∈ Env_,  
-_𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, [W ↦ B] :: H :: V, E, S, L)_, where _H ∉ Env_,  
+_𝛅(#BIND :: C, B :: W :: E' :: V, E, S, L) = 𝛅(C, ({W ↦ B} ∪ E') :: V, E, S, L)_, where _E' ∈ Env_,  
+_𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, (W ↦ B) :: H :: V, E, S, L)_, where _H ∉ Env_,  
 
 _𝛅(DSeq(D₁, D₂), X) :: C, V, E, S, L) = 𝛅(D₁ :: D₂ :: C, V, E, S, L)_, 
 
@@ -240,18 +244,18 @@ _Closure : Formals × Blk × Env ⟶   Bindable_
 
 #### Abstractions
 
-Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_, _1 ≤ i ≤ n_, _n ∈ ℕ_,  
+Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _V ∈ Value_, _1 ≤ i ≤ u_, _u ∈ ℕ_,  
 
 _𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_   
 
-_𝛅(Call(I, [X₁, X₂, ..., Xn])) :: C, V, E, S, L) =   
-    𝛅(Xn :: Xn-1 :: ... :: X_1 :: #CALL(I, n) :: C, V, E, S, L)_   
-_𝛅(#CALL(I, n) ::C, [V₁, V₂, ..., Vn] :: V, [I ↦ Closure(F, B, E₁)] E₂, S, L) =_  
-    _𝛅(B :: #BLKCMD :: C, E₂ :: V, (E₁ / match(F, [V₁, V₂, ..., Vn])), S, L)_   
+_𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L) =   
+_𝛅(Xᵤ:: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, i) :: C, V, E, S, L)_   
+_𝛅(#CALL(I, i) ::C, [V₁, V₂, ..., Vᵤ] :: V, {I ↦ Closure(F, B, E₁)} ∪ E₂, S, L) =_  
+    _𝛅(B :: #BLKCMD :: C, E₂ :: V, (E₁ / match(F, [V₁, V₂, ..., Vᵤ])), S, L)_   
 
 _match : Id* × Values* ⟶   Env_  
 _match(fl, al) = if |fl| ≠ |al| than {} else match-aux(fl, al, {})_   
 _match-aux : Id* × Values* × Env ⟶   Env_   
 _match-aux([], [], E) = E_    
-_match-aux(f, a, E) = {f ↦ a} E_  
-_match-aux(f :: fl, a :: al, E) = match-aux(fl), al, {f ↦ a} E)_
+_match-aux(f, a, E) = {f ↦ a} ∪ E_  
+_match-aux(f :: fl, a :: al, E) = match-aux(fl), al, {f ↦ a} ∪ E)_
