@@ -210,7 +210,7 @@ Such names can be called and applied to actual parameters, a list of expressions
 
 #### Closures
 
-We chose a static binding semantics for abstractions. Therefore, we interpret abstractions as _closures formed by an abstraction together with its declaration environment which defines the context in which the abstraction will be evaluated.
+We chose a static binding semantics for abstractions. Therefore, we interpret abstractions as _closures_ formed by an abstraction together with its declaration environment which defines the context in which the abstraction will be evaluated.
 
 _Closure : Formals × Blk × Env → Bindable_
 
