@@ -168,7 +168,7 @@ _δ(CSeq(M₁, M₂) :: C, V, E, S) = δ(M₁ :: M₂ :: C, V, E, S)_.
 
 ### Automaton
 
-Let _BlockLocs_ = 2ᴸᴼᶜ, the transition function be _δ : L(G)* × L(G)* × Env × Store × BlockLocs → Q_, and
+Let _BlockLocs_ = $2^{Loc}$, the transition function be _δ : L(G)* × L(G)* × Env × Store × BlockLocs → Q_, and
 let _L, L' ∈ BlockLocs_, _Loc_ ⊆ Storable_, and _S / L_ mean the store _S_ without the locations in _L_,
 
 _δ(Ref(X) :: C, V, E, S, L) = δ(X :: #REF :: C, V, E, S, L)_,   
