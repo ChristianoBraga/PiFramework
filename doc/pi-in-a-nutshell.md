@@ -35,7 +35,7 @@ the memory.
 
 * Grammar _G_ is the result of the composition of Π IR and Π opcodes: _G = `<IR>` | `<OC>`_.  
 * Elements in a set _S*_ are represented by terms _[s₁, s₂, ..., sᵢ]_.  
-* 𝛅(∅, V, S) denotes an _accepting state_.
+* 𝛅(∅, V, S) ∈ F, that is, it denotes an _accepting state_.
 
 ## Π IR expressions
 
@@ -154,12 +154,12 @@ _𝛅(Assign(W, X) :: C, V, E, S) =  𝛅(X :: #ASSIGN :: C, W :: V, E, S')_,
 _𝛅(#ASSIGN :: C, T :: W :: V, E, S) = 𝛅(C, V, E, S')_, where _E[W] = l ∧ S' = S/(l ↦ T)_, 
 
 _𝛅(Loop(X, M) :: C, V, E, S) =  𝛅(X :: #LOOP :: C, Loop(X, M) :: V, E, S)_,  
-_𝛅(#LOOP :: C, Boo(true) :: Loop(X, M) :: V, E, S) = 𝛅(M :: Loop(X, M) :: C, V, E, S)_,  
-_𝛅(#LOOP :: C, Boo(false) :: Loop(X, M) :: V, E, S) = 𝛅(C, V, E, S)_, 
+_𝛅(#LOOP :: C, true :: Loop(X, M) :: V, E, S) = 𝛅(M :: Loop(X, M) :: C, V, E, S)_,  
+_𝛅(#LOOP :: C, false :: Loop(X, M) :: V, E, S) = 𝛅(C, V, E, S)_, 
 
 _𝛅(Cond(X, M₁, M₂) :: C, V, E, S) =  𝛅(X :: #COND :: C, Cond(X, M₁, M₂) :: V, E, S)_,  
-_𝛅(#COND :: C, Boo(true) :: Cond(X, M₁, M₂) :: V, E, S) = 𝛅(M₁ :: C, V, E, S)_,  
-_𝛅(#COND :: C, Boo(false) :: Cond(X, M₁, M₂) :: V, E, S) = 𝛅(M₂ :: C, V, E, S)_, 
+_𝛅(#COND :: C, true :: Cond(X, M₁, M₂) :: V, E, S) = 𝛅(M₁ :: C, V, E, S)_,  
+_𝛅(#COND :: C, false :: Cond(X, M₁, M₂) :: V, E, S) = 𝛅(M₂ :: C, V, E, S)_, 
 
 _𝛅(CSeq(M₁, M₂) :: C, V, E, S) = 𝛅(M₁ :: M₂ :: C, V, E, S)_.
 
@@ -190,7 +190,7 @@ _𝛅(CSeq(M₁, M₂) :: C, V, E, S) = 𝛅(M₁ :: M₂ :: C, V, E, S)_.
 
 Let _BlockLocs_ = 𝒫(Loc), the transition function be _𝛅 : L(G)* ×
 L(G)* × Env × Store × BlockLocs ⟶   Q_, and let _L, L' ∈ BlockLocs_,
-_Loc_ ⊆ Storable_, and _S / L = { l ↦ T | l ↦ T ∈ S ∧ l ∉ L}_, that
+_Loc ⊆ Storable_, and _S / L = { l ↦ T | l ↦ T ∈ S ∧ l ∉ L}_, that
 is, the store _S_ without the mappings whose locations are in _L_,
 
 _𝛅(Ref(X) :: C, V, E, S, L) = 𝛅(X :: #REF :: C, V, E, S, L)_,   
@@ -202,13 +202,13 @@ _𝛅(ValRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, T :: V, E, S, L)_, where _T = S[
 
 _𝛅(Bind(Id(W), X) :: C, V, E, S, L) = 𝛅(X :: #BIND :: C, W :: V, E, S, L)_,   
 _𝛅(#BIND :: C, B :: W :: E' :: V, E, S, L) = 𝛅(C, ({W ↦ B} ∪ E') :: V, E, S, L)_, where _E' ∈ Env_,  
-_𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, (W ↦ B) :: H :: V, E, S, L)_, where _H ∉ Env_,  
+_𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, {W ↦ B} :: H :: V, E, S, L)_, where _H ∉ Env_,  
 
 _𝛅(DSeq(D₁, D₂), X) :: C, V, E, S, L) = 𝛅(D₁ :: D₂ :: C, V, E, S, L)_, 
 
 _𝛅(Blk(D, M) :: C, V, E, S, L) = 𝛅(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅)_,   
 _𝛅(#BLKDEC :: C, E' :: V, E, S, L) = 𝛅(C, E :: V, E / E', S, L)_,   
-_𝛅(#BLKCMD :: C, E :: L :: V, E', S, L') = 𝛅(C, V, E, S', L)_, where _S' = S / L_.
+_𝛅(#BLKCMD :: C, E :: L :: V, E', S, L') = 𝛅(C, V, E, S', L)_, where _S' = S / L'_.
 
 ## Π IR abstractions
 
@@ -244,13 +244,13 @@ _Closure : Formals × Blk × Env ⟶   Bindable_
 
 #### Abstractions
 
-Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _V ∈ Value_, _1 ≤ i ≤ u_, _u ∈ ℕ_,  
+Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_, _1 ≤ i ≤ u_, _u ∈ ℕ_,  
 
 _𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_   
 
 _𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L) =   
-_𝛅(Xᵤ:: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, i) :: C, V, E, S, L)_   
-_𝛅(#CALL(I, i) ::C, [V₁, V₂, ..., Vᵤ] :: V, {I ↦ Closure(F, B, E₁)} ∪ E₂, S, L) =_  
+_𝛅(Xᵤ:: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
+_𝛅(#CALL(I, u) ::C, [V₁, V₂, ..., Vᵤ] :: V, {I ↦ Closure(F, B, E₁)} ∪ E₂, S, L) =_  
     _𝛅(B :: #BLKCMD :: C, E₂ :: V, (E₁ / match(F, [V₁, V₂, ..., Vᵤ])), S, L)_   
 
 _match : Id* × Values* ⟶   Env_  
