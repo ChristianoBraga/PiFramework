@@ -248,7 +248,7 @@ Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_,
 
 _𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_   
 
-_𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L) =   
+_𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =   
 _𝛅(Xᵤ:: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
 _𝛅(#CALL(I, u) ::C, [V₁, V₂, ..., Vᵤ] :: V, {I ↦ Closure(F, B, E₁)} ∪ E₂, S, L) =_  
     _𝛅(B :: #BLKCMD :: C, E₂ :: V, (E₁ / match(F, [V₁, V₂, ..., Vᵤ])), S, L)_   
