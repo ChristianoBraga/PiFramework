@@ -4,7 +4,7 @@ Christiano Braga
 Universidade Federal Fluminense  
 http://www.ic.uff.br/~cbraga  
 \
-March 2019  
+July 2019  
 \
 http://github.com/ChristianoBraga/PiFramework
 
@@ -148,10 +148,10 @@ Commands are language constructions that require a _memory store_ to be evaluate
   `<Cmd>`_,and expression _S' = S/(l ↦ N)_ means that _S'_ equals to
   _S_ in all indices but _l_ where it is bound to _N_,
 
-_𝛅(Id(W) :: C, V, E, S) = 𝛅(C, B :: V, E, S)_, where _E[W] = l ∧ S[l] = B_,
+_𝛅(Id(W) :: C, V, E, S) = 𝛅(C, B :: V, E, S)_, **where** _E[W] = l ∧ S[l] = B_,
 
 _𝛅(Assign(W, X) :: C, V, E, S) =  𝛅(X :: #ASSIGN :: C, W :: V, E, S')_,   
-_𝛅(#ASSIGN :: C, T :: W :: V, E, S) = 𝛅(C, V, E, S')_, where _E[W] = l ∧ S' = S/(l ↦ T)_, 
+_𝛅(#ASSIGN :: C, T :: W :: V, E, S) = 𝛅(C, V, E, S')_, **where** _E[W] = l ∧ S' = S/(l ↦ T)_, 
 
 _𝛅(Loop(X, M) :: C, V, E, S) =  𝛅(X :: #LOOP :: C, Loop(X, M) :: V, E, S)_,  
 _𝛅(#LOOP :: C, true :: Loop(X, M) :: V, E, S) = 𝛅(M :: Loop(X, M) :: C, V, E, S)_,  
@@ -194,21 +194,21 @@ _Loc ⊆ Storable_, and _S / L = { l ↦ T | l ↦ T ∈ S ∧ l ∉ L}_, that
 is, the store _S_ without the mappings whose locations are in _L_,
 
 _𝛅(Ref(X) :: C, V, E, S, L) = 𝛅(X :: #REF :: C, V, E, S, L)_,   
-_𝛅(#REF :: C, T :: V, E, S, L) = 𝛅(C, l :: V, E, S', L')_, where _S' = S ∪ [l ↦ T], l ∉ S, L' = L ∪ {l}_, 
+_𝛅(#REF :: C, T :: V, E, S, L) = 𝛅(C, l :: V, E, S', L')_, **where** _S' = S ∪ [l ↦ T], l ∉ S, L' = L ∪ {l}_, 
 
-_𝛅(DeRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, l :: V, E, S, L)_, where _l = E[W]_,  
+_𝛅(DeRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, l :: V, E, S, L)_, **where** _l = E[W]_,  
 
-_𝛅(ValRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, T :: V, E, S, L)_, where _T = S[S[E[W]]]_,  
+_𝛅(ValRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, T :: V, E, S, L)_, **where** _T = S[S[E[W]]]_,  
 
 _𝛅(Bind(Id(W), X) :: C, V, E, S, L) = 𝛅(X :: #BIND :: C, W :: V, E, S, L)_,   
-_𝛅(#BIND :: C, B :: W :: E' :: V, E, S, L) = 𝛅(C, ({W ↦ B} ∪ E') :: V, E, S, L)_, where _E' ∈ Env_,  
-_𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, {W ↦ B} :: H :: V, E, S, L)_, where _H ∉ Env_,  
+_𝛅(#BIND :: C, B :: W :: E' :: V, E, S, L) = 𝛅(C, ({W ↦ B} ∪ E') :: V, E, S, L)_, **where** _E' ∈ Env_,  
+_𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, {W ↦ B} :: H :: V, E, S, L)_, **where** _H ∉ Env_,  
 
 _𝛅(DSeq(D₁, D₂), X) :: C, V, E, S, L) = 𝛅(D₁ :: D₂ :: C, V, E, S, L)_, 
 
 _𝛅(Blk(D, M) :: C, V, E, S, L) = 𝛅(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅)_,   
 _𝛅(#BLKDEC :: C, E' :: V, E, S, L) = 𝛅(C, E :: V, E / E', S, L)_,   
-_𝛅(#BLKCMD :: C, E :: L :: V, E', S, L') = 𝛅(C, V, E, S', L)_, where _S' = S / L'_.
+_𝛅(#BLKCMD :: C, E :: L :: V, E', S, L') = 𝛅(C, V, E, S', L)_, **where** _S' = S / L'_.
 
 ## Π IR abstractions
 
@@ -249,13 +249,51 @@ Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_,
 _𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_   
 
 _𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =   
-_𝛅(Xᵤ:: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
-_𝛅(#CALL(I, u) ::C, [V₁, V₂, ..., Vᵤ] :: V, {I ↦ Closure(F, B, E₁)} ∪ E₂, S, L) =_  
-    _𝛅(B :: #BLKCMD :: C, E₂ :: V, (E₁ / match(F, [V₁, V₂, ..., Vᵤ])), S, L)_   
+_𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
+_𝛅(#CALL(I, u) ::C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) =_  
+    _𝛅(B :: #BLKCMD :: C, E :: V, E', S, L)_   
+**where** E = {I ↦ Closure(F, B, E₁)} ∪ E₂,
+	      E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
 
 _match : Id* × Values* ⟶   Env_  
-_match(fl, al) = if |fl| ≠ |al| than {} else match-aux(fl, al, {})_   
+_match(fl, al) = **if** |fl| ≠ |al| **than** {} **else** match-aux(fl, al, {})_
+
 _match-aux : Id* × Values* × Env ⟶   Env_   
 _match-aux([], [], E) = E_    
 _match-aux(f, a, E) = {f ↦ a} ∪ E_  
-_match-aux(f :: fl, a :: al, E) = match-aux(fl), al, {f ↦ a} ∪ E)_
+_match-aux(f :: fl, a :: al, E) = match-aux(fl, al, {f ↦ a} ∪ E)_
+
+
+## Π IR recursive abstractions
+
+### Grammar
+
+```
+<Dec>       ::= `Rbnd'(<Id>, <Abs>) 
+```
+
+### Automaton
+
+#### Recursive closures
+
+In the context of _static binding_ semantics for abstractions, in a call
+to a recursive function, the evaluation of identifiers needs to be
+"reminded" about the binding of the function name to a closure.
+
+_Rec : Formals × Blk × Env × Env ⟶   Bindable_
+_unfold : Env ⟶   Env_
+_recloseₑ_ : Env ⟶   Env_
+
+_unfold(E) = recloseₑ(e)_
+_recloseₑ(I ↦ Closure(F, B, E′)) = (I ↦ Rec(F, B, E′, E))_
+_recloseₑ(I ↦ Rec(F, B, E′, E′′)) = (I ↦ Rec(F, B, E′, E))_ 
+_recloseₑ(I ↦ v) = (I ↦ v) if v != Closure(F, B, E)_ 
+_recloseₑ(E₁ ∪ E₂) = recloseₑ(E₁) ∪ recloseₑ(E₂)_
+_recloseₑ(∅) = ∅_
+
+#### Recursive abstractions 
+
+_δ(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = δ(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_
+_δ(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = δ(B :: #BLKCMD :: C, E :: V, E′, S, L)_
+**where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_
+         _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_

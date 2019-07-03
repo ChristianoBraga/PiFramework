@@ -1,18 +1,19 @@
-# Π denotations for Imπ
+# Π denotations for ImΠ
 
 Christiano Braga  
 Universidade Federal Fluminense  
 http://www.ic.uff.br/~cbraga  
 \
-March 2019  
+July 2019  
 \
 http://github.com/ChristianoBraga/PiFramework
 
 ## Introduction
 
-A compiler for the Imπ language is defined by means of functions mapping constructions from the Imπ language to π IR.
+A compiler for the ImΠ language is defined by means of functions
+mapping constructions from the ImΠ language to Π IR.
 
-## Imπ grammar
+## ImΠ grammar
 ```
 <S> ::=  <cmd>
 
@@ -82,7 +83,7 @@ A compiler for the Imπ language is defined by means of functions mapping constr
 <truth> ::= 'True' | 'False' 
 ```
 
-### Imπ examples
+### ImΠ examples
 ```
 # The classic iterative factorial example
 let var z = 1 
@@ -112,11 +113,11 @@ in f(10)
 
 ## Π denotations
 
-A π denotation for the Imπ language is a function 
+A Π denotation for the ImΠ language is a function 
 
-> _⟦⋅⟧ : Gimp → Gπ_,   
+> _⟦⋅⟧ : Gimp → GΠ_,   
 
-intentionally defined, that associates (a class of) words derivable by Imπ's grammar with (a class of words) words derivable by π IR grammar.
+intentionally defined, that associates (a class of) words derivable by ImΠ's grammar with (a class of words) words derivable by Π IR grammar.
 
 ### Expressions
 
@@ -170,6 +171,8 @@ and _mkFor : `<identifier>*` → `<Id>*`_
 
 1. _⟦ fn(ast) ⟧ = Bind(⟦ fst(ast) ⟧, mkAbs(snd(ast), trd(ast))_
 
+1. _⟦ rfn(ast) ⟧ = Rbnd(⟦ fst(ast) ⟧, mkAbs(snd(ast), trd(ast))_
+
 ### Commands
 
 Let _mkCSeq : `<cmd>+` → `<CSeq>`_ be defined by the following equations,  
@@ -190,11 +193,11 @@ and _mkAct : `<actual>` → `<Exp>*`_ be as follows
 
 1. _⟦ call(ast) ⟧ = Call(⟦ left(ast) ⟧, mkAct(right(ast)))_
 
-### Example application of π denotations for Imπ
+### Example application of Π denotations for ImΠ
 
 * For the iteractive factorial:
 ```
-π lib AST: Blk(Bind(Id(z), Ref(Num(1))), 
+Π IR AST: Blk(Bind(Id(z), Ref(Num(1))), 
             Blk(Bind(Id(y), Ref(Num(10))), 
                 Loop(Not(Eq(Id(y), Num(0))), 
                      CSeq(Assign(Id(z), Mul(Id(z), Id(y))), 
@@ -203,8 +206,8 @@ and _mkAct : `<actual>` → `<Exp>*`_ be as follows
 
 * For the functional factorial:
 ```
-π lib AST: Blk(Bind(Id(z), Ref(Num(1))), 
-            Blk(BindAbs(Id(f), 
+Π IR AST: Blk(Bind(Id(z), Ref(Num(1))), 
+            Blk(Bind(Id(f), 
                         Abs(Id(x), 
                             Blk(Bind(Id(y), Ref(Id(x))), 
                                 Loop(Not(Eq(Id(y), Num(0))), 
