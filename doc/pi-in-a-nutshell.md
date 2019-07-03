@@ -249,7 +249,7 @@ Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_,
 _𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_   
 
 _𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =   
-_𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
+   _𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
 _𝛅(#CALL(I, u) ::C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) =_  
     _𝛅(B :: #BLKCMD :: C, E :: V, E', S, L)_   
 **where** E = {I ↦ Closure(F, B, E₁)} ∪ E₂,
@@ -269,7 +269,7 @@ _match-aux(f :: fl, a :: al, E) = match-aux(fl, al, {f ↦ a} ∪ E)_
 ### Grammar
 
 ```
-<Dec>       ::= `Rbnd'(<Id>, <Abs>) 
+<Dec> ::= Rbnd(<Id>, <Abs>) 
 ```
 
 ### Automaton
@@ -293,7 +293,7 @@ _recloseₑ(∅) = ∅_
 
 #### Recursive abstractions 
 
-_δ(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = δ(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_  
-_δ(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = δ(B :: #BLKCMD :: C, E :: V, E′, S, L)_  
+_𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_  
+_𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: V, E′, S, L)_  
 **where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_  
-         _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_  
+  _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_  
