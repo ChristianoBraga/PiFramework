@@ -253,16 +253,16 @@ _𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =
    _𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_,  
 _𝛅(#CALL(I, u) ::C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) =_  
     _𝛅(B :: #BLKCMD :: C, E :: V, E', S, L)_,   
-**where** E = {I ↦ Closure(F, B, E₁)} ∪ E₂,  
-   E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
+**where** _E = {I ↦ Closure(F, B, E₁)} ∪ E₂_,  
+   _E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])_,
 
-_match : Id* × Values* ⟶   Env_  
-_match(fl, al) = **if** |fl| ≠ |al| **than** {} **else** match-aux(fl, al, {})_
+_match : Id* × Values* ⟶   Env_,  
+_match(fl, al) = **if** |fl| ≠ |al| **than** {} **else** match-aux(fl, al, {})_,
 
 _match-aux : Id* × Values* × Env ⟶   Env_,   
 _match-aux([], [], E) = E_,    
 _match-aux(f, a, E) = {f ↦ a} ∪ E_,  
-_match-aux(f :: fl, a :: al, E) = match-aux(fl, al, {f ↦ a} ∪ E)_
+_match-aux(f :: fl, a :: al, E) = match-aux(fl, al, {f ↦ a} ∪ E)_.
 
 
 ## Π IR recursive abstractions
@@ -283,7 +283,7 @@ to a recursive function, the evaluation of identifiers needs to be
 
 _Rec : Formals × Blk × Env × Env ⟶   Bindable_,  
 _unfold : Env ⟶   Env_,  
-_recloseₑ : Env ⟶   Env_.  
+_recloseₑ : Env ⟶   Env_,  
 
 _unfold(e) = recloseₑ(e)_,  
 _recloseₑ(I ↦ Closure(F, B, E′)) = (I ↦ Rec(F, B, E′, e))_,  
@@ -297,4 +297,4 @@ _recloseₑ(∅) = ∅_.
 _𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_,  
 _𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: V, E′, S, L)_,  
 **where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_,  
-   _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_  
+   _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_.  
