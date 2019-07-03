@@ -194,7 +194,8 @@ _Loc ⊆ Storable_, and _S / L = { l ↦ T | l ↦ T ∈ S ∧ l ∉ L}_, that
 is, the store _S_ without the mappings whose locations are in _L_,
 
 _𝛅(Ref(X) :: C, V, E, S, L) = 𝛅(X :: #REF :: C, V, E, S, L)_,   
-_𝛅(#REF :: C, T :: V, E, S, L) = 𝛅(C, l :: V, E, S', L')_, **where** _S' = S ∪ [l ↦ T], l ∉ S, L' = L ∪ {l}_, 
+_𝛅(#REF :: C, T :: V, E, S, L) = 𝛅(C, l :: V, E, S', L')_,   
+   **where** _S' = S ∪ [l ↦ T], l ∉ S, L' = L ∪ {l}_, 
 
 _𝛅(DeRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, l :: V, E, S, L)_, **where** _l = E[W]_,  
 
@@ -246,21 +247,21 @@ _Closure : Formals × Blk × Env ⟶   Bindable_
 
 Let _F ∈ Formals_, _B ∈ Blk_, _I ∈ Id_, _A ∈ Actuals_, _Vᵢ ∈ Value_, _1 ≤ i ≤ u_, _u ∈ ℕ_,  
 
-_𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_   
+_𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_,   
 
-_𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =   
-   _𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_   
+_𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =  
+   _𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_,  
 _𝛅(#CALL(I, u) ::C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) =_  
-    _𝛅(B :: #BLKCMD :: C, E :: V, E', S, L)_   
-**where** E = {I ↦ Closure(F, B, E₁)} ∪ E₂,
-	      E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
+    _𝛅(B :: #BLKCMD :: C, E :: V, E', S, L)_,   
+**where** E = {I ↦ Closure(F, B, E₁)} ∪ E₂,  
+   E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])
 
 _match : Id* × Values* ⟶   Env_  
 _match(fl, al) = **if** |fl| ≠ |al| **than** {} **else** match-aux(fl, al, {})_
 
-_match-aux : Id* × Values* × Env ⟶   Env_   
-_match-aux([], [], E) = E_    
-_match-aux(f, a, E) = {f ↦ a} ∪ E_  
+_match-aux : Id* × Values* × Env ⟶   Env_,   
+_match-aux([], [], E) = E_,    
+_match-aux(f, a, E) = {f ↦ a} ∪ E_,  
 _match-aux(f :: fl, a :: al, E) = match-aux(fl, al, {f ↦ a} ∪ E)_
 
 
@@ -280,20 +281,20 @@ In the context of _static binding_ semantics for abstractions, in a call
 to a recursive function, the evaluation of identifiers needs to be
 "reminded" about the binding of the function name to a closure.
 
-_Rec : Formals × Blk × Env × Env ⟶   Bindable_  
-_unfold : Env ⟶   Env_  
-_recloseₑ : Env ⟶   Env_  
+_Rec : Formals × Blk × Env × Env ⟶   Bindable_,  
+_unfold : Env ⟶   Env_,  
+_recloseₑ : Env ⟶   Env_.  
 
-_unfold(e) = recloseₑ(e)_  
-_recloseₑ(I ↦ Closure(F, B, E′)) = (I ↦ Rec(F, B, E′, e))_  
-_recloseₑ(I ↦ Rec(F, B, E′, E′′)) = (I ↦ Rec(F, B, E′, e))_  
-_recloseₑ(I ↦ v) = (I ↦ v) if v ≠ Closure(F, B, E)_   
-_recloseₑ(e₁ ∪ e₂) = recloseₑ(e₁) ∪ recloseₑ(e₂)_  
-_recloseₑ(∅) = ∅_  
+_unfold(e) = recloseₑ(e)_,  
+_recloseₑ(I ↦ Closure(F, B, E′)) = (I ↦ Rec(F, B, E′, e))_,  
+_recloseₑ(I ↦ Rec(F, B, E′, E′′)) = (I ↦ Rec(F, B, E′, e))_,  
+_recloseₑ(I ↦ v) = (I ↦ v) if v ≠ Closure(F, B, E)_,  
+_recloseₑ(e₁ ∪ e₂) = recloseₑ(e₁) ∪ recloseₑ(e₂)_,  
+_recloseₑ(∅) = ∅_.  
 
 #### Recursive abstractions 
 
-_𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_  
-_𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: V, E′, S, L)_  
+_𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_,  
+_𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: V, E′, S, L)_,  
 **where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_,  
    _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_  
