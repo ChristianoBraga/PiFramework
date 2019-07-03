@@ -282,12 +282,12 @@ to a recursive function, the evaluation of identifiers needs to be
 
 _Rec : Formals × Blk × Env × Env ⟶   Bindable_  
 _unfold : Env ⟶   Env_  
-_recloseₑ_ : Env ⟶   Env_  
+_recloseₑ : Env ⟶   Env_  
 
 _unfold(E) = recloseₑ(e)_  
 _recloseₑ(I ↦ Closure(F, B, E′)) = (I ↦ Rec(F, B, E′, E))_  
 _recloseₑ(I ↦ Rec(F, B, E′, E′′)) = (I ↦ Rec(F, B, E′, E))_  
-_recloseₑ(I ↦ v) = (I ↦ v) if v != Closure(F, B, E)_   
+_recloseₑ(I ↦ v) = (I ↦ v) if v ≠ Closure(F, B, E)_   
 _recloseₑ(E₁ ∪ E₂) = recloseₑ(E₁) ∪ recloseₑ(E₂)_  
 _recloseₑ(∅) = ∅_  
 
