@@ -295,5 +295,4 @@ _recloseₑ(∅) = ∅_
 
 _𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_  
 _𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: V, E′, S, L)_  
-**where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_  
-  _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_  
+**where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_, _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_  
