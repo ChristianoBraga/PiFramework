@@ -195,7 +195,7 @@ is, the store _S_ without the mappings whose locations are in _L_,
 
 _𝛅(Ref(X) :: C, V, E, S, L) = 𝛅(X :: #REF :: C, V, E, S, L)_,   
 _𝛅(#REF :: C, T :: V, E, S, L) = 𝛅(C, l :: V, E, S', L')_,   
-   **where** _S' = S ∪ [l ↦ T], l ∉ S, L' = L ∪ {l}_, 
+   **where** _S' = S ∪ {l ↦ T}, l ∉ S, L' = L ∪ {l}_, 
 
 _𝛅(DeRef(Id(W)) :: C, V, E, S, L) = 𝛅(C, l :: V, E, S, L)_, **where** _l = E[W]_,  
 
@@ -207,8 +207,8 @@ _𝛅(#BIND :: C, B :: W :: H :: V, E, S, L) = 𝛅(C, {W ↦ B} :: H :: V, E, S
 
 _𝛅(DSeq(D₁, D₂), X) :: C, V, E, S, L) = 𝛅(D₁ :: D₂ :: C, V, E, S, L)_, 
 
-_𝛅(Blk(D, M) :: C, V, E, S, L) = 𝛅(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅)_,   
-_𝛅(#BLKDEC :: C, E' :: V, E, S, L) = 𝛅(C, E :: V, E / E', S, L)_,   
+_𝛅(Blk(D, M) :: C, V, E, S, L) = 𝛅(D :: #BLKDEC :: M :: #BLKCMD :: C, L :: V, E, S, ∅)_,  
+_𝛅(#BLKDEC :: C, E' :: V, E, S, L) = 𝛅(C, E :: V, E / E', S, L)_,  
 _𝛅(#BLKCMD :: C, E :: L :: V, E', S, L') = 𝛅(C, V, E, S', L)_, **where** _S' = S / L'_.
 
 ## Π IR abstractions
@@ -252,7 +252,7 @@ _𝛅(Abs(F, B) :: C, V, E, S, L) = 𝛅(C, Closure(F, B, E) :: V, E, S, L)_,
 _𝛅(Call(I, [X₁, X₂, ..., Xᵤ])) :: C, V, E, S, L)_ =  
    _𝛅(Xᵤ :: Xᵤ₋₁ :: ... :: X₁ :: #CALL(I, u) :: C, V, E, S, L)_,  
 _𝛅(#CALL(I, u) ::C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) =_  
-    _𝛅(B :: #BLKCMD :: C, E :: V, E', S, L)_,   
+    _𝛅(B :: #BLKCMD :: C, E :: L :: V, E', S, ∅)_,   
 **where** _E = {I ↦ Closure(F, B, E₁)} ∪ E₂_,  
    _E'= E / E₁ / match(F, [V₁, V₂, ..., Vᵤ])_,
 
@@ -294,7 +294,7 @@ _recloseₑ(∅) = ∅_.
 
 #### Recursive abstractions 
 
-_𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_,  
-_𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: V, E′, S, L)_,  
+_𝛅(Rbnd(I, Abs(F, B)) :: C, V, E, S, L) = 𝛅(#BIND :: C, unfold(I ↦ Closure(F, B, E)) :: V, E, S, L)_,  
+_𝛅(#CALL(I, u) :: C, V₁ :: V₂ :: ... :: Vᵤ :: V, E, S, L) = 𝛅(B :: #BLKCMD :: C, E :: L :: V, E′, S, ∅)_,  
 **where** _E = {I ↦ Rec(F, B, E₁, E₂)} ∪ E₃_,  
    _E' = E / E₁ / unfold(E₂) / match(F, [V₁, V₂, ..., Vᵤ])_.  
