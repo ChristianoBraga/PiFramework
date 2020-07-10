@@ -1,9 +1,0 @@
-fmod 2-TUPLE{X :: TRIV, Y :: TRIV} is
-  sort Tuple{X, Y} .
-  op ((_,_)) : X$Elt Y$Elt -> Tuple{X, Y} .
-  op p1_ : Tuple{X, Y} -> X$Elt .
-  op p2_ : Tuple{X, Y} -> Y$Elt .
-  eq p1(A:X$Elt, B:Y$Elt) = A:X$Elt .
-  eq p2(A:X$Elt, B:Y$Elt) = B:Y$Elt .
-endfm
-
