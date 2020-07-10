@@ -1,0 +1,219 @@
+\def\sortunder#1{}
+\begin{thebibliography}{10}
+
+\bibitem{b-book}
+J.-R. Abrial.
+\newblock {\em The B-book - {A}ssigning {P}rograms to {M}eanings.}
+\newblock Cambridge Univ. Press, 2005.
+
+\bibitem{Aho:2006:CPT:1177220}
+A.~V. Aho, M.~S. Lam, R.~Sethi, and J.~D. Ullman.
+\newblock {\em Compilers: Principles, Techniques, and Tools}.
+\newblock Addison-Wesley Longman Publishing Co., Inc., Boston, MA, USA, 2nd.
+  edition, 2006.
+
+\bibitem{arnold1994finite}
+A.~Arnold.
+\newblock {\em Finite Transition Systems: Semantics of Communicating Systems}.
+\newblock Prentice Hall, Upper Saddle River, New Jersey 07458, 1994.
+
+\bibitem{Baader:1998:TR:280474}
+F.~Baader and T.~Nipkow.
+\newblock {\em Term Rewriting and All That}.
+\newblock Cambridge University Press, New York, NY, USA, 1998.
+
+\bibitem{BERRY1992217}
+G.~Berry and G.~Boudol.
+\newblock The chemical abstract machine.
+\newblock {\em Theoretical Computer Science}, 96(1):217 -- 248, 1992.
+
+\bibitem{2018arXiv180504650B}
+C.~{Braga}.
+\newblock {Compiler Construction with Basic Programming Languages Constructs
+  and Generalized Interpreting Automata}.
+\newblock {\em ArXiv e-prints}, May 2018.
+
+\bibitem{etmf:2016}
+C.~Braga, D.~Deharbe, A.~M. Moreira, and N.~M. Oliet.
+\newblock A rewriting logic semantics for the generalized substitution
+  language.
+\newblock In {\em Proceedings of School of Theoretical Computer Science and
+  Formal Methods (ETMF 2016)}, ISBN 978-85-7669-357-4, pages 93--104. Sociedade
+  Brasileira de Computa{\c c}{\~a}o, 2016.
+
+\bibitem{bragaMeseguer:WRLA04}
+C.~Braga and J.~Meseguer.
+\newblock Modular rewriting semantics in practice.
+\newblock In N.~Mart\'\i-Oliet, editor, {\em Proceedings of 5th International
+  Workshop on Rewriting Logic and its Applications, WRLA 2004}, volume 117,
+  pages 393--416. Elsevier, 2005.
+
+\bibitem{msc-chalub}
+F.~Chalub.
+\newblock An implementation of {M}odular {S}tructural {O}perational {S}emantics
+  in {M}aude.
+\newblock Master's thesis, Universidade Federal Fluminense, 2005.
+
+\bibitem{Chalub:jucs-10-7:a-modular-rewriting-semantics}
+F.~Chalub and C.~Braga.
+\newblock A modular rewriting semantics for {CML}.
+\newblock {\em Journal of Universal Computer Science}, 10(7):789--807, 2004.
+
+\bibitem{wrla06}
+F.~Chalub and C.~Braga.
+\newblock Maude {MSOS} {T}ool.
+\newblock {\em Electronic Notes in Theoretical Computer Science},
+  176(4):133--146, 2006.
+
+\bibitem{Chartier1998}
+P.~Chartier.
+\newblock Formalisation of {B} in {Isabelle/HOL}.
+\newblock In D.~Bert, editor, {\em B'98: Recent Advances in the Development and
+  Use of the {B} Method, Montpellier, France, April 22--24, 1998 Proceedings},
+  pages 66--82. Springer Berlin Heidelberg, 1998.
+
+\bibitem{Churchill2015}
+M.~Churchill, P.~D. Mosses, N.~Sculthorpe, and P.~Torrini.
+\newblock Reusable components of semantic specifications.
+\newblock In S.~Chiba, {\'E}.~Tanter, E.~Ernst, and R.~Hirschfeld, editors,
+  {\em Transactions on Aspect-Oriented Software Development XII}, pages
+  132--179, Berlin, Heidelberg, 2015. Springer Berlin Heidelberg.
+
+\bibitem{Clarke:2000:MC:332656}
+E.~M. Clarke, Jr., O.~Grumberg, and D.~A. Peled.
+\newblock {\em Model Checking}.
+\newblock MIT Press, Cambridge, MA, USA, 1999.
+
+\bibitem{Clavel:2007:MHL:1808998}
+M.~Clavel, F.~Dur\'{a}n, S.~Eker, P.~Lincoln, N.~Mart\'{\i}-Oliet, J.~Meseguer,
+  and C.~Talcott.
+\newblock {\em All About Maude - a High-performance Logical Framework: How to
+  Specify, Program and Verify Systems in Rewriting Logic}.
+\newblock Springer-Verlag, Berlin, Heidelberg, 2007.
+
+\bibitem{maude/2007}
+M.~Clavel, F.~Dur{\'a}n, S.~Eker, P.~Lincoln, N.~Mart{\'\i}-Oliet, J.~Meseguer,
+  and C.~L. Talcott.
+\newblock {\em All About Maude}, volume 4350 of {\em LNCS}.
+\newblock Springer, 2007.
+
+\bibitem{Deharbe2016}
+D.~D{\'e}harbe and S.~Merz.
+\newblock Software component design with the {B} method - {A Formalization in
+  Isabelle/HOL}.
+\newblock In C.~Braga and C.~P. {\"O}lveczky, editors, {\em Formal Aspects of
+  Component Software: 12th Inter. Conf., FACS 2015, Niter{\'o}i, Brazil,
+  October 14-16, 2015}, pages 31--47. Springer, 2016.
+
+\bibitem{Dunne2002}
+S.~Dunne.
+\newblock A theory of generalised substitutions.
+\newblock In D.~Bert, J.~P. Bowen, M.~C. Henson, and K.~Robinson, editors, {\em
+  ZB 2002:Formal Specification and Development in Z and B: 2nd Int. Conf. of B
+  and Z Users, Grenoble, France, January 23--25, 2002, Proc.}, pages 270--290.
+  Springer, 2002.
+
+\bibitem{FELLEISEN1992235}
+M.~Felleisen and R.~Hieb.
+\newblock The revised report on the syntactic theories of sequential control
+  and state.
+\newblock {\em Theoretical Computer Science}, 103(2):235 -- 271, 1992.
+
+\bibitem{Goguen:1996:ASI:547173}
+J.~A. Goguen and G.~Malcolm.
+\newblock {\em Algebraic Semantics of Imperative Programs}.
+\newblock MIT Press, Cambridge, MA, USA, 1996.
+
+\bibitem{goldblatt}
+R.~Goldblatt.
+\newblock {\em Logics of time and computation}, volume~7 of {\em CSLI Lecture
+  Notes}.
+\newblock Center for the Study of Language and Information, Stanford, CA. ISBN:
+  0-937073-94-6, second edition edition, 1992.
+
+\bibitem{kevm}
+E.~Hildenbrandt, M.~Saxena, X.~Zhu, N.~Rodrigues, P.~Daian, D.~Guth, and
+  G.~Rosu.
+\newblock Kevm: A complete semantics of the ethereum virtual machine.
+\newblock Technical report, University of Illinois at Urbana Chanpaign,
+  \url{http://hdl.handle.net/2142/97207}, 08 2017.
+
+\bibitem{marti-oliet-meseguer:2002}
+N.~Mart\'i-Oliet and J.~Meseguer.
+\newblock Rewriting logic as a logical and semantic framework.
+\newblock In {\em Handbook of Philosophical Logic}, volume~9, pages 1--87.
+  Kluwer Academic Publishers, P.O. Box 17, 3300 AA Dordrecht, the Netherlands,
+  2002.
+
+\bibitem{meseguer92}
+J.~Meseguer.
+\newblock Conditional rewriting as a unified model of concurrency.
+\newblock {\em Theoretical Computer Science}, 96(1):73--155, April 1992.
+
+\bibitem{amast04}
+J.~Meseguer and C.~Braga.
+\newblock Modular rewriting semantics of programming languages.
+\newblock In C.~Rattray, S.~Maharaj, and C.~Shankland, editors, {\em In
+  Algebraic Methodology and Software Technology: proceedings of the 10th
+  International Conference, AMAST 2004}, volume 3116 of {\em LNCS}, pages
+  364--378, Stirling, Scotland, UK, July 2004. Springer.
+
+\bibitem{Mosses:2008:CDP:2227536.2227559}
+P.~D. Mosses.
+\newblock Component-based description of programming languages.
+\newblock In {\em Proceedings of the 2008 International Conference on Visions
+  of Computer Science: BCS International Academic Conference}, VoCS'08, pages
+  275--286, Swindon, UK, 2008. BCS Learning \& Development Ltd.
+
+\bibitem{Mosses:2009:CS:1596486.1596489}
+P.~D. Mosses.
+\newblock Component-based semantics.
+\newblock In {\em Proc. of the 8th Inter. Workshop on Spec. and Verif. of
+  Comp.-based Systems (SAVCBS '09)}, pages 3--10. ACM, 2009.
+
+\bibitem{Mosses:2004:FCF}
+P.~D. Mosses.
+\newblock Fundamental concepts and formal semantics of programming languages.
+\newblock
+  \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.457.4959&rep=rep1&type=pdf},
+  2009.
+
+\bibitem{10.1007/978-3-319-12904-4-12}
+P.~D. Mosses and F.~Vesely.
+\newblock Funkons: Component-based semantics in k.
+\newblock In S.~Escobar, editor, {\em Rewriting Logic and Its Applications},
+  pages 213--229, Cham, 2014. Springer International Publishing.
+
+\bibitem{plotkin}
+G.~D. Plotkin.
+\newblock A structural approach to operational semantics.
+\newblock {\em Journal of Logic and Algebraic Programming}, 60--61:17--139,
+  2004.
+\newblock Special issue on SOS.
+
+\bibitem{10.1007/978-3-540-31959-7-13}
+G.~Ro{\c{s}}u.
+\newblock From conditional to unconditional rewriting.
+\newblock In J.~L. Fiadeiro, P.~D. Mosses, and F.~Orejas, editors, {\em Recent
+  Trends in Algebraic Development Techniques}, pages 218--233, Berlin,
+  Heidelberg, 2005. Springer Berlin Heidelberg.
+
+\bibitem{rosu-serbanuta-2010-jlap}
+G.~Ro{\c s}u and T.~F. {\c S}erb{\u a}nu{\c t}{\u a}.
+\newblock An overview of the {K} semantic framework.
+\newblock {\em Journal of Logic and Algebraic Programming}, 79(6):397--434,
+  2010.
+
+\bibitem{zbMATH01440294}
+P.~{Viry}.
+\newblock {Elimination of conditions.}
+\newblock {\em {J. Symb. Comput.}}, 28(3):381--400, 1999.
+
+\bibitem{Zeyda2005}
+F.~Zeyda, B.~Stoddart, and S.~Dunne.
+\newblock A prospective-value semantics for the {GSL}.
+\newblock In H.~Treharne, S.~King, M.~Henson, and S.~Schneider, editors, {\em
+  ZB 2005: Formal Spec. and Dev. in Z and B: 4th Int. Conf. of B and Z Users,
+  Guildford, UK, April 13-15. Proc.}, pages 187--202. Springer, 2005.
+
+\end{thebibliography}

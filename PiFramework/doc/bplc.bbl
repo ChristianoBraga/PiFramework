@@ -1,0 +1,103 @@
+\def\sortunder#1{}
+\begin{thebibliography}{10}
+
+\bibitem{arnold1994finite}
+A.~Arnold.
+\newblock {\em Finite Transition Systems: Semantics of Communicating Systems}.
+\newblock Prentice Hall, Upper Saddle River, New Jersey 07458, 1994.
+
+\bibitem{Baader:1998:TR:280474}
+F.~Baader and T.~Nipkow.
+\newblock {\em Term Rewriting and All That}.
+\newblock Cambridge University Press, New York, NY, USA, 1998.
+
+\bibitem{msc-chalub}
+F.~Chalub.
+\newblock An implementation of {M}odular {S}tructural {O}perational {S}emantics
+  in {M}aude.
+\newblock Master's thesis, Universidade Federal Fluminense, 2005.
+
+\bibitem{wrla06}
+F.~Chalub and C.~Braga.
+\newblock Maude {MSOS} {T}ool.
+\newblock {\em Electronic Notes in Theoretical Computer Science},
+  176(4):133--146, 2006.
+\newblock \url{http://dx.doi.org/10.1016/j.entcs.2007.06.012}.
+
+\bibitem{Clarke:2000:MC:332656}
+E.~M. Clarke, Jr., O.~Grumberg, and D.~A. Peled.
+\newblock {\em Model Checking}.
+\newblock MIT Press, Cambridge, MA, USA, 1999.
+
+\bibitem{maude}
+M.~Clavel, F.~Dur\'an, S.~Eker, S.~Escobar, N.~Mart\'\i-Oliet, P.~Lincoln,
+  J.~Meseguer, and C.~Talcott.
+\newblock {\em Maude Manual (Version 2.7.1)}.
+\newblock SRI International and University of Illinois at Urbana-Champaign,
+  \small\url{http://maude.cs.uiuc.edu/maude2-manual/}, July 2016.
+
+\bibitem{Clavel:2007:MHL:1808998}
+M.~Clavel, F.~Dur\'{a}n, S.~Eker, P.~Lincoln, N.~Mart\'{\i}-Oliet, J.~Meseguer,
+  and C.~Talcott.
+\newblock {\em All About Maude - a High-performance Logical Framework: How to
+  Specify, Program and Verify Systems in Rewriting Logic}.
+\newblock Springer-Verlag, Berlin, Heidelberg, 2007.
+
+\bibitem{Goguen:1996:ASI:547173}
+J.~A. Goguen and G.~Malcolm.
+\newblock {\em Algebraic Semantics of Imperative Programs}.
+\newblock MIT Press, Cambridge, MA, USA, 1996.
+
+\bibitem{goldblatt}
+R.~Goldblatt.
+\newblock {\em Logics of time and computation}, volume~7 of {\em CSLI Lecture
+  Notes}.
+\newblock Center for the Study of Language and Information, Stanford, CA. ISBN:
+  0-937073-94-6, second edition edition, 1992.
+
+\bibitem{marti-oliet-meseguer:2002}
+N.~Mart\'i-Oliet and J.~Meseguer.
+\newblock {\em Handbook of Philosophical Logic}, volume~9, chapter Rewriting
+  logic as a logical and semantic framework, pages 1--87.
+\newblock Kluwer Academic Publishers, P.O. Box 17, 3300 AA Dordrecht, the
+  Netherlands, 2002.
+
+\bibitem{meseguer92}
+J.~Meseguer.
+\newblock Conditional rewriting as a unified model of concurrency.
+\newblock {\em Theoretical Computer Science}, 96(1):73--155, April 1992.
+
+\bibitem{Mosses:2008:CDP:2227536.2227559}
+P.~D. Mosses.
+\newblock Component-based description of programming languages.
+\newblock In {\em Proceedings of the 2008 International Conference on Visions
+  of Computer Science: BCS International Academic Conference}, VoCS'08, pages
+  275--286, Swindon, UK, 2008. BCS Learning \& Development Ltd.
+
+\bibitem{Mosses:2004:FCF}
+P.~D. Mosses.
+\newblock Fundamental concepts and formal semantics of programming languages.
+\newblock
+  \url{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.457.4959&rep=rep1&type=pdf},
+  2009.
+
+\bibitem{plotkin}
+G.~D. Plotkin.
+\newblock A structural approach to operational semantics.
+\newblock {\em Journal of Logic and Algebraic Programming}, 60--61:17--139,
+  2004.
+\newblock Special issue on SOS.
+
+\bibitem{10.1007/978-3-540-31959-7_13}
+G.~Ro{\c{s}}u.
+\newblock From conditional to unconditional rewriting.
+\newblock In J.~L. Fiadeiro, P.~D. Mosses, and F.~Orejas, editors, {\em Recent
+  Trends in Algebraic Development Techniques}, pages 218--233, Berlin,
+  Heidelberg, 2005. Springer Berlin Heidelberg.
+
+\bibitem{zbMATH01440294}
+P.~{Viry}.
+\newblock {Elimination of conditions.}
+\newblock {\em {J. Symb. Comput.}}, 28(3):381--400, 1999.
+
+\end{thebibliography}

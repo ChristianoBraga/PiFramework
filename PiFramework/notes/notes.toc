@@ -1,0 +1,54 @@
+\contentsline {chapter}{\numberline {1}Introduction}{4}{chapter.1}
+\contentsline {chapter}{\numberline {2}Preliminaries}{5}{chapter.2}
+\contentsline {section}{\numberline {2.1}Tree automata}{5}{section.2.1}
+\contentsline {section}{\numberline {2.2}Transition systems, structural operational semantics and model checking}{5}{section.2.2}
+\contentsline {section}{\numberline {2.3}Maude}{6}{section.2.3}
+\contentsline {subsection}{\numberline {2.3.1}Maude as a meta-tool}{7}{subsection.2.3.1}
+\contentsline {subsection}{\numberline {2.3.2}Writing a compiler in Maude}{7}{subsection.2.3.2}
+\contentsline {chapter}{\numberline {3}$\uppi $ Automata}{9}{chapter.3}
+\contentsline {section}{\numberline {3.1}Interpreting automata}{9}{section.3.1}
+\contentsline {section}{\numberline {3.2}$\uppi $ Automata}{11}{section.3.2}
+\contentsline {section}{\numberline {3.3}$\uppi $ Automata and Term Rewriting}{11}{section.3.3}
+\contentsline {subsection}{\numberline {3.3.1}$\uppi $ Automata in Maude}{12}{subsection.3.3.1}
+\contentsline {section}{\numberline {3.4}Model checking $\uppi $ Automata}{13}{section.3.4}
+\contentsline {chapter}{\numberline {4}$\uppi $ lib: Basic Programming Language Constructs}{15}{chapter.4}
+\contentsline {section}{\numberline {4.1}$\uppi $ lib signature}{15}{section.4.1}
+\contentsline {section}{\numberline {4.2}$\uppi $ lib signature in Maude}{17}{section.4.2}
+\contentsline {section}{\numberline {4.3}$\uppi $ Automata transitions for $\uppi $ lib dynamic semantics in Maude}{19}{section.4.3}
+\contentsline {chapter}{\numberline {5}$\uppi ^2$: $\uppi $ Framework in Python}{22}{chapter.5}
+\contentsline {section}{\numberline {5.1}$\uppi $ lib Expressions}{22}{section.5.1}
+\contentsline {subsection}{\numberline {5.1.1}Grammar for $\uppi $ lib Expressions}{22}{subsection.5.1.1}
+\contentsline {subsection}{\numberline {5.1.2}$\uppi $ lib Expressions in Python}{22}{subsection.5.1.2}
+\contentsline {subsection}{\numberline {5.1.3}$\uppi $ Automaton for $\uppi $ lib Expressions}{23}{subsection.5.1.3}
+\contentsline {subsection}{\numberline {5.1.4}The complete $\uppi $ Automaton for $\uppi $ lib Expressions in Python}{24}{subsection.5.1.4}
+\contentsline {section}{\numberline {5.2}$\uppi $ lib Commands}{27}{section.5.2}
+\contentsline {subsection}{\numberline {5.2.1}Grammar for $\uppi $ lib Commands}{27}{subsection.5.2.1}
+\contentsline {subsection}{\numberline {5.2.2}Grammar for $\uppi $ lib Commands in Python}{27}{subsection.5.2.2}
+\contentsline {subsection}{\numberline {5.2.3}Complete $\uppi $ Automaton for Commands in Python}{28}{subsection.5.2.3}
+\contentsline {subsection}{\numberline {5.2.4}$\uppi $ lib Declarations}{29}{subsection.5.2.4}
+\contentsline {subsection}{\numberline {5.2.5}Grammar for $\uppi $ lib Declarations}{29}{subsection.5.2.5}
+\contentsline {subsection}{\numberline {5.2.6}Grammar for $\uppi $ lib Declarations in Python}{30}{subsection.5.2.6}
+\contentsline {subsection}{\numberline {5.2.7}Complete $\uppi $ Automaton for $\uppi $ lib Declarations in Python}{30}{subsection.5.2.7}
+\contentsline {subsubsection}{Factorial example}{32}{section*.2}
+\contentsline {chapter}{\numberline {6}A $\uppi $ compiler for \textsc {Imp} in Maude}{34}{chapter.6}
+\contentsline {section}{\numberline {6.1}IMP syntax}{34}{section.6.1}
+\contentsline {section}{\numberline {6.2}\textsc {Imp}'s command-line interface}{35}{section.6.2}
+\contentsline {section}{\numberline {6.3}\textsc {Imp} parser}{36}{section.6.3}
+\contentsline {section}{\numberline {6.4}\textsc {Imp} to $\uppi $ lib transformer}{37}{section.6.4}
+\contentsline {section}{\numberline {6.5}Complete IMP compiler in Maude}{37}{section.6.5}
+\contentsline {subsection}{\numberline {6.5.1}Parser}{37}{subsection.6.5.1}
+\contentsline {subsection}{\numberline {6.5.2}Compiling to $\uppi $ lib}{41}{subsection.6.5.2}
+\contentsline {subsection}{\numberline {6.5.3}Pretty-printing IMP programs, their execution and model checking results}{47}{subsection.6.5.3}
+\contentsline {subsection}{\numberline {6.5.4}IMP command line interface}{54}{subsection.6.5.4}
+\contentsline {chapter}{\numberline {7}A $\uppi $ compiler for the Abstract Machine Notation in Maude}{58}{chapter.7}
+\contentsline {section}{\numberline {7.1}Preliminaries}{58}{section.7.1}
+\contentsline {subsection}{\numberline {7.1.1}Abstract Machine Notation grammar and example}{58}{subsection.7.1.1}
+\contentsline {subsection}{\numberline {7.1.2}The \texttt {MUTEX} machine.}{60}{subsection.7.1.2}
+\contentsline {section}{\numberline {7.2}$\uppi $ denotations for the Abstract Machine Notation}{61}{section.7.2}
+\contentsline {section}{\numberline {7.3}B Maude}{61}{section.7.3}
+\contentsline {subsection}{\numberline {7.3.1}Searching the computation graph of a GSL substitution}{63}{subsection.7.3.1}
+\contentsline {subsection}{\numberline {7.3.2}Linear Temporal Logic model checking AMN Machines}{65}{subsection.7.3.2}
+\contentsline {section}{\numberline {7.4}Related work}{66}{section.7.4}
+\contentsline {chapter}{\numberline {8}Related work}{67}{chapter.8}
+\contentsline {chapter}{\numberline {9}Conclusion}{69}{chapter.9}
+\contentsline {paragraph}{Acknowledgements}{70}{section*.3}

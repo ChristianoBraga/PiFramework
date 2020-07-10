@@ -1,0 +1,37 @@
+load full-maude
+load smtlogic
+load toasts
+
+
+load cnRedux2
+
+
+mod TEST is
+protecting CNMSMTPB .
+protecting TOASTS .
+protecting REAL-INTEGER .
+
+  var N : Integer  .
+  var Y : Integer  .
+  var W : Toast .
+  var SOL : Solution .
+endm
+
+red in TEST : 
+***problem(9, 90, (upTerm(1 / W / 0 ; zt zt / 0) =>* upTerm(N / zt / Y ; zt zt / 1) && upTerm(Y < 12))) .
+
+
+*** Problem 1
+***problem(9, 90, (upTerm(1 / W / 0 ; zt zt / 0) =>* upTerm(N / zt / Y ; zt zt / 1) && upTerm(Y < 12))) .
+
+*** Problem 2
+***problem(3, 90, (upTerm(N / W / 0 ; zt zt / 0) =>* upTerm(0 / zt / Y ; zt zt / 2) && upTerm(Y < 12))) .
+
+*** Problem 2 optimized
+***problem(3, 90, (upTerm(N / W / 0 ; zt zt / 0) =>* upTerm(0 / zt / Y ; zt zt / 2) && upTerm(N < 3 and Y < 12))) .
+
+*** Problem 3
+***problem(1, 90, (upTerm(N / W / 0 ; zt zt / 0) =>* upTerm(0 / zt / Y ; zt zt / 3) && upTerm(Y <= 12))) .
+
+*** Problem 3 optimized
+***problem(1, 90, (upTerm(N / W / 0 ; zt zt / 0) =>* upTerm(0 / zt / Y ; zt zt / 3) && upTerm(N < 3 and Y <= 12))) .

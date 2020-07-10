@@ -1,0 +1,35 @@
+---- Formal Modelling and Analysis of BPMN using Maude
+---- authors: Francisco Duran, Gwen Salaun, and Camilo Rocha
+---- file: README
+
+Files:
+- bpmn.maude
+  Contains the Maude specification of BPMN. It is the main file containing
+  most of the specification, including all rules.
+- my-real-time-maude.maude
+  Contains some of the modules in the official distribution of Real-Time Maude.
+  We only use the definition of Time and TimeInf sorts and operations on them.
+- run.maude
+  This file in the main file for the execution of data-aware BPMN processes.
+- apmaude.maude
+  This file contains operations for the automated analysis of BPMN processes.
+  Includes definitions for workloads, tick rules, analysis, etc.
+- examples
+  This directory includes some examples showing different BPMN processes to
+  be directly used on our Maude specification of BPMN.
+
+How to execute the examples:
+
+The run.maude file loads all other necessary files, so any example can be
+executed just by loading it into Maude, or by running the Maude executable
+with it as an argument. If you move into the provided MaudeBPMN folder, and
+assuming maude is in your path, just write:
+
+> maude run.maude
+
+You may run a different example just by changing the file loaded in the
+run.maude file, that is, just replace the line
+
+load <path-to-your-file>/<name-of-file-with-example>.maude
+
+as you will.

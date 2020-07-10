@@ -1,0 +1,76 @@
+---- Example p0058 in BPMN
+
+---- load ../bpmn.maude
+
+mod BPMN-EX is 
+  pr BPMN-SEM . 
+  ops sf1 sf2 sf3 sf4 sf5 sf6 sf7 sf8 sf9 sf10a sf11a sf12a sf13a sf14a sf15a sf16a sf17a sf18a sf19a sf20a sf10b sf11b sf12b sf13b sf14b sf15b sf16b sf17b sf18b sf19b sf20b : -> FId . 
+  ops initial final task0 task1 task2 task3 task4 task10 task11 task12 task13 task14 task15 task16 task17 task18 task19 task20 S1 J1 : -> NId . 
+
+  op fls : -> Set{Flow} . 
+  op nds : Boolean Integer Integer -> Set{Node} . 
+  eq init = token(sf1,0) .
+
+  var B : Boolean .
+  vars I J : Integer .
+  
+  eq fls 
+    = ( 
+        flow(sf1,3),
+        flow(sf2,0),
+        flow(sf3,3),
+        flow(sf4,4),
+        flow(sf5,4),
+        flow(sf6,2),
+        flow(sf7,0),
+        flow(sf8,1),
+        flow(sf9,3),
+        flow(sf10a,4),
+        flow(sf11a,4),
+        flow(sf12a,2),
+        flow(sf13a,1),
+        flow(sf14a,4),
+        flow(sf15a,3),
+        flow(sf16a,4),
+        flow(sf17a,4),
+        flow(sf18a,0),
+        flow(sf19a,0),
+        flow(sf20a,1),
+        flow(sf10b,0),
+        flow(sf11b,4),
+        flow(sf12b,0),
+        flow(sf13b,3),
+        flow(sf14b,1),
+        flow(sf15b,4),
+        flow(sf16b,1),
+        flow(sf17b,3),
+        flow(sf18b,1),
+        flow(sf19b,4),
+        flow(sf20b,2)
+      ) . 
+
+  eq nds(B,I,J)
+    = ( 
+        start(initial,sf1),
+        end(final,sf9),
+        task(task0,"task0",sf1,sf2,2),
+        task(task1,"task1",sf2,sf3,1),
+        task(task2,"task2",sf4,sf6,2),
+        task(task3,"task3",sf5,sf7,3),
+        task(task4,"task4",sf8,sf9,0),
+        task(task10,"task10",sf10a,sf10b,3),
+        task(task11,"task11",sf11a,sf11b,2),
+        task(task12,"task12",sf12a,sf12b,3),
+        task(task13,"task13",sf13a,sf13b,2),
+        task(task14,"task14",sf14a,sf14b,0),
+        task(task15,"task15",sf15a,sf15b,3),
+        task(task16,"task16",sf16a,sf16b,2),
+        task(task17,"task17",sf17a,sf17b,2),
+        task(task18,"task18",sf18a,sf18b,1),
+        task(task19,"task19",sf19a,sf19b,4),
+        task(task20,"task20",sf20a,sf20b,1),
+        split(S1,inclusive,sf3,((sf4, B ) (sf5,not(B)) (sf10a, I === J ) (sf11a,I =/== J) (sf12a, true ) (sf13a, true) (sf14a, false) (sf15a,B and (I < J)) (sf16a,true) (sf17a,false) (sf18a,I > J) (sf19a, I < J) (sf20a,I + 3 > J))),
+        merge(J1,inclusive,(sf6,sf7,sf10b,sf11b,sf12b,sf13b,sf14b,sf15b,sf16b,sf17b,sf18b,sf19b,sf20b),sf8)
+      ) . 
+
+endm

@@ -1,0 +1,87 @@
+@@grammar::IMP
+@@eol_comments :: /#.*?$/
+
+@@keyword :: 'and'
+@@keyword :: 'not'
+@@keyword :: 'or'
+@@keyword :: 'True'
+@@keyword :: 'False'
+@@keyword :: '+'
+@@keyword :: '-'
+@@keyword :: '(' ')'
+@@keyword :: '=='
+@@keyword :: '<'
+@@keyword :: '<='
+@@keyword :: '>'
+@@keyword :: '>='
+@@keyword :: ':='
+@@keyword :: 'while' 'do' 'end'
+@@keyword :: 'let' 'in' 'end'
+@@keyword :: 'if' 'then' 'else' 'end'
+@@keyword :: 'var' '='
+@@keyword :: 'const' '='
+@@keyword :: ';'
+@@keyword :: 'skip'
+@@keyword :: '{' '}'
+
+
+start = [ds:decSeq] [cs:cmd_seq] $ ;
+
+exp = paren_exp | bin_exp | un_exp | @:atom ;
+
+paren_exp = "(" e:exp ")" ;
+
+bin_exp = e1:exp op:binop e2:exp ;
+
+un_exp = op:"not" e:exp ;
+
+atom = @:num_atom  | @:truth_atom | @:id_atom ;
+
+num_atom = number ;
+
+truth_atom = truth ;
+
+id_atom = identifier ;
+
+binop = "and"| "or" | "==" | "<=" | ">=" | "<" | ">"  | "+" | "-" | "*" | "/"  ; 
+
+truth = 'True' | 'False' ;
+
+# This makes sure that an identifier does not match a keyword.
+@name
+identifier = /(?!\d)\w+/ ;
+
+number = /\d+/ ;
+
+blk = "{" ds:decSeq cs:cmd_seq "}" ;
+
+cmd_seq = ";"%{ac:atom_cmd}+ ;
+
+atom_cmd = cond | loop | assign | call | skip ;
+
+skip = "skip" ;
+
+assign = idn:identifier op:":=" e:exp ;
+
+cond = op:"if" t:paren_exp b1:blk ["else" b2:blk] ; 
+
+loop = op:"while" t:paren_exp b:blk ;
+
+dec = fn | var | const ;
+
+decSeq = { d:dec }* ;
+
+var = op:"var" ","%{ idn:identifier "=" e:exp }+ ";" ;
+
+const = op:"const" idn:identifier "=" e:exp ";" ;
+
+fn = op:"def" idn:identifier '(' f:formal ')' b:blk ;
+
+formal = ','%{ identifier }* ;
+
+call = idn:identifier '(' a:actual ')' ;
+
+actual = ','%{ exp }* ;
+
+
+

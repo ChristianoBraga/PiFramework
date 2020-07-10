@@ -1,0 +1,35 @@
+---- Example p0061 in BPMN
+
+mod BPMN-EX is 
+  pr BPMN-SEM . 
+  ops sf1 sf2 sf3 sf4 sf6 sf8 sf9 : -> FId . 
+  ops initial final AAA BBB CCC DDD S1 J1 : -> NId . 
+  vars X Y : Integer .
+  op fls : -> Set{Flow} . 
+  op nds : Integer Integer -> Set{Node} . 
+  eq init = token(sf1,0) . 
+
+  eq fls 
+    = ( 
+        flow(sf1,0),
+        flow(sf2,0),
+        flow(sf3,2),
+        flow(sf4,1),
+        flow(sf6,0),
+        flow(sf8,3),
+        flow(sf9,2)
+      ) . 
+
+  eq nds(X, Y)
+    = ( 
+        start(initial,sf1),
+        end(final,sf9),
+        task(AAA,"AAA",sf1,sf2,2),
+        task(BBB,"BBB",sf2,sf3,2),
+        task(CCC,"CCC",sf4,sf6,0),
+        task(DDD,"DDD",sf8,sf9,3),
+        split(S1,exclusive,sf3,(sf4,X < Y)),
+        merge(J1,exclusive,(sf6),sf8)
+      ) .
+
+endm

@@ -1,0 +1,71 @@
+---- DMN example in page 146, Figure 69
+
+mod BPMN-EX is
+  pr VERIF .
+  ops sf1 sf2 sf3 sf4 sf5 sf6 sf7 sf8 sf9 sf10 sf11 sf12 sf13 sf14 sf15 sf16 sf17 sf18 sf19 sf20 sf21 sf22 sf23 : -> FId .
+  ops initial final1 final2 final3 t1 t2 t3 t4 t5 t6 t7 t8 t9 t10 s1 s2 s3 s4 s5 m1 m2 : -> NId .
+  var  OK         : Boolean .
+  vars TRY FSIZE  : Integer .
+  var  QUAL       : Real .
+  eq init = token(sf1, 0) .
+
+  eq fls
+    = (
+        flow(sf1,0),
+        flow(sf2,0),
+        flow(sf3,0),
+        flow(sf4,0),
+        flow(sf5,0),
+        flow(sf6,0),
+        flow(sf7,0),
+        flow(sf8,0),
+        flow(sf9,0),
+        flow(sf10,0),
+        flow(sf11,0),
+        flow(sf12,0),
+        flow(sf13,0),
+        flow(sf14,0),
+        flow(sf15,0),
+        flow(sf16,0),
+        flow(sf17,0),
+        flow(sf18,0),
+        flow(sf19,0),
+        flow(sf20,0),
+        flow(sf21,0),
+        flow(sf22,0),
+        flow(sf23,0)
+      ) .
+
+  eq nds(v(OK) v(TRY) v(FSIZE) v(QUAL))
+    = ( start(initial, sf1),
+        end(final1, sf12),
+        end(final2, sf23),
+        end(final3, sf22),
+        task(t1, "Apply online", sf1, sf2, 0, TRY := 0),
+        task(t2, "Upload scanned passport", sf3, sf4, 0, lookup(FSIZE) lookup(QUAL)),
+        task(t3, "Alert size error", sf5, sf6, 0, TRY := TRY + 1),
+        task(t4, "Alert quality error", sf8, sf10, 0, TRY := TRY + 1),
+        task(t5, "Evaluate application", sf9, sf13, 0, lookup(OK)),
+        task(t6, "Notify reject", sf14, sf23, 0),
+        task(t7, "Deliver visa", sf21, sf22, 0),
+        task(t8, "Pay for fees", sf17, sf18, 0),
+        task(t9, "Notify accept", sf15, sf16, 0),
+        task(t10, "Prepare visa", sf19, sf20, 0),
+        merge(m1, exclusive, (sf2, sf6, sf11), sf3),
+        split(s1, exclusive, sf4, (sf5, FSIZE >= 2) (sf7, FSIZE < 2)),
+        ---- use (sf5, FSIZE >= 2 and TRY < 3) to make it finite, but then you
+        ---- need a new branch (sf24, TRY == 3), and end task end(final4, sf24)
+        ---- what happen if the new branch sf24 is not specified? Can we check
+        ---- that every split covers all posibilities and no overlaps, e.g.,
+        ---- for branches with constraints A, B and C, for every two A /\ B == false,
+        ---- and A \/ B \/ C == true
+        split(s3, exclusive, sf7, (sf8, QUAL < 9/10) (sf9, QUAL >= 9/10)),
+        split(s2, exclusive, sf10, (sf11, TRY < 3) (sf12, TRY === 3)),
+        split(s4, exclusive, sf13, (sf14, OK === false) (sf15, OK === true)),
+        split(s5, parallel, sf16, (sf17, sf19)),
+        merge(m2, parallel, (sf18, sf20), sf21)
+      ) .
+
+endm
+
+eof

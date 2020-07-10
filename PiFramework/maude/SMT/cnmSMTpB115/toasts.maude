@@ -1,0 +1,33 @@
+mod TOASTS is
+  protecting INTEGER .
+  protecting META-LEVEL .
+  
+  sorts RealToast EmptyToast Toast Pan Kitchen MaybeKitchen Tray System .
+  subsort RealToast EmptyToast < Toast < Tray .
+  subsort Kitchen < MaybeKitchen .
+  
+  vars A B C D N OK Y Z : Integer .
+  var R : RealToast .
+  var V : Toast .
+  var T : Tray .
+  var K : Kitchen .
+
+  op zt : -> EmptyToast .
+  op [_,_] : Integer Integer -> RealToast .
+  op __ : Toast Toast -> Pan [comm] .
+  op _;_ : Tray Tray -> Tray [comm assoc id: zt] .
+  op _;_ : Integer Pan -> Kitchen .
+  op cook : Kitchen Integer -> MaybeKitchen .
+  op _/_/_/_ : Integer Tray Kitchen Integer -> System .
+  
+******  Rules for module TOASTS
+  crl cook(Y ; zt zt, Z) => Y + Z ; zt zt if (Z > 0) = (true).Boolean .
+  crl cook(Y ; [A, B] zt, Z) => Y + Z ; [A + Z, B] zt if ((A >= 0) and (Z > 0) and (Z + A <= 5)) = (true).Boolean .
+  crl cook(Y ; [A, B] [C, D], Z) => Y + Z ; [A + Z, B] [C + Z, D] if ((A >= 0) and (C >= 0) and (Z > 0) and (A + Z <= 5) and (C + Z <= 5)) = (true).Boolean .
+  crl N / T / K / OK => N - 1 / [0, 0] ; T / K / OK if (N > 0) = (true).Boolean .
+  rl N / R ; T / Y ; zt V / OK => N / T / Y ; R V / OK .
+  rl Y ; R V => cook(Y ; R V, Z) [nonexec] .
+  rl Y ; [5, 0] V => Y ; [0, 5] V .
+  rl N / T / Y ; [A, B] V / OK => N / [A, B] ; T / Y ; zt V / OK .
+  crl N / T / Y ; [5, 5] V / OK => N / T / K / OK + 1 if cook(Y ; zt V, 1) => K .
+endm

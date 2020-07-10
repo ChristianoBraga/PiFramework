@@ -1,0 +1,21 @@
+--- A recursive implementation of the factorial function.
+(module Fact-Rec
+   var y
+   init y = 1
+   proc fact(x) { 
+      if ~(x == 0)   
+      {
+		y := y * x ;
+		fact(x - 1) 
+      }
+      else print(y) 
+   }
+end)
+
+(view)
+
+set show loop stats on .
+set show loop timing on .
+(exec fact(100))
+
+quit

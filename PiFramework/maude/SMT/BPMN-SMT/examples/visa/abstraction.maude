@@ -1,0 +1,86 @@
+---- Symbolic Formal Modelling and Analysis of BPMN using Maude+CVC4
+---- authors: Francisco Duran, Gwen Salaun, Camilo Rocha
+---- file: verif.maude
+----
+---- This file contains operations for the automated symbolic analysis
+---- of BPMN processes
+
+load ../../verif.maude
+load visa.maude
+load model-checker.maude
+
+red in STRING : "visa.maude" .
+
+mod PREDS is
+  pr VERIF .
+  pr BPMN-EX .
+  including SATISFACTION .
+  subsort Configuration < State .
+  ops final : -> Prop .
+
+  vars PId : PId .
+  vars SId : SId .
+  vars FId : FId .
+  vars NId : NId .
+  vars Nodes : Set{Node} .
+  vars Atts Atts1 : AttributeSet .
+  vars Tks : Set{Message} .
+
+  eq < PId : Process | nodes : (end(NId, FId), Nodes), Atts >
+     < SId : Simulation | tokens : (token(FId, 0), Tks), Atts1 >
+     |= final = true .
+endm
+
+
+mod ABSTRACTION is
+  pr VERIF .
+  pr BPMN-EX .
+
+  vars TRYA TRYB TRYC N M TRY1 TRY2 TRY3 TRY4 TRY5 : Integer .
+  vars B B' B'' : Boolean .
+
+-----  eq (B and TRYB === N) and (TRYA === TRYB + M)
+-----    = (B and TRYB === N) and (TRYA === N + M) .
+
+-----  eq ((B and B') and B'') and B' = (B and B'') and B' .
+
+-----  eq TRYA === N + 1 + 1 + 1 + 1 = TRYA === 1 + 1 + 1 + 1 .
+
+  eq < s : Simulation |
+       constr : (TRY1 === 0 and FSIZE#0:Integer >= 2
+                 and TRY2 === TRY1 + 1 and FSIZE#0:Integer >= 2
+                 and TRY3 === TRY2 + 1 and FSIZE#0:Integer >= 2
+                 and TRY4 === TRY3 + 1 and FSIZE#0:Integer >= 2
+                 and TRY5 === TRY4 + 1),
+       varidx : (v(OK:Boolean) |-> 0, v(TRY:Integer) |-> 5, v(FSIZE:Integer) |-> 0, v(QUAL:Real) |-> 0),
+       Atts:AttributeSet >
+   = < s : Simulation |
+       constr : (TRY1 === 0 and FSIZE#0:Integer >= 2
+                 and TRY2 === TRY1 + 1 and FSIZE#0:Integer >= 2
+                 and TRY3 === TRY2 + 1 and FSIZE#0:Integer >= 2
+                 and TRY4 === TRY3 + 1 and FSIZE#0:Integer >= 2),
+       varidx : (v(OK:Boolean) |-> 0, v(TRY:Integer) |-> 4, v(FSIZE:Integer) |-> 0, v(QUAL:Real) |-> 0),
+       Atts:AttributeSet > .
+  eq (B and B') and B' = B and B' .
+endm
+
+mod CHECK is
+  pr ABSTRACTION .
+  inc PREDS .
+  inc MODEL-CHECKER .
+endm
+
+red modelCheck(
+      initSystem(v(OK:Boolean) v(TRY:Integer) v(FSIZE:Integer) v(QUAL:Real)),
+      []final) .
+
+eof
+search  =>! Conf:Configuration .
+
+red FSIZE#0:Integer >= (2).Integer
+    and TRY#50:Integer === TRY#49:Integer + (1).Integer
+    and FSIZE#0:Integer >= (2).Integer
+    and TRY#51:Integer === TRY#50:Integer + (1).Integer .
+
+red TRY#50:Integer === TRY#49:Integer + (1).Integer
+    and TRY#51:Integer === TRY#50:Integer + (1).Integer .

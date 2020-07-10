@@ -1,0 +1,686 @@
+% $\color{red} \Pi$: Towards a Simple Semantic Framework for Com$\color{red}\mbox{pi}$ler Construction
+% **[Christiano Braga](http://www.ic.uff.br/~cbraga)**  
+% April 12, 2019
+
+---
+header-includes:
+    - "\\usepackage{bbm}"
+    - "\\usepackage{fourier}"	
+    - "\\usepackage{amsmath}"		
+	- "\\usepackage{tikz}"
+    - "\\usetikzlibrary{arrows,shapes,decorations,automata,backgrounds,positioning,chains,fit,calc}"
+	- "\\usepackage{adjustbox}"
+<!-- aspectratio: 169 -->
+---
+
+## Acknowledgements
+
+* Thanks to the FADoSS group, and to Professor Narciso Martí Oliet in
+  particular, for partially sponsoring this visit to UCM and the
+  presentation of this work at SAC 2019.
+
+* Thanks to Fabricio Chalub, E. Hermann Haeusler, José Meseguer and
+  Peter D. Mosses, for the long term collaboration that built the
+  foundations of this work.
+
+## Standard approach to compiler construction
+
+<!-- Detailed discussions on grammar classes, specially LR(K), laLR, PEG -->
+
+<!-- \fbox{Source to source!} -->
+
+$$
+\begin{array}{lllll}
+p_L \xrightarrow{\mathit{lexical \ analysis}} \mathit{tokens}_p \\
+\quad \qquad \qquad \xrightarrow{\mathit{syntactical \ analysis}} ast_p \\ 
+\quad \qquad \qquad \qquad\qquad\xrightarrow{\mathit{semantic \ analysis}} ast_p \checkmark \\ 
+\quad \qquad \quad \qquad \qquad \qquad\qquad\qquad\xrightarrow{\mathit{code \ generation}} p_{asm} \\ 
+\quad \qquad \qquad \qquad \qquad \qquad \qquad\qquad\qquad\qquad\xrightarrow{\mathit{code \ optimization}} p'_{asm}
+\end{array}
+$$
+
+## $\ldots$ and \color{cyan}Chomsky's hierarchy
+
+<!-- Detailed discussions on grammar classes, specially LR(K), laLR, PEG -->
+
+<!-- \fbox{Source to source!} -->
+
+$$
+\begin{array}{lllll}
+%
+% Lexer
+% 
+p_L 
+\xrightarrow{
+  \scriptsize
+  \begin{tabular}{c}
+    \textit{lexical analysis} \\
+    {\color{cyan}\textit{Linear Grm.}}
+  \end{tabular}
+} \mathit{tokens}_p \\
+%
+% Parser
+%
+\quad \quad \qquad 
+\xrightarrow{
+\scriptsize
+\begin{tabular}{c}
+\textit{syntactical analysis} \\
+{\color{cyan}\textit{Context-free Grm.}}
+\end{tabular}
+} ast_p \\
+%
+% Type-checker
+%
+\qquad \qquad \qquad \qquad\qquad
+\xrightarrow{
+\scriptsize
+\begin{tabular}{c}
+\textit{semantic analysis} \\
+{\color{cyan}\textit{Context-sensitive Grm.}}
+\end{tabular}
+} 
+ast_p \checkmark \\ 
+%
+% Code generation
+%
+\quad \qquad \quad \qquad \qquad \qquad\qquad\qquad
+\xrightarrow{
+\scriptsize
+\begin{tabular}{c}
+\textit{code generation} \\
+{\color{cyan}\textit{Context-sens. Grm.}}
+\end{tabular}
+}
+p_{asm} \\
+%
+% Code optimization
+%
+\quad \qquad \qquad \qquad \qquad \qquad \qquad\qquad\qquad\qquad
+\xrightarrow{
+\scriptsize
+\begin{tabular}{c}
+\textit{code optimization} \\
+{\color{cyan}\textit{Context-sens. Grm.}}
+\end{tabular}
+} p'_{asm}
+\end{array}
+$$
+
+
+##
+
+\begin{picture}(320,250)
+\put(10,60){ \includegraphics[scale=0.3]{dragon-book.jpg}}
+\put(170,130){\begin{minipage}[t]{0.4\linewidth}
+{What about fighting the dragon $\ldots$}
+\end{minipage}}
+\end{picture}
+
+<!-- 
+%\includegraphics[scale=0.3]{DragonMedium.png} \\
+%\tiny \url{https://llvm.org/img/DragonMedium.png}
+-->
+
+## 
+
+\begin{picture}(320,250)
+\put(10,120){ 
+\begin{tabular}{c}
+\includegraphics[scale=0.05]{pi-logo.png} \\
+\tiny \url{http://github.com/ChristianoBraga/PiFramework}
+\end{tabular}
+}
+\put(170,130){\begin{minipage}[t]{0.4\linewidth}
+{... with $\color{red}{\mathit{semantic}}$ weaponry instead?}
+\end{minipage}}
+\end{picture}
+
+# $\color{red}\Pi$
+
+## $\color{red}\Pi$ approach to compiler construction i
+
+$$
+p_L \xrightarrow{{\color{red} \Pi_\mathit{Den}}} 
+\begin{array}{c}
+{\color{red} \Pi_\mathit{IR}} \\
+\begin{adjustbox}{scale=0.5}
+\begin{tikzpicture}
+\tikzset{dot/.style={inner sep=2pt,circle,draw,fill}}
+\node[dot](z){}
+  child{node[dot]{} 
+	child{node[dot]{}}
+	child{node[dot]{}}}
+  child{node[dot]{}} 
+;  
+\end{tikzpicture}
+\end{adjustbox}
+\end{array}
+\xrightarrow{{\color{red}\Pi_\delta}} 
+\begin{array}{c}
+{\color{red} \Pi_\mathit{Aut}} \\
+\begin{adjustbox}{scale=0.2}
+\begin{tikzpicture}
+	[->,>=stealth',shorten >=2pt,auto,node distance=3cm, semithick, 
+	 dot/.style={inner sep=5pt,circle,draw,fill}]
+\node[initial, dot] (s0) {} ; \node at ([shift={(90:0.25)}] s0.90) {$s_0$};
+\node[dot]           (s1) [below left of = s0] {}; \node at ([shift={(180:0.25)}] s1.180) {$s_1$};
+\node[dot]           (s5) [below right of=s0] {}; \node at ([shift={(0:0.25)}] s5.0) {$s_5$};
+\node[dot]           (s2) [below left of =s1] {}; \node at ([shift={(180:0.25)}] s2.180) {$s_2$};
+\node[dot]           (s3) [below right of =s1] {}; \node at ([shift={(270:0.25)}] s3.270) {$s_3$};
+\node[dot]           (s6) [below right of =s5] {}; \node at ([shift={(0:0.25)}] s6.0) {$s_6$};
+\node[dot]           (s4) [below right of =s2] {}; \node at ([shift={(180:0.25)}] s4.180) {$s_4$};
+\node[dot]           (s7) [below right of =s3] {}; \node at ([shift={(0:0.25)}] s7.0) {$s_7$};
+\path (s0) edge (s1) edge (s5) ;
+\path (s1) edge (s2) edge (s3) ;
+\path (s5) edge (s3) edge (s6) ;
+\path (s2) edge (s4) edge [bend left] (s0) ;
+\path (s3) edge (s4) edge (s7) ;
+\path (s4) edge [bend left] (s5) ;
+\path (s6) edge [bend right] (s0) ;
+\path (s6) edge (s7) ;
+\path (s7) edge [bend right] (s1) ;
+\end{tikzpicture}
+\end{adjustbox}
+\end{array}
+$$
+
+
+<!-- ##
+
+$$\begin{tabular}{c}
+\includegraphics[scale=0.05]{pi-logo.png} \\
+\mbox{http://github.com/ChristianoBraga/PiFramework}
+\end{tabular}$$
+-->
+
+## $\color{red}\Pi$ approach to compiler construction ii
+
+$p_L \xrightarrow{{\color{red}\Pi_{\mathit{Den}}}} p_{\color{red}\Pi_{IR}} 
+\left\{
+\begin{array}{l}
+\xrightarrow{\mathit{validation}} \checkmark \\
+\xrightarrow{\mathit{interpretation}} \mathit{output} \\
+\xrightarrow{\mathit{code \ generation}}
+p_{asm} \xrightarrow{\mathit{code \ optimization}}
+p'_{asm}
+\end{array}
+\right.$
+
+* ${\color{red}\Pi_{IR}}$ semantics is given in terms of $\color{red}\Pi$ _automata_: a simple stack-based machine.
+* $\color{red}\Pi$ automata mimic computation of postfixed expressions, like an "HP calculator".
+<!-- * Focus on _semantics_ (while teaching), and not so much on syntax,
+  such as (la)LR(k) or PEG grammars and their algorithms. -->
+
+## $\color{red}\Pi$ approach to compiler construction iii
+
+$\color{red}\Pi$ denotations:
+$$ \llbracket \cdot \rrbracket_{\color{red}\Pi_{Den}} : G_L \to G_{\color{red}\Pi_{IR}} $$
+
+$\color{red}\Pi$ automata: Let $L(G_{\color{red}\Pi_{IR}}) =
+{\color{red}\Pi_{IR}}$ programs, $L(G_{\color{red}\Pi_{\iota}}) =
+{\color{red}\Pi_{IR}}$ programs with computed values and
+opcodes\footnote{Statements used during the $\color{red}\Pi$
+automaton-evaluation of a program.}, the set $\mathbf{Q}$ \textbf{is the disjoint union
+of semantic components}, such as $\kappa =
+L(G_{\color{red}\Pi_{\iota}})^*$ is the control stack, $\nu =
+L(G_{\color{red}\Pi_{\iota}})^*$ is the value stack, $\sigma$ is
+the memory store, $\rho$ is the environment, 
+a $\color{red}\Pi$ automaton $\mathcal{A}$ is the tuple 
+$$
+\mathcal{A} = \langle L(G_{\color{red}\Pi_{\iota}}), Q, \delta, q_0, F \rangle 
+$$
+where $q_0 \in Q$, $F \subseteq Q$, $\mathbf{\delta : Q \to Q}$.
+
+<!-- ## $\color{red}\Pi$ approach to compiler construction iii
+
+$$ \llbracket p_L \rrbracket_{\color{red}\Pi_{Den}} = p_{\color{red}\Pi_{IR}} \ ; \ \llbracket p_{\color{red}\Pi_{IR}} \rrbracket_{\color{red}\Pi_{Aut}} \models \Lambda$$
+
+$$\Lambda = 
+\left\{
+\begin{array}{lr}
+\varphi_{DL} & \mbox{program verification} \\
+(\exists \ O), interp(O) & \mbox{program execution}\\
+\mathit{typecheck()} & \mbox{static analysis} \\
+(\exists \ p_{asm}), codegen ; optimize_\omega (p_{asm}) & \vdots \\
+\ldots 
+\end{array}
+\right.$$
+-->
+
+## ${\color{red}\Pi_{IR}}$ {.allowframebreaks}
+
+  ```
+  <PiIR> ::= <Exp> | <Cmd> | <Dec> | <Abs>
+  ```
+
+* Declarations: statements that create an environment, binding identifiers to (bindable) values.
+  ```
+  <Dec> ::= Bind(<Id>, <Exp>) 
+  <Cmd> ::= Blk(<Dec>, <Cmd>)
+  ```
+
+\pagebreak
+
+* Abstractions: extend Bindables by allowing a name to be bound to a
+    list of formal parameters, a list of identifiers, and a block in
+    the environment. Such names can be called and applied to actual
+    parameters, a list of expressions.
+
+  ```
+  <Abs>     ::= Abs(<Formals>, <Blk>)
+  <Formals> ::= <Id>*
+  <Cmd>     ::= Call(<Id>, <Actuals>)
+  <Actuals> ::= <Exp>*
+  ```
+
+\pagebreak
+
+* $\color{red} \Pi_{IR}$ constructions may be _functional_ or _relational_.
+  * Functional constructions are understood as terminating functions.
+  * Relational constructions are understood as relations and may not terminate.
+
+## $\color{red} \Pi$ automata for blocks and functions {.allowframebreaks}
+
+* Transition function for blocks:  
+Let $CS = D :: \#BLKDEC :: M :: \#BLKCMD :: C$ and $VS = L :: V$,
+\begin{align*} {\color{red}\delta}({\color{red}Blk}(D, M) :: C, V, E,
+S, L) & = {\color{red}\delta}(CS, VS, E, S, \emptyset), \\
+{\color{red}\delta}(\#BLKDEC :: C, E' :: V, E, S, L) & =
+{\color{red}\delta}(C, E :: V, E / E', S, L), \\
+{\color{red}\delta}(\#BLKCMD :: C, E :: L :: V, E', S, L') & =
+{\color{red}\delta}(C, V, E, S', L), \\ & \qquad \mbox{ where } S' = S
+/ L.  \end{align*}
+
+* Transition function for abstractions:  
+\begin{align*}
+{\color{red}\delta}({\color{red}Abs}(F, B) :: C, V, E, S, L) = {\color{red}\delta}(C, Closure(F, B, E) :: V, E, S, L)
+\end{align*}
+
+* Transition function for calls:  
+Let 
+$\color{blue}CS_1 = X_n :: X_{n-1} :: \ldots :: X_1 :: \#CALL(I, n) :: C$, 
+$A = [V_1, V_2, \ldots, V_n]$,
+$E = [I \mapsto Closure(F, B,E_1)] E_2$, 
+$\color{blue}CS_2 = B :: \#BLKCMD :: C$,
+and $E'= (E_1 / match(F, [V_1, V_2, ..., V_n]))$ in,  
+\begin{align*} 
+{\color{red}\delta}({\color{red}Call}(I, [X_1, X_2, \ldots, X_n]) :: C, V,E, S, L) & = {\color{red}\delta}({\color{blue}CS_1}, V, E, S, L) \\
+{\color{red}\delta}(\#CALL(I, n) ::C, A :: V, E, S, L) & = 
+{\color{red}\delta}({\color{blue}CS_2}, E_2 :: V, E', S, L) 
+\end{align*}
+
+# A simple example 
+
+## How to write a compiler using $\color{red}\Pi$? {#sl:how-to-write-a-compiler-with-pi}
+
+1. Write a context-free gramar for the source language.
+1. Write a transformation from the source language to $\color{red}\Pi_{IR}$.
+
+* The implementation of the $\color{red}\Pi$ framework will do the heavy lifting.
+
+## The language Imp
+
+* Expressions: identifier, arithmetic, Boolean expressions
+* Commands: `:=`, `while`, `if-then-else`, `;`, `let-in`
+* Declarations: `const`, `var`, `fn`  
+`<let>    ::= 'let' <dec> 'in' <cmd>+`  
+`<dec>    ::= <var> | <fn>`  
+`<var>    ::= 'var' <identifier> '=' <expression>`  
+`<fn>     ::=  `  
+  `'fn' <identifier> '(' <formal> ')' '=' <cmd>`  
+`<formal> ::= <identifier> (',' <identifier>)* | ` $\epsilon$
+
+## Imp code
+```ocaml
+# In this example we encapsulate the iterative 
+# calculation for the factorial within a call.
+let var z = 1
+in
+    let fn f(x) =
+        let var y = x
+        in
+            while not (y == 0)
+            do
+                z := z * y
+                y := y - 1
+in f(10)
+```
+
+## Some $\color{red} \Pi$ denotations for Imp$
+
+* Function declaration:  
+\begin{align*}
+\llbracket fn(ast) \rrbracket_{\color{red}\Pi_{\mathit{Den}}} & = {\color{red}Bind}(\llbracket fst(ast) \rrbracket, \mathbf{mkAbs}(snd(ast), trd(ast))
+\end{align*}
+
+* Block command:  
+\begin{align*}
+\llbracket let(ast) \rrbracket_{\color{red}\Pi_{\mathit{Den}}} & = {\color{red}Blk}(\llbracket left(ast) \rrbracket, \mathbf{mkCSeq}(right(ast))), \\ \nonumber
+& \quad \mbox{ if } right(ast) \in \ <cmd>^+
+\end{align*}
+
+## Imp AST in ${\color{red}\Pi_{IR}}$
+```code
+Blk(Bind(Id(z), Ref(Num(1))),
+ Blk(Bind(Id(f),
+   Abs(Id(x),
+     Blk(Bind(Id(y), Ref(Id(x))),
+       Loop(Not(Eq(Id(y), Num(0))),
+         CSeq(Assign(Id(z), Mul(Id(z), Id(y))),
+           Assign(Id(y), Sub(Id(y), Num(1)))))))),
+   Call(Id(f), [Num(10)])))
+```
+
+<!-- ## Executing an $Im{\color{red}\pi}$ program -->
+
+# A Maude implementation of $\color{red} \Pi$
+
+## Maude {.allowframebreaks}
+
+* Maude is language and system that implements Meseguer's Rewriting Logic.
+
+* Computations in Maude are realized by _term rewriting_. 
+  * A term is well-defined and is rewritten with respect to a _module_ declaration.
+
+* Some of its features include:
+  * Rewriting modulo axioms for identity, commutativity, associativity and idempotence.
+  * Built-in Linear Temporal Logic model checking.
+  * Metaprogramming.
+
+## $\color{red} \Pi$ and term rewriting systems
+
+* $\mathcal{A} = (L(G_{\color{red}\Pi_{IR}})^*, \delta, q_0, F) \Rightarrow
+  \mathcal{T} = (A, \longrightarrow)$, such that $A = Q$ and
+  $\longrightarrow = \delta$.
+
+* Functional and relational constructions in $\color{red}\Pi_{IR}$
+  * The semantics of functional constructions are represented by Church-Rosser reduction relations,
+  * while relational constructions are represented by an unconstrained reduction relation.
+
+* A $\color{red} \Pi$ automaton gives rise to a TRS where its defining rules are _unconditional_.
+  * An important characteristic booth from operational and proof-theoretical perspectives.
+
+<!-- * Set-rewriting makes it easier to specify monotonic rules. -->
+
+## Writing a compiler in Maude {.allowframebreaks}
+
+Write the following _metafunctions_:
+
+1. [Parser] $\mathit{parseC} : \mathit{Qid} \to
+   \mathit{ConcreteSyntax_S}$, where $S$ is the source language,
+   $\mathit{ConcreteSyntax_S}$ is the module denoting the context-free
+   grammar of the language $S$.
+  
+1. [Parser] $\mathit{parseA} : \mathit{ConcreteSyntax_S} \to \mathit{AbstractSyntax_S}$
+<!-- To construct the _abstract syntax_ of a given program, `parse` must
+  be composed with a function transforms terms in the grammar of the
+  concrete syntax to terms in the module of the abstract syntax. -->
+  
+1. [Compiler] $\mathit{comp}: \mathit{AbstractSyntax_S} \to
+   \mathit{AbstractSyntax_T}$, where $T$ is the target language
+<!-- The second-to-last step is to transform a given term in the abstract
+  syntax of the source language into a term in the abstract syntax of the target language. -->
+  
+1. [Pretty-printer] $\mathit{pp}: \mathit{AbstractSyntax_T} \to \mathit{Qid}$
+<!-- The final step is to pretty-print the abstract-syntax of the target
+  language into its concrete syntax. -->
+
+## Writing a compiler in Maude with $\color{red}\Pi$
+
+1. Write $\mathit{parseC}$ and $\mathit{parseA}$, where  
+   $$\mathit{AbstractSyntax_S} = {\color{red}\Pi_{IR}}.$$
+
+1. Write a pretty-printer from ${\color{red}\Pi_{IR}}$ to $S$.
+
+## The B Maude tool {.allowframebreaks}
+(Joint work with Narciso Martí Oliet.)
+
+$$\begin{tabular}{c}
+\includegraphics[scale=0.3]{bmaude.jpg} \\
+{\scriptsize\mbox{http://github.com/ChristianoBraga/BMaude}}
+\end{tabular}$$
+
+* B Maude is a formal tool for Abstract Machine Notation Descriptions
+  of Abrial's B method implemented in Maude using $\color{red}\Pi$ and
+  Maude's metaprogramming facilities.
+  
+* It represents AMN programs as $\color{red}\Pi_{IR}$ programs.
+
+* We developed a function to compile from AMN to ${\color{red}\Pi_{IR}}$
+  and a pretty-printer from ${\color{red}\Pi_{IR}}$ to AMN.
+
+* Computations are done at $\color{red}\Pi$ automata level.
+
+## Mutex analysis in B Maude
+
+$$
+\begin{adjustbox}{max totalsize={\textwidth}{.7\textheight},center}
+\begin{tikzpicture}[->,>=stealth',shorten >=2pt,auto,node distance=3cm, semithick]
+\node[initial, state] (s0)  {$n_1 n_2$} ; \node at ([shift={(90:0.25)}] s0.90) {$s_0$};
+\node[state]           (s1) [below left of = s0] {$t_1 n_2$}; \node at ([shift={(180:0.25)}] s1.180) {$s_1$};
+\node[state]           (s5) [below right of=s0] {$n_1 t_2$}; \node at ([shift={(0:0.25)}] s5.0) {$s_5$};
+\node[state]           (s2) [below left of =s1] {$c_1 n_2$}; \node at ([shift={(180:0.25)}] s2.180) {$s_2$};
+\node[state]           (s3) [below right of =s1] {$t_1 t_2$}; \node at ([shift={(270:0.25)}] s3.270) {$s_3$};
+\node[state]           (s6) [below right of =s5] {$n_1 c_2$}; \node at ([shift={(0:0.25)}] s6.0) {$s_6$};
+\node[state]           (s4) [below right of =s2] {$c_1 t_2$}; \node at ([shift={(180:0.25)}] s4.180) {$s_4$};
+\node[state]           (s7) [below right of =s3] {$t_1 c_2$}; \node at ([shift={(0:0.25)}] s7.0) {$s_7$};
+\path (s0) edge (s1) edge (s5) ;
+\path (s1) edge (s2) edge (s3) ;
+\path (s5) edge (s3) edge (s6) ;
+\path (s2) edge (s4) edge [bend left] (s0) ;
+\path (s3) edge (s4) edge (s7) ;
+\path (s4) edge [bend left] (s5) ;
+\path (s6) edge [bend right] (s0) ;
+\path (s6) edge (s7) ;
+\path (s7) edge [bend right] (s1) ;
+\end{tikzpicture}
+\end{adjustbox}$$
+
+## Mutex analysis in B Maude - Liveness problem
+
+$$
+\begin{adjustbox}{max totalsize={\textwidth}{0.7\textheight},center}
+\begin{tikzpicture}[->,>=stealth',shorten >=2pt,auto,node distance=3cm, semithick, color=gray]
+\node [initial, state] (s0)  {${\color{red}n_1} n_2$} ; \node at ([shift={(90:0.25)}] s0.90) {$s_0$}; 
+\node[state]           (s1) [below left of = s0] {${\color{red}t_1} n_2$}; \node at ([shift={(180:0.25)}] s1.180) {$s_1$};
+\node[state]           (s5) [below right of=s0] {$n_1 t_2$}; \node at ([shift={(0:0.25)}] s5.0) {$s_5$};
+\node[state]           (s2) [below left of =s1] {$c_1 n_2$}; \node at ([shift={(180:0.25)}] s2.180) {$s_2$};
+\node[state]           (s3) [below right of =s1] {${\color{red}t_1} t_2$}; \node at ([shift={(270:0.25)}] s3.270) {$s_3$};
+\node[state]           (s6) [below right of =s5] {$n_1 c_2$}; \node at ([shift={(0:0.25)}] s6.0) {$s_6$};
+\node[state]           (s4) [below right of =s2] {$c_1 t_2$}; \node at ([shift={(180:0.25)}] s4.180) {$s_4$};
+\node[state]           (s7) [below right of =s3] {${\color{red}t_1} c_2$}; \node at ([shift={(0:0.25)}] s7.0) {$s_7$};
+\path (s0) edge [color=black] (s1) edge (s5) ;
+\path (s1) edge (s2) edge [color=black] (s3) ;
+\path (s5) edge (s3) edge (s6) ;
+\path (s2) edge (s4) edge [bend left] (s0) ;
+\path (s3) edge (s4) edge [color=black] (s7) ;
+\path (s4) edge [bend left] (s5) ;
+\path (s6) edge [bend right] (s0) ;
+\path (s6) edge (s7) ;
+\path (s7) edge [color=black, bend right] (s1) ;
+\end{tikzpicture}
+\end{adjustbox}
+$$
+
+## Mutex analysis in B Maude - specification
+\tiny
+
+```
+--- A simple mutual exclusion protocol.
+(MACHINE MUTEX
+  VARIABLES p1 , p2
+  CONSTANTS idle , wait , crit
+  VALUES
+    p1 = 0 ; p2 = 0 ;
+    idle = 0 ; wait = 1 ; crit = 2
+  OPERATIONS
+    mutex =
+      WHILE true DO
+          BEGIN
+            IF p1 == idle /\ p2 == idle THEN (p1 := wait OR p2 := wait)
+            ELSE
+            IF p1 == idle /\ p2 == wait THEN p1 := wait OR p2 := crit
+            ELSE
+            IF p1 == idle /\ p2 == crit THEN p1 := wait OR p2 := idle
+            ELSE
+            IF p1 == wait /\ p2 == idle THEN p1 := crit OR p2 := wait
+            ELSE
+            IF p1 == wait /\ p2 == wait THEN p1 := crit OR p2 := crit
+            ELSE
+            IF p1 == wait /\ p2 == crit THEN p2 := idle
+            ELSE
+            IF p1 == crit /\ p2 == idle THEN p1 := idle OR p2 := wait
+            ELSE
+            IF p1 == crit /\ p2 == wait THEN p1 := idle
+           END END END END END END END END
+          END
+END)
+```
+
+## Mutex analysis in B Maude - checking for liveness
+
+```(mc mutex() |= [] (p1(1) -> <> p1(2)))```
+
+```
+BMaude: Model check counter example
+Path from the initial state:
+  WHILE(true)...[p1 = 0 p2 = 0]->
+    WHILE(true)...[p1 = 0 p2 = 0]-> 
+      p2 := wait OR p1 := wait[p1 = 0 p2 = 0]
+```
+`Loop:`  
+`WHILE(true)...[p1 = ` ${\color{red} 1}$ ` p2 = ` ${\color{blue} 0}$`]->`   
+ `p2 := wait OR p1 := crit[p1 = ` ${\color{red} 1}$ ` p2 = ` ${\color{blue} 0}$`]->`   
+  `WHILE(true)...[p1 = ` ${\color{red} 1}$ ` p2 = ` ${\color{blue} 1}$`]->`   
+   `p2 := crit OR p1 := crit[p1 = ` ${\color{red} 1}$ ` p2 = ` ${\color{blue} 1}$`]->`  
+    `WHILE(true)...[p1 = ` ${\color{red} 1}$ ` p2 = ` ${\color{blue} 2}$`]`
+
+
+## ${\color{red}\Pi}$ denotation of Mutex
+
+\tiny
+``` 
+blk(dec(
+ dec(ref(gid(bid('p1)), rat(0)), 
+     ref(gid(bid('p2)), rat(0))), 
+	 dec(dec(cns( gid(bid('idle)), rat(0)),
+         dec(cns(gid(bid('wait)), rat(1)), 
+		 cns(gid(bid('crit)), rat(2)))),
+         prc(gid(bid('mutex)), 
+		   blk(loop(boo(true), 
+		       if(and(eq(gid(bid('p2)), gid(bid('idle))), 
+			          eq(gid(bid('p1)), gid(bid('idle)))), 
+				  choice(assign(gid(bid('p1)), gid(bid('wait))), 
+				         assign(gid(bid('p2)), gid(bid('wait)))), 
+ 				  if(and(eq(gid(bid('wait)), gid( bid('p2))),
+                         eq(gid(bid('p1)), gid(bid('idle)))), 
+					 choice(assign(gid(bid('p1)), gid(bid('wait))), 
+					        assign(gid(bid( 'p2)), gid(bid('crit)))),
+	                 if(and(eq(gid(bid('p1)), gid(bid('idle))), 
+					        eq(gid(bid('p2)), gid(bid('crit)))), 
+						choice( assign(gid(bid('p1)), gid(bid('wait))),
+                                assign(gid(bid('p2)), gid(bid('idle)))), 
+	                    if(and(eq(gid(bid('wait)), gid( bid('p1))), 
+						       eq(gid(bid('p2)), gid(bid('idle)))),
+                           choice(assign(gid(bid('p1)), gid(bid('crit))), 
+						          assign(gid(bid( 'p2)), gid(bid('wait)))), 
+									  ...
+                                      if(and(eq(gid(bid('wait)), gid(bid('p2))), 
+									         eq(gid(bid('p1)), gid(bid('crit)))), 
+									   assign(gid(bid('p1)), gid(bid('idle))), nop))))))))))))) 
+```
+
+## Example state of Mutex's ${\color{red}\Pi}$ automaton
+\tiny
+```
+< env : (gid(bid('p1)) |-> bind(loc(0)), gid(bid('p2)) |-> bind(loc(1))), 
+  sto : (loc(0) |-> store(0), loc(1) |-> store(0)), 
+  cnt : dec(dec(cns(gid(bid('idle)), rat(0)), 
+         dec(cns(gid(bid('wait)), rat(1)), 
+		     cns(gid(bid('crit)), rat(2)))), prc(...)) cal(gid(bid('mutex))) BLK ecs, 
+  val : val(noEnv) evs, locs : (loc(0), loc(1)), out : evs, exc : CNT >
+```
+
+# Coda
+
+## A few pros and cons of $\color{red}\Pi$ {.allowframebreaks}
+
+### Pros
+
+* Semantic functions are _really_ semantic functions!
+* The semantic framework is quite simple, and uses standard Automata
+  Theory notation.
+  * Different implementations may explore different aspects of the compiler construction process.
+* $\color{red} \Pi_{IR}$ allows us to _focus_ the semantic actions
+  on small set of constructions.
+
+### Cons
+
+* $\color{red} \Pi_{IR}$ is Turing-complete, but it has many limitations in its current form.
+* The program transformation step requires engineering.
+  * There are libraries in some programming languages that ease this process.
+* Currently no support for type-checking.
+
+## Related work
+
+* Mosses' Component-based semantics: $\color{red}\Pi_{IR}$ is a subset of CBS' funcons.
+* Plotkin's Interpreting Automata: $\color{red}\Pi$ automata generalizes IA,
+  inspired by Mosses' Modular SOS and set-rewriting in Meserguer's
+  Rewriting Logic.
+* Ro\c{s}u's K Framework has similar foundations, but it evolved
+  towards specific notation to hide context and rebase its foundations
+  on top of Matching Logic.
+
+<!-- 
+* $\Pi$ automata $\times$ Rewriting Logic theories
+* $\Pi$ approach $\times$ Rewriting Logic approach   
+  * $\Pi$ approach as meta-language independent through $\Pi$ IR and $\Pi automata$
+* $\Pi$ $\times$ Component-based semantics/MSOS
+* $\Pi$ $\times$ K
+-->
+
+## Conclusions {.allowframebreaks}
+
+* A proposal to approach compiler construction from a semantics perspective.
+
+* $\color{red}\Pi$ is a _semantic_ framework for compiler construction.
+  * Focus on semantics rather syntax. 
+
+* Its underlying formalism is Automata Theory.
+  * Different implementations of $\color{red}\Pi$ may take advantage of its
+    underlying coding platform, such as rewriting-modulo, narrowing,
+    metaprogramming in Maude and LLVM binding in Python. 
+	
+\pagebreak
+
+* A reduced, but Turing-computable, IR helps make the framework simple to use.
+  * Particularly relevant for teaching.
+    * We conjecture that its simplicity will allow us to cover more ground, including code
+      generation, static analysis and validation. 
+  * But also yields a fair framework for developing formal tools (such as B Maude).
+
+## Future work
+
+* $\color{red}\Pi_{IR}$: support for reactive programs with
+  co-routines on top of continuations. (Joint work with João Pedro
+  Abreu.)
+* Support the complete $\color{red}\Pi_{IR}$ in the LLVM code generator.
+* Incorporate Dynamic Logic model-checking. (Closer to program validation than Temporal Logic.)
+* Incorporate the development of optimization passes into the mix. (Via LLVM infrastructure.)
+* From a research perspective: head towards static analysis for functional programs.
+* From a teaching perspective: better documentation and tool support
+  to allow us to cover more ground faster to include validation and static analysis in the mix.
+
+## 
+
+$\titlepage$
+
+<!-- 
+## Suggested reading
+
+<a name="Fowler&Brady13"> Simon Fowler and Edwin Brady</a>. 2013. Dependent Types for Safe and
+Secure Web Programming. In Proceedings of the 25th symposium on
+Implementation and Application of Functional Languages (IFL '13). ACM,
+New York, NY, USA, Pages 49, 12 pages. DOI:
+[https://doi.org/10.1145/2620678.2620683](https://doi.org/10.1145/2620678.2620683) -->

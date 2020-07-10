@@ -1,0 +1,25 @@
+mod SAMPLER is
+  pr RANDOM .
+  pr COUNTER .
+  pr CONVERSION .
+
+  op sampleBerWithP : Float -> Bool .
+  op sampleUniWithInt : Nat -> Nat .       
+  op genRandom : Float Float -> [Float] .
+  var n s N : Nat .
+
+  op rand : Nat -> Float .
+  eq [rnd] : rand(N) = float(random(N) / 4294967296) .
+
+  op rand : -> [Float] .
+  rl [rnd] : rand => float(random(counter) / 4294967296) .
+
+  op rrand : -> [Rat] .
+  rl [rrnd] : rrand => random(counter) / 4294967296 .
+	
+  var R R1 Min Max : Float .
+
+  eq sampleBerWithP(R) = if rand < R then true else false fi . 
+  eq sampleUniWithInt(n) = floor(rrand * n) .
+  eq genRandom(Min, Max) = rand * (Max - Min) + Min .
+endm

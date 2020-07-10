@@ -1,0 +1,177 @@
+---- Symbolic Formal Modelling and Analysis of BPMN using Maude+CVC4
+---- authors: Francisco Duran, Gwen Salaun, Camilo Rocha
+---- file: verif.maude
+----
+---- This file contains operations for the automated symbolic analysis
+---- of BPMN processes
+
+load ../../verif.maude
+load visa.maude
+
+red in STRING : "visa.maude" .
+
+mod RUN is
+  pr VERIF .
+  pr BPMN-EX .
+
+  var  Atts      : AttributeSet .
+  var  B         : Boolean .
+  var  C         : Cid .
+  vars Cnf St    : Configuration .
+  var  VI        : Map{SymbVar,Nat} .
+  var  O PId SId : Oid .
+  var  Tks       : Set{Message} .
+  var  Id        : Id .
+  var  NId       : NId .
+  var  FId1 FId2 : FId .
+  var  Str       : String .
+  var  T         : Time .
+  var  Nodes     : Set{Node} .
+
+  op get-constr : Configuration -> Boolean .
+  op get-varidx : Configuration -> Map{SymbVar,Nat} .
+  op get-tokens : Configuration -> Set{Message} .
+  eq get-constr( < O : C | Atts, constr : B > Cnf)
+   = B .
+  eq get-varidx( < O : C | Atts, varidx : VI > Cnf)
+   = VI .
+  eq get-tokens( < O : C | Atts, tokens : Tks > Cnf)
+   = Tks .
+
+  op token-at : Id Configuration -> Bool .
+  eq token-at(Id, < O : Simulation | tokens : (token(Id, 0) Tks), Atts > Cnf)
+    = true .
+  eq token-at(Id, Cnf) = false [owise] .
+
+  op token-at : String Configuration -> Bool .
+  eq token-at(Str, < SId : Simulation | tokens : (token(NId, 0) Tks), Atts >
+                   < PId : Process | nodes : (task(NId, Str, FId1, FId2, T), Nodes), Atts >)
+    = true .
+  eq token-at(Str, Cnf) = false [owise] .
+
+  vars OK        : Boolean .
+  vars TRY FSIZE : Integer .
+  vars QUAL      : Real .
+
+
+  pr META-LEVEL .
+  pr INTEGER .
+  pr CONVERSION .
+  op gen-intvar : String -> Integer .
+  op error-int : -> [Integer] .
+  var S : String .
+
+  eq gen-intvar(S)
+   = downTerm(qid(S + ":Integer"), error-int) .
+endm
+
+----eof
+
+rew [10] initSystem(v(OK:Boolean) v(TRY:Integer) v(FSIZE:Integer) v(QUAL:Real)) .
+---(
+rewrite [10] in RUN : initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL)) .
+rewrites: 155 in 4ms cpu (8ms real) (37116 rewrites/second)
+result Configuration:
+  < p : Process | nodes : ..., flows : ... >
+  < s : Simulation |
+    tokens : token(t2, 0),
+    gtime : 0,
+    constr : (TRY#1:Integer === (0).Integer and
+              FSIZE#1:Integer >= (2).Integer and
+              TRY#2:Integer === TRY#1:Integer + (1).Integer),
+    varidx : (v(OK) |-> 0, v(TRY) |-> 2, v(FSIZE) |-> 1, v(QUAL) |-> 1) >
+---)
+
+---- first example in the paper ... note the hack in the condition of the search command
+search [1] initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL))
+       =>! St
+       such that check-sat(process-expression(get-varidx(St), gen-intvar("TRY") === 3)) .
+search [1] initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL))
+       =>! St
+       such that check-sat(get-constr(St) and process-expression(get-varidx(St), gen-intvar("TRY") === 3)) .
+---(
+Solution 1 (state 136)
+states: 154  rewrites: 1990 in 59ms cpu (59ms real) (33671 rewrites/second)
+St --> < p : Process | nodes : (start(initial, sf1), end(final1, sf12), end(final2, sf23), end(final3, sf22), merge(m1, exclusive, (sf2, sf6, sf11), sf3), merge(m2, parallel, (sf18, sf20), sf21), split(
+    s1, exclusive, sf4, (sf5,FSIZE >= (2).Integer) (sf7,FSIZE < (2).Integer)), split(s2, exclusive, sf10, (sf11,TRY < (3).Integer) (sf12,TRY === (3).Integer)), split(s3, exclusive, sf7, (sf8,QUAL < (
+    9/10).Real) (sf9,QUAL >= (9/10).Real)), split(s4, exclusive, sf13, (sf14,OK === (false).Boolean) (sf15,OK === (true).Boolean)), split(s5, parallel, sf16, (sf17, sf19)), task(t1, "Apply online", sf1,
+    sf2, 0, TRY := (0).Integer), task(t2, "Upload scanned passport", sf3, sf4, 0, lookup(FSIZE) lookup(QUAL)), task(t3, "Alert size error", sf5, sf6, 0, TRY := TRY + (1).Integer), task(t4,
+    "Alert quality error", sf8, sf10, 0, TRY := TRY + (1).Integer), task(t5, "Evaluate application", sf9, sf13, 0, lookup(OK)), task(t6, "Notify reject", sf14, sf23, 0, nil), task(t7, "Deliver visa",
+    sf21, sf22, 0, nil), task(t8, "Pay for fees", sf17, sf18, 0, nil), task(t9, "Notify accept", sf15, sf16, 0, nil), task(t10, "Prepare visa", sf19, sf20, 0, nil)),flows : (flow(sf1, 0), flow(sf2, 0),
+    flow(sf3, 0), flow(sf4, 0), flow(sf5, 0), flow(sf6, 0), flow(sf7, 0), flow(sf8, 0), flow(sf9, 0), flow(sf10, 0), flow(sf11, 0), flow(sf12, 0), flow(sf13, 0), flow(sf14, 0), flow(sf15, 0), flow(sf16,
+    0), flow(sf17, 0), flow(sf18, 0), flow(sf19, 0), flow(sf20, 0), flow(sf21, 0), flow(sf22, 0), flow(sf23, 0)) > < s : Simulation | tokens : empty,gtime : 0,
+    constr : (TRY#1:Integer === (0).Integer
+          and FSIZE#1:Integer >= (2).Integer
+          and TRY#2:Integer === TRY#1:Integer + (1).Integer
+          and FSIZE#2:Integer >= (2).Integer
+          and TRY#3:Integer === TRY#2:Integer + (1).Integer
+          and FSIZE#3:Integer < (2).Integer
+          and QUAL#3:Real < (9/10).Real
+          and TRY#4:Integer === TRY#3:Integer + (1).Integer
+          and TRY#4:Integer === (3).Integer),
+    varidx : (v(OK) |-> 0, v(TRY) |-> 4, v(FSIZE) |-> 3, v(QUAL) |-> 3) >
+---)
+
+---- Why the get-constr(St) part in the check-sat of the condition? We cannot reach states with non-satisfiable constraints, right?
+search [,1000] initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL))
+       =>* St
+       such that not check-sat(get-constr(St)) .
+---(
+No solution.
+states: 21629  rewrites: 415609 in 70487ms cpu (70919ms real) (5896 rewrites/second)
+---)
+
+---- second example in the paper
+search [1,500] initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL)) =>! St such that get-tokens(St) =/= empty .
+---(
+Solution 1 (state 208)
+states: 230  rewrites: 2361 in 100ms cpu (101ms real) (23554 rewrites/second)
+St --> < p : Process | nodes : (start(initial, sf1), end(final1, sf12), end(final2, sf23), end(final3, sf22), merge(m1, exclusive, (sf2, sf6, sf11), sf3), merge(m2, parallel, (sf18, sf20), sf21), split(
+    s1, exclusive, sf4, (sf5,FSIZE >= (2).Integer) (sf7,FSIZE < (2).Integer)), split(s2, exclusive, sf10, (sf11,TRY < (3).Integer) (sf12,TRY === (3).Integer)), split(s3, exclusive, sf7, (sf8,QUAL < (
+    9/10).Real) (sf9,QUAL >= (9/10).Real)), split(s4, exclusive, sf13, (sf14,OK === (false).Boolean) (sf15,OK === (true).Boolean)), split(s5, parallel, sf16, (sf17, sf19)), task(t1, "Apply online", sf1,
+    sf2, 0, TRY := (0).Integer), task(t2, "Upload scanned passport", sf3, sf4, 0, lookup(FSIZE) lookup(QUAL)), task(t3, "Alert size error", sf5, sf6, 0, TRY := TRY + (1).Integer), task(t4,
+    "Alert quality error", sf8, sf10, 0, TRY := TRY + (1).Integer), task(t5, "Evaluate application", sf9, sf13, 0, lookup(OK)), task(t6, "Notify reject", sf14, sf23, 0, nil), task(t7, "Deliver visa",
+    sf21, sf22, 0, nil), task(t8, "Pay for fees", sf17, sf18, 0, nil), task(t9, "Notify accept", sf15, sf16, 0, nil), task(t10, "Prepare visa", sf19, sf20, 0, nil)),flows : (flow(sf1, 0), flow(sf2, 0),
+    flow(sf3, 0), flow(sf4, 0), flow(sf5, 0), flow(sf6, 0), flow(sf7, 0), flow(sf8, 0), flow(sf9, 0), flow(sf10, 0), flow(sf11, 0), flow(sf12, 0), flow(sf13, 0), flow(sf14, 0), flow(sf15, 0), flow(sf16,
+    0), flow(sf17, 0), flow(sf18, 0), flow(sf19, 0), flow(sf20, 0), flow(sf21, 0), flow(sf22, 0), flow(sf23, 0)) > < s : Simulation | tokens : token(sf10, 0),gtime : 0,
+    constr : (TRY#1:Integer === (0).Integer
+          and FSIZE#1:Integer >= (2).Integer
+          and TRY#2:Integer === TRY#1:Integer + (1).Integer
+          and FSIZE#2:Integer >= (2).Integer
+          and TRY#3:Integer === TRY#2:Integer + (1).Integer
+          and FSIZE#3:Integer >= (2).Integer
+          and TRY#4:Integer === TRY#3:Integer + (1).Integer
+          and FSIZE#4:Integer < (2).Integer
+          and QUAL#4:Real < (9/10).Real
+          and TRY#5:Integer === TRY#4:Integer + (1).Integer),
+    varidx : (v(OK) |-> 0, v(TRY) |-> 5, v(FSIZE) |-> 4, v(QUAL) |-> 4) >
+---)
+
+---- task(t8, "Pay for fees", sf17, sf18, 0),
+search [1,500] initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL))
+       =>! St
+       such that token-at("Pay for fees", St)
+             and check-sat(get-constr(St) and process-expression(get-varidx(St), gen-intvar("FSIZE") > 2)) .
+---(
+No solution.
+states: 10647  rewrites: 134288 in 10491ms cpu (10657ms real) (12799 rewrites/second)
+)
+
+search [1,500] initSystem(v(OK) v(TRY) v(FSIZE) v(QUAL))
+       =>! St
+       such that token-at(t8, St)
+             and check-sat(get-constr(St) and process-expression(get-varidx(St), gen-intvar("FSIZE") > 2)) .
+---(
+No solution.
+states: 10647  rewrites: 134288 in 10477ms cpu (10642ms real) (12816 rewrites/second)
+---)
+
+
+
+
+eof
+
+red get-constr(initSystem(v(OK:Boolean) v(TRY:Integer) v(FSIZE:Integer) v(QUAL:Real))) .
+
+
+search [,100] initSystem(v(OK:Boolean) v(TRY:Integer) v(FSIZE:Integer) v(QUAL:Real)) =>! Conf:Configuration .

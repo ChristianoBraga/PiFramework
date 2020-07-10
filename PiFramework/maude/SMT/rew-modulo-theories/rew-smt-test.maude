@@ -1,0 +1,70 @@
+load smt
+
+red metaSmtSearch(upMdule('BAR, false), upTerm(f(R:Integer, left, X1:Integer, X2:Integer)), upTerm(f(W:Integer, H':Hose,)) .
+>     X1':Integer, X2:Integer)
+
+
+mod FOO is pr REAL-INTEGER .
+ sort State .
+ op f : Real -> State .
+ crl f(X:Real) => f(toReal(2) * X:Real) if (X:Real < toReal(0)) = true .
+endm
+
+smt-search f(toReal(4)) =>* f(X:Real) s.t. toReal(2) + toReal(2) = X:Real .
+
+eof
+
+mod TANK is pr REAL-INTEGER .
+
+	sorts System GlobalSystem .
+
+	ops w v1 v2 r1 r2 : -> Integer .
+	
+	sort Hose .
+	ops left right : -> Hose [ctor] .
+
+	op _,_,_ : Hose Integer Integer -> System [ctor] .
+	op {_|_} : System Real -> GlobalSystem .
+
+	vars x1 x2 : Integer .
+	*** Move mangueira para esquerda e direita instantaneamente 
+	crl [moveright] : left,x1,x2 => right,x1,x2 if (x2 <= r2) = true . 
+
+	crl [moveleft] : right,x1,x2 => left,x1,x2 if (x1 <= r1) = true .
+	
+	*** Regras de avanço do tempo
+	var R : Real .
+	
+	crl [tick-right] :
+		{ right, x1, x2 | R } => { right, x1 - (v1 * toInteger(R)), x2 + ((w - v2) * toInteger(R)) | R + 1.0 }
+	if (x1 > r1) = true .
+			
+	crl [tick-left] :
+		{ left, x1, x2 | R } => {left, x1 + ((w - v1) * toInteger(R)), x2 - (v2 * toInteger(R)) | R + 1.0 }
+	if (x2 > r2) = true  .
+
+endm
+
+eof
+
+
+fmod TEST-I is
+ pr INTEGER .
+ var I : Integer .
+endfm
+
+check 4 divisible I .
+check I divisible 0 .
+check I divisible -1 .
+
+fmod TEST-RI is
+ pr REAL-INTEGER .
+ var I : Integer .
+ var P : Real .
+endfm
+
+check 1 div I > 2 .
+check 1 mod I > 2 .
+check I * I > 2 .
+check 1/1 / P > 2/1 .
+check P * P > 2/1 .

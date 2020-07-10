@@ -1,0 +1,99 @@
+load smt
+
+mod BAR is pr INTEGER .
+ sort State Hose .
+ ops left right : -> Hose .
+ op f  : Integer Hose Integer Integer -> State .
+
+ crl f(R:Integer, left , X1:Integer , X2:Integer) =>
+ 		 f(R:Integer, right , X1':Integer , X2:Integer)
+ if ((X1:Integer < R:Integer) and (X1':Integer === (X1:Integer - 1))) = true [nonexec] .
+endm
+
+smt-search f(R:Integer, left, X1:Integer, X2:Integer) =>+ f(W:Integer, H':Hose , X1':Integer, X2:Integer)
+s.t. R:Integer = 15 /\ X2:Integer = 20 .
+
+mod BAR' is inc META-LEVEL . inc BAR . endm
+
+red metaSmtSearch(upModule('BAR, false), upTerm(f(R:Integer, left, X1:Integer, X2:Integer)), 
+										upTerm(f(W:Integer, H':Hose, X1':Integer, X2:Integer)),
+										upTerm(R:Integer === 15 and X2:Integer === 20), '+ , 0, unbounded, 0) .
+
+eof
+
+mod FOO is pr INTEGER .
+sort State .
+op f : Integer -> State .
+crl f(X:Integer) => f(2 * X:Integer) if (X:Integer < 0) = true .
+endm
+
+smt-search in FOO : f(4) =>* f(X:Integer) such that 2 + 2 = X:Integer .
+
+mod TANK is pr INTEGER .
+
+	sorts Sys .
+
+	vars W V1 V2 R1 R2 X1 X2 : Integer .
+
+	***(sort Hose .
+	ops left right : -> Hose [ctor] .)
+
+	op _,_,_ : Integer Integer Integer -> Sys [ctor] .
+	---op {_,_,_,_,_|_|_} : Integer Integer Integer Integer Integer System Integer -> GlobalSystem [ctor] .
+
+	var T : Integer .
+
+	crl [moveright] : -2 , X1 , X2 =>  -1 , X1 , X2 if (X2 <= 10) = true .
+***(	crl [moveleft] : {  W, V1, V2, R1, R2 | -1,X1,X2 | T } => {  W, V1, V2, R1, R2 | -2,X1,X2 | T } if (X1 <= R1) = true .
+
+	crl [tick-right] :
+		{ W, V1, V2, R1, R2 | -1, X1, X2 | T } =>
+		{ W, V1, V2, R1, R2 | -1, X1 - (V1 * T), X2 + ((W - V2) * T) | T + 1 }
+	if (X1 > R1) = true .
+
+	crl [tick-left] :
+		{ W, V1, V2, R1, R2 | -2, X1, X2 | T } =>
+		{ W, V1, V2, R1, R2 | -2, X1 + ((W - V1) * T), X2 - (V2 * T) | T + 1 }
+	if (X2 > R2) = true .
+	)
+endm
+
+smt-search -2, 20, 20 =>* H:Integer , X1:Integer , X2:Integer s.t. ((X1:Integer < 15) or (X2:Integer < 15)) = true .
+
+eof
+
+smt-search [5,1] { 10, 5, 5, 15, 15 | -2, 20, 20 | 0 } =>*
+				 { 10, 5, 5, 15, 15 | H:Integer , X1:Integer , X2:Integer | T:Integer } s.t. ((X1:Integer < 15) or (X2:Integer < 15)) = true .
+
+eof
+
+mod FOO is pr REAL-INTEGER .
+ sort State .
+ op _,_|_,_|_  : Integer Integer Integer Integer Real -> State .
+ crl Z:Integer , K:Integer | X:Integer, Y:Integer | W:Real => Z:Integer, K:Integer | 2 * X:Integer, Y:Integer | W:Real if (X:Integer < 0) = true .
+endm
+
+smt-search 5 , 6 | 4, 5 | toReal(7) =>* Z:Integer, K:Integer | X:Integer, Y:Integer | W:Real  s.t. 2 + 2 = X:Integer .
+
+eof
+
+fmod TEST-I is
+ pr INTEGER .
+ var I : Integer .
+endfm
+
+check 4 divisible I .
+check I divisible 0 .
+check I divisible -1 .
+
+fmod TEST-RI is
+ pr REAL-INTEGER .
+ var I : Integer .
+ var P : Real .
+endfm
+
+check 1 div I > 2 .
+check 1 mod I > 2 .
+check I * I > 2 .
+check 1/1 / P > 2/1 .
+check P * P > 2/1 .

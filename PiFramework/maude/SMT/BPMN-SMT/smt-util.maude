@@ -1,0 +1,83 @@
+-----------------------------------
+---- the SMT solving utilities ----
+-----------------------------------
+fmod SMT-UTIL is
+  pr META-LEVEL .
+  pr REAL-INTEGER .
+  pr CONVERSION .
+
+  op check-sat : Boolean -> Bool .
+  op check-unsat : Boolean -> Bool .
+
+  op gen-bool-var : Term Nat -> Boolean [memo] .
+  op gen-int-var  : Term Nat -> Integer [memo] .
+  op gen-real-var : Term Nat -> Real [memo] .
+  op $gen-var     : Term Nat -> Qid [memo] .
+  op error-bool   : -> [Boolean] .
+  op error-int    : -> [Integer] .
+  op error-real   : -> [Real] .
+
+  var B : Boolean .
+  var I : Integer .
+  var N : Nat .
+  var R : Real .
+  var V : Variable .
+  var T : Term .
+  
+  eq check-sat(B)
+   = metaCheck(['REAL-INTEGER], upTerm(B)) .
+  eq check-unsat(B)
+   = not(check-sat(B)) .
+
+  eq $gen-var(T, N)
+   = qid(string(getName(T)) + "#" + string(N, 10) + ":" + string(getType(T))) .
+  eq gen-bool-var(T, N)
+   = downTerm($gen-var(T, N), error-bool) .
+  eq gen-int-var(T, N)
+   = downTerm($gen-var(T, N), error-int) .
+  eq gen-real-var(T, N)
+   = downTerm($gen-var(T, N), error-real) .
+  
+  ---c op is-var : Boolean -> Bool .
+  ---c op is-var : Integer -> Bool .
+  ---c op is-var : Real -> Bool .
+  ---c op $is-var : Term -> Bool .
+  ---c eq is-var(B)
+  ---c  = $is-var(upTerm(B)) .
+  ---c eq is-var(I)
+  ---c  = $is-var(upTerm(I)) .
+  ---c eq is-var(R)
+  ---c  = $is-var(upTerm(R)) .
+  ---c eq $is-var(V)
+  ---c  = true .
+  ---c eq $is-var(T)
+  ---c  = false [owise] .
+   
+  ---- some Boolean identities used to simplify constraints: they are
+  ---- confluent and terminating
+  
+  eq B and true
+   = B .
+  eq B and false
+   = false .
+  eq true and B
+   = B .
+  eq false and B
+   = false .
+  eq B and B
+   = B .
+  eq B or true
+   = true .
+  eq B or false
+   = B .
+  eq true or B
+   = true .
+  eq false or B
+   = B .
+  eq B or B
+   = B .
+  eq not((true).Boolean)
+   = (false).Boolean .
+  eq not((false).Boolean)
+   = (true).Boolean .
+endfm

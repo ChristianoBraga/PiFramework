@@ -1,0 +1,49 @@
+load full-maude
+load smtlogic
+load toasts
+
+
+load cnmsmtpbNew2SC
+
+
+mod TEST is
+protecting CNMSMTPB .
+protecting TOASTS .
+protecting REAL-INTEGER .
+
+  var N : Integer  .
+  var Y : Integer  .
+  var W : Toast .
+  var SOL : Solution .
+ 
+endm
+
+search [9, 90] in TEST : 
+problem(upTerm(1 / W / 0 ; zt zt / 0) =>* upTerm(N / zt / Y ; zt zt / 1) && upTerm(Y < 12)) 
+=>* SOL .
+
+*** Problem 1
+***search [9, 90] in TEST : 
+***problem(upTerm(1 / W / 0 ; zt zt / 0) =>* upTerm(N / zt / Y ; zt zt / 1) && upTerm(Y < 12)) 
+***=>* SOL .
+
+*** Problem 2
+***search [3, 90] in TEST : 
+***problem(upTerm(N / W / 0 ; zt zt / 0) =>* upTerm(0 / zt / Y ; zt zt / 2) && upTerm(Y < 12)) 
+***=>* SOL .
+
+*** Problem 2 optimized
+***search [3, 90] in TEST : 
+***problem(upTerm(N / W / 0 ; zt zt / 0) =>* upTerm(0 / zt / Y ; zt zt / 2) && upTerm(N < 3 and Y < 12))
+***=>* SOL .
+
+*** Problem 3
+***search [1, 90] in TEST : 
+***problem(upTerm(N / zt / 0 ; zt W / 0) =>* upTerm(0 / zt / Y ; zt zt / 3) && upTerm(Y <= 12)) 
+***=>* SOL .
+
+*** Problem 3 optimized
+***search [1, 90] in TEST : 
+***problem(upTerm(N / zt / 0 ; zt W / 0) =>* upTerm(0 / zt / Y ; zt zt / 3) && upTerm(N < 4 and Y <= 12)) 
+***=>* SOL .
+

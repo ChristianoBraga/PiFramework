@@ -1,0 +1,27 @@
+mod RESERVOIR is
+	protecting REAL-INTEGER .
+	
+	ops w v1 v2 r1 r2 : -> Real .
+	
+	sort HosePos .
+	ops left right : -> HosePos [ctor] .
+
+	op _`,_`,_ : HosePos NNegRat NNegRat -> System [ctor] .
+
+	vars x1 x2 : NNegRat . var R : Time .
+
+	crl [moveright] : left,x1,x2 => right,x1,x2	if x2 <= r2 . 
+	crl [moveleft] : right,x1,x2 => left,x1,x2	if x1 <= r1 .
+	
+
+	crl [tick-right] :
+		{right, x1, x2} => {right, x1 - (v1 * R), x2 + ((w - v2) * R)}
+			in time R 
+	if x1 > r1 [nonexec] .
+			
+	crl [tick-left] :
+		{left, x1, x2} => {left, x1 + ((w - v1) * R), x2 - (v2 * R)}
+		       in time R
+	if x2 > r2 [nonexec] .
+endm
+

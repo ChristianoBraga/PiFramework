@@ -1,0 +1,14 @@
+\frametitle{Example: iterative factorial within a function}
+\begin{lstlisting}
+# In this example we encapsulate the iterative calculation
+# of the factorial within a function call.
+let var z = 1
+in
+    let fn f(x) =
+        let var y = x
+        in
+            while not (y == 0)
+            do
+                z := z * y
+                y := y - 1
+    in f(10)\end{lstlisting}
