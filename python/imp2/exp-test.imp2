@@ -1,4 +1,0 @@
-let var x = 0
-in
-	x := 1
-end
