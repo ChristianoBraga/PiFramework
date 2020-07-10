@@ -1,5 +1,6 @@
 # Iteractive factorial
-var x = 2 , y = 1 ; 
+var x = 2 ;
+var y = 1 ; 
 while (x > 0)
 {
   y := y * x ;

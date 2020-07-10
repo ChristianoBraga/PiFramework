@@ -109,7 +109,6 @@ def main(argv):
 
     try:
         pi_ast = parser.parse(source, semantics=Impiler())
-        print(pi_ast)
         if print_pilib_ast:            
             print('π IR syntax tree:')            
             pprint.pprint(pi_ast,indent=2, width=20)
