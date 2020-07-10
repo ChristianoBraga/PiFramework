@@ -1,8 +1,0 @@
-# Iterative factorial
-def fat (x, y) {
-    if (x > 0) {
-       fat(x - 1, y * x)
-    }  
-} 
-
-fat(10, 1) 
