@@ -56,7 +56,7 @@ class Impiler(object):
         if isinstance(ast.idn, list):
             bind = pi.Bind(ast.idn[0], pi.Ref(ast.e[0]))
             for i in range(1, len(ast.idn)):
-                bind = pi.DSeq(bind, pi.Bind(ast.idn[i], pi.Ref(ast.e[0])))
+                bind = pi.DSeq(bind, pi.Bind(ast.idn[i], pi.Ref(ast.e[i])))
             return bind
         else:
             return pi.Bind(ast.idn, pi.Ref(ast.e))
