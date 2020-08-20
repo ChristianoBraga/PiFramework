@@ -1,0 +1,2 @@
+var z = False;
+var y = True and (not True) ;

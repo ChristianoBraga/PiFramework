@@ -1,0 +1,14 @@
+var z = 1 ;
+rec f(x) {
+    if (x == 0) {
+       z := 0
+    }
+    else {
+    	 g(x)
+    }
+}
+rec g(x) {
+    z := z - 1 ;
+    f(0)
+}
+f(3)

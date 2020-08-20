@@ -1,0 +1,9 @@
+# Recursive factorial
+var z = 1 ;
+rec fat (x) {
+    if (x > 0) {
+       z := z * x ;
+       fat(x - 1)
+    }  
+} 
+fat(3)

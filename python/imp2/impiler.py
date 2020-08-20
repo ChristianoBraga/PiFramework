@@ -2,6 +2,7 @@
 # http://github.com/ChristianoBraga
 
 import pi
+from tatsu import ast
 
 class Impiler(object):
     def paren_exp(self, ast):
@@ -49,6 +50,9 @@ class Impiler(object):
     def assign(self, ast):
         return pi.Assign(ast.idn, ast.e)
 
+    def print(self, ast):
+        return pi.Print(ast.e)
+    
     def const(self, ast):
         return pi.Bind(ast.idn, ast.e) 
 
@@ -74,12 +78,26 @@ class Impiler(object):
             else:
                 return ast.d
 
+    def __blk_aux(self, ds, cs):
+        if len(ds) > 1:
+            return pi.Blk(ds[0], self.__blk_aux(ds[1:], cs))
+        else:
+            return pi.Blk(ds[0], cs)
+            
+    def __blk(self, ds, cs):
+        if isinstance(ds, pi.Bind):
+            return pi.Blk(ds, cs)
+        elif isinstance(ds, pi.DSeq):
+            return self.__blk_aux(ds.operands(), cs)
+        else:
+            raise Exception("Block parse error: " + str(ds) + " "  + str(cs) + ".")
+            
     def blk(self, ast):
         if ast.ds:
             if ast.cs:
-                return pi.Blk(ast.ds, ast.cs)
+                return self.__blk(ast.ds, ast.cs)
             else:
-                return pi.Blk(ast.ds, pi.Nop())
+                return self.__blk(ast.ds, pi.Nop())
         else:
             if ast.cs:
                 return pi.Blk(ast.cs)
@@ -116,20 +134,23 @@ class Impiler(object):
             body = c
         else:
             body = pi.Blk(c)
-
         if f == []:
             return pi.Abs(pi.Formals(), body)
         else:
             # Tatsu roduces list of identifiers and commas from
             # formals = ','%{ identifiers }
-            formals = [e for e in f if e != ','] 
+            formals = [e for e in f if e != ',']
             return pi.Abs(formals, body)
 
     def fn(self, ast):
         body = self.__makeAbs(ast.f, ast.b)
         return pi.BindAbs(ast.idn, body)
 
+    def rec(self, ast):
+        body = self.__makeAbs(ast.f, ast.b)
+        return pi.BindRecAbs(ast.idn, body)
+
     def call(self, ast):
-        actuals = [e for e in ast.a if e != ','] 
+        actuals = [e for e in ast.a if e != ',']
         aux = pi.Call(ast.idn, actuals)
         return aux 

@@ -1,0 +1,11 @@
+# Iterative Fibonnacci
+# The program calculates Fibonacci of n.
+var n = 20, i = 0, j = 1, k = 1 ;
+while(k < n)
+{	
+  var t = 0  ;
+  t := i + j ;
+  i := j     ;
+  j := t     ;
+  k := k + 1
+}
