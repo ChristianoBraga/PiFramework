@@ -6,4 +6,5 @@ rec fat (x) {
        fat(x - 1)
     }  
 } 
-fat(10)
+fat(10) ;
+print(z)

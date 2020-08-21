@@ -8,4 +8,5 @@ while(k < n)
   i := j     ;
   j := t     ;
   k := k + 1
-}
+} ;
+print(j)

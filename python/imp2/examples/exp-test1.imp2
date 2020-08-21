@@ -1,2 +1,3 @@
 var z = False;
-var y = True and (not True) ;
+var y = True and (not z) ;
+print(y)

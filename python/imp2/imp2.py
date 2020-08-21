@@ -13,7 +13,9 @@ def print_help():
     print(colored('Imπ2 to Π IR compiler and interpreter, August 2020', 'green'))
     print(colored('http://github.com/ChristianoBraga/PiFramework', 'grey'))
     print(colored('imp2.py -f <impfile>' + 
-                  '[-s | -a | -d | -p | -t | --at | --pt | --stats | --state n | --last n | --no-color | --llvm | --llvm_jit]',
+                  '[-s | -a | -d | -p | -t | ' +
+                  '--at | --pt | --stats | --state n | --last n | ' +
+                  '--out | --no-color | --llvm | --llvm_jit]',
                   'yellow'))
     print('-s : Prints source code.')
     print('-a : Prints syntax tree.')
@@ -27,6 +29,7 @@ def print_help():
     print('--stats : Prints execution statistics.')
     print('--state n : Prints the nth state of the trace.')
     print('--last n : Prints the (last - n)th state of the trace.')
+    print('--out : Prints the oputput.')
     print('--no-color : Do not print colors in trace.')
     print('--llvm : Prints LLVM code.')
     print('--llvm_jit : Runs LLVM JIT code.')
@@ -44,6 +47,7 @@ def main(argv):
     print_stats = False
     print_state = False
     print_last = False
+    print_out = False
     color = True
     print_llvm = False
     run_llvm_jit = False
@@ -51,7 +55,7 @@ def main(argv):
     display_state = 0
     last_n_state = 0
     try:
-        opts, args = getopt.getopt(argv,"f:saptb", ['at', 'pt', 'td', 'llvm', 'llvm_jit', 'stats', 'state=', 'last=', 'no-color'])
+        opts, args = getopt.getopt(argv,"f:saptb", ['at', 'pt', 'td', 'llvm', 'llvm_jit', 'stats', 'state=', 'last=', 'out', 'no-color'])
     except getopt.GetoptError:
         print_help()
         sys.exit(2)
@@ -87,6 +91,8 @@ def main(argv):
         elif opt == '--last':
             print_last = True
             last_n_state = int(arg)
+        elif opt == '--out':
+            print_out = True
         elif opt == '--no-color':
             color= False
         elif opt == '--llvm':
@@ -147,7 +153,7 @@ def main(argv):
         exit(2)
 
     try:
-        (tr, ns, dt) = run(pi_ast, color=color)
+        (tr, ns, o, dt) = run(pi_ast, color=color)
     except EvaluationError as e:
         exc_type, exc_value, exc_traceback = sys.exc_info()
         if color:
@@ -205,19 +211,33 @@ def main(argv):
                     print('State '+ csn + ' of the ' + pi_symb + ' automaton:')
                     print(state)
                     state_number = state_number - 1
+                    print(tr[state_number])
             else:    
                 if print_last:
                     display_state = len(tr) - (last_n_state + 1)
-                else:
-                    display_state = len(tr) - 1
-                if color:
-                    print('State '+ colored('#'+ str(display_state), 'blue') + \
-                          ' of the ' + pi_symb + ' automaton:')
-                else:
-                    print('State '+ '#'+ str(display_state) + \
-                          ' of the ' + pi_symb + ' automaton:')
-                print(tr[display_state])
+                    if color:
+                        print('State '+ colored('#'+ str(display_state), 'blue') +
+                              ' of the ' + pi_symb + ' automaton:')
+                    else:
+                        print('State '+ '#'+ str(display_state) +
+                              ' of the ' + pi_symb + ' automaton:')
+                    print(tr[display_state])
+                #else:
+                #    display_state = len(tr) - 1
+                # if color:
+                #    print('State '+ colored('#'+ str(display_state), 'blue') + \
+                #                 ' of the ' + pi_symb + ' automaton:')
+                # else:
+                #    print('State '+ '#'+ str(display_state) + \
+                #          ' of the ' + pi_symb + ' automaton:')
+                # print(tr[display_state])
 
+        if print_out:
+            if o:
+                print("Output = " + str(o))
+            else:
+                print("No output.")
+            
         if print_stats:
             print('Number of evaluation steps:', ns)
             print('Evaluation time:', dt)       

@@ -591,7 +591,7 @@ class ExpPiAut(PiAutomaton):
             self.__evalNotKW()
         else:
             raise EvaluationError( \
-                "Ill formed expression " + str(e) + " of type " + str(type(e)) + "." + \
+                "Don't know how to evaluate " + str(e) + " of type " + str(type(e)) + "." + \
                 "\nCall to 'eval' on \n" + str(self))
 
 #
@@ -729,6 +729,8 @@ class CmdPiAut(ExpPiAut):
     def env(self):
         return self["env"]
 
+    def out(self):
+        return self["out"]
 
     def getBindable(self, i):
         en = self.env()
@@ -761,7 +763,7 @@ class CmdPiAut(ExpPiAut):
         else:
             raise EvaluationError("Call to updateStore with location " + str(l) + " not in store.")
 
-    def emmit(self, e):
+    def __emmit(self, e):
         self["out"].append(e)
         
     def __evalPrint(self, c):
@@ -771,7 +773,7 @@ class CmdPiAut(ExpPiAut):
 
     def __evalPrintKW(self):
         v = self.popVal()
-        self.emmit(v)
+        self.__emmit(v)
         
     def __evalAssign(self, c):
         i = c.lvalue()
@@ -844,7 +846,7 @@ class CmdPiAut(ExpPiAut):
             self.__evalPrint(c)
         elif c == CmdKW.PRINT:
             self.__evalPrintKW()
-        if isinstance(c, Assign):
+        elif isinstance(c, Assign):
             self.__evalAssign(c)
         elif c == CmdKW.ASSIGN:
             self.__evalAssignKW()
@@ -864,7 +866,7 @@ class CmdPiAut(ExpPiAut):
             self.__evalCSeq(c)
         else:
             self.pushCnt(c)
-            ExpPiAut.eval(self)
+            super().eval()
 
 #
 # Declarations
@@ -1107,7 +1109,7 @@ class DecPiAut(CmdPiAut):
             self.__evalBlkCmdKW()
         else:
             self.pushCnt(d)
-            CmdPiAut.eval(self)
+            super().eval()
  
 #            
 # Abstractions
@@ -1339,7 +1341,7 @@ class AbsPiAut(DecPiAut):
             self.__evalCall()
         else:
             self.pushCnt(d)
-            DecPiAut.eval(self)
+            super().eval()
 
 #            
 # Recursive abstractions
@@ -1501,7 +1503,7 @@ class RecPiAut(AbsPiAut):
             self.__evalRecCall()
         else:
             self.pushCnt(c)
-            AbsPiAut.eval(self)
+            super().eval()
 
 import datetime
 
@@ -1522,7 +1524,8 @@ def run(ast, color=True):
         trace.append(str(aut))
         step = step + 1
     t1 = datetime.datetime.now()
-    return (trace, step, (t1 - t0))
+    out = aut.out()
+    return (trace, step, out, (t1 - t0))
 
 # if __name__ == '__main__':
 #     # The classic iterative factorial example within a function.
