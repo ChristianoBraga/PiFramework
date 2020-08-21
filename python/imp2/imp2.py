@@ -174,7 +174,7 @@ def main(argv):
                 state_number = state_number - 1
         print('Python ' + pi_symb + ' automaton call trace:')
         tbl = traceback.format_exception(exc_type, exc_value, exc_traceback)
-        imp_tb = [e for e in tbl if 'PiFramework' in e]
+        imp_tb = [e for e in tbl if 'pi.py' in e or 'imp2.py' in e]
         for ex in imp_tb:
             print(ex)
         exit(2)

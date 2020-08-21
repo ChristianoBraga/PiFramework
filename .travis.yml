@@ -4,4 +4,4 @@ install:
 before_script:
 - cd python/imp2
 script:
-- ./test.sh
+- python3 imp2-test.py 
