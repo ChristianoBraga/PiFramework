@@ -219,6 +219,8 @@ def main(argv):
                     else:
                         print('State '+ '#'+ str(display_state) +
                               ' of the ' + pi_symb + ' automaton:')
+                    print(tr[display_state])
+
                 #else:
                 #    display_state = len(tr) - 1
                 # if color:
@@ -227,7 +229,6 @@ def main(argv):
                 # else:
                 #    print('State '+ '#'+ str(display_state) + \
                 #          ' of the ' + pi_symb + ' automaton:')
-                print(tr[display_state])
 
         if print_out:
             if o:
