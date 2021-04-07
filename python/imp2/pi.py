@@ -11,7 +11,6 @@ class IllFormed(Exception):
         return "Ill formed Π IR AST: " + colored(self.args, 'red')
 
 class Statement:
-    __opr = []
     def __init__(self, *args):
         self.__opr = list(args)
         
@@ -1304,7 +1303,7 @@ class AbsPiAut(DecPiAut):
         caller = self.popVal()
         self.pushVal(self.locs())
         # Saves the current environment in the value stack.
-        self.pushVal(self.env())
+        self.pushVal(self.env().copy())
         # Retrieves the closure associated with the caller function.
         clos = self.getBindable(caller.id())
         # Retrieves the formal parameters from the closure.
@@ -1317,7 +1316,7 @@ class AbsPiAut(DecPiAut):
         # Retrieves the current environment.
         # e = self.env().copy()
         # Retrives the closure's environment.
-        ce = clos.env()      
+        ce = clos.env().copy()      
         # The caller's block must run on the closure's environment
         # overwritten with the matches.
         # e.update(ce)

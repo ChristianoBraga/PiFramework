@@ -19,7 +19,6 @@
 @@keyword :: 'if' 'then' 'else' 
 @@keyword :: 'var' '='
 @@keyword :: 'const' '='
-@@keyword :: ';'
 @@keyword :: 'skip'
 @@keyword :: '{' '}'
 @@keyword :: 'print'

@@ -1,3 +1,4 @@
+#!/usr/local/Cellar/python@3.8/3.8.6_1/bin/python3
 # Author: Christiano Braga
 # http://github.com/ChristianoBraga
 
@@ -123,7 +124,6 @@ def main(argv):
     if print_ast:
         try:
             ast = parser.parse(source)
-            print(ast)
             print('Concrete syntax tree: ')            
             pprint.pprint(ast, indent=2, width=20)
             if terminate:
@@ -188,7 +188,6 @@ def main(argv):
     else:
         if print_state:
             print('State #'+ str(display_state) + ' of the ' + pi_symb + ' automaton:')
-            print(tr[display_state])
             exit(1)
 
         if print_trace:
@@ -211,7 +210,6 @@ def main(argv):
                     print('State '+ csn + ' of the ' + pi_symb + ' automaton:')
                     print(state)
                     state_number = state_number - 1
-                    print(tr[state_number])
             else:    
                 if print_last:
                     display_state = len(tr) - (last_n_state + 1)
@@ -221,7 +219,6 @@ def main(argv):
                     else:
                         print('State '+ '#'+ str(display_state) +
                               ' of the ' + pi_symb + ' automaton:')
-                    print(tr[display_state])
                 #else:
                 #    display_state = len(tr) - 1
                 # if color:
@@ -230,7 +227,7 @@ def main(argv):
                 # else:
                 #    print('State '+ '#'+ str(display_state) + \
                 #          ' of the ' + pi_symb + ' automaton:')
-                # print(tr[display_state])
+                print(tr[display_state])
 
         if print_out:
             if o:

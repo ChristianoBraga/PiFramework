@@ -4,8 +4,10 @@ def fat (x) {
     while (z > 0)
     {
 	y := y * z ;
-  	z := z - 1 ;
-	print(y)
-    } 
-} 
-fat(10) 
+  	z := z - 1 
+    } ; 
+    print(y) 
+}
+fat(2) 
+
+

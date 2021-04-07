@@ -31,8 +31,6 @@ class Impiler(object):
             return pi.And(ast.e1, ast.e2)        
         elif ast.op == "or":
             return pi.Or(ast.e1, ast.e2)        
-        elif ast.op == "and":
-            return pi.And(ast.e1, ast.e2)        
         elif ast.op == "<":
             return pi.Lt(ast.e1, ast.e2)        
         elif ast.op == "<=":
@@ -152,5 +150,4 @@ class Impiler(object):
 
     def call(self, ast):
         actuals = [e for e in ast.a if e != ',']
-        aux = pi.Call(ast.idn, actuals)
-        return aux 
+        return pi.Call(ast.idn, actuals)
