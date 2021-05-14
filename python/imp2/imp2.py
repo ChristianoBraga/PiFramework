@@ -1,4 +1,4 @@
-#!/usr/local/Cellar/python@3.8/3.8.6_1/bin/python3
+#!/usr/local/bin/python3
 # Author: Christiano Braga
 # http://github.com/ChristianoBraga
 

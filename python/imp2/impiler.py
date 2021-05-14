@@ -103,8 +103,12 @@ class Impiler(object):
                 return pi.Blk(pi.Nop())
         
     def start(self, ast):
-        return self.blk(ast)
-
+        decs = ast.ds.copy()
+        blk = pi.Blk(decs.pop(), ast.cs)
+        for d in reversed(decs):
+            blk = pi.Blk(d, blk)
+        return blk
+                    
     def cmd_seq(self, ast):
         if isinstance(ast.ac, list):
             cs = ast.ac[0]

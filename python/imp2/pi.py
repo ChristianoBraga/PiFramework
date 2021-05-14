@@ -1,5 +1,5 @@
 from termcolor import colored
-
+import copy
 #
 # Basic concepts
 #
@@ -1232,7 +1232,7 @@ class AbsPiAut(DecPiAut):
         else:
             f = a.formals()             # Formal parameters
             b = a.blk()                 # Body
-            e = self.env()              # Current environment
+            e = copy.deepcopy(self.env())              # Current environment
             # Closes the given abs. with the current env
             c = Closure(f, b, e)
             # Closure c is pushed to the value stack such that
@@ -1303,7 +1303,7 @@ class AbsPiAut(DecPiAut):
         caller = self.popVal()
         self.pushVal(self.locs())
         # Saves the current environment in the value stack.
-        self.pushVal(self.env().copy())
+        self.pushVal(copy.deepcopy(self.env()))
         # Retrieves the closure associated with the caller function.
         clos = self.getBindable(caller.id())
         # Retrieves the formal parameters from the closure.
@@ -1526,7 +1526,7 @@ def run(ast, color=True):
     out = aut.out()
     return (trace, step, out, (t1 - t0))
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
 #     # The classic iterative factorial example within a function.
 #     bl1 = Blk(Bind(Id("y"), Ref(Num(1))),
 #             CSeq(Assign(Id("y"), Id("x")),
@@ -1538,13 +1538,19 @@ def run(ast, color=True):
 #     ba = BindAbs(Id("fac"), abs)
 #     ast = Blk(Bind(Id("z"), Ref(Num(1))), Blk(ba, Call(Id("fac"), Actuals(Num(1500)))))
 
-#     try:
-#         (tr, ns, dt) = run(ast)
-#     except Exception as e:
-#         print('Evaluation error: ', e)
-#         exit()
+    ast = Blk(DSeq(Bind(Id("self.x"), Ref(Num(0))),
+                   DSeq(Bind(Id("self.y"), Ref(Num(0))),
+                        BindAbs(Id("C"), Abs([Id("x")], Blk(Call(Id("x"), [Exp()])))))),
+              Blk(Bind(Id("o"), Id("C")),
+                  Call(Id("o"), Assign(Id("self.x"), Num(1)))))
+    
+    try:
+        (tr, ns, dt) = run(ast)
+    except Exception as e:
+        print('Evaluation error: ', e)
+        exit()
 
-#     print('Last state of the π automaton:')
-#     print(tr[len(tr) - 2])
-#     print('Number of evaluation steps:', ns)
-#     print('Evaluation time:', dt)
+    print('Last state of the π automaton:')
+    print(tr[len(tr) - 2])
+    print('Number of evaluation steps:', ns)
+    print('Evaluation time:', dt)

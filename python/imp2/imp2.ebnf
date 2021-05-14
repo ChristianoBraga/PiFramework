@@ -23,7 +23,7 @@
 @@keyword :: '{' '}'
 @@keyword :: 'print'
 
-start = [ds:decSeq] [cs:cmd_seq] $ ;
+start = ds:{dec}* [cs:cmd_seq] $ ;
 
 exp = paren_exp | bin_exp | un_exp | @:atom ;
 
