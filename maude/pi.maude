@@ -1,0 +1,633 @@
+fmod STACK{X :: TRIV} is 
+     inc LIST{X} * (op __ to _::_, op nil to empty) .
+     sort Stack{X} .
+     op [_] : List{X} -> Stack{X} . 
+     op [] : -> Stack{X} .
+     op push : Stack{X} X$Elt -> Stack{X} .
+     op pop : Stack{X} -> Stack{X} .
+     op top : Stack{X} ~> X$Elt .
+     var L : List{X} . var E : X$Elt .
+     eq [empty] = [] .
+     eq push([], E) = [E] .
+     eq push([L], E) = [L :: E] .
+     eq pop([]) = [] .
+     eq pop([L :: E]) = [L] .
+     eq top([L :: E]) = E .
+endfm
+
+fmod INDEX is sort Idx . endfm
+view Idx from TRIV to INDEX is sort Elt to Idx . endv
+
+fmod SEM-COMP is sort SemComp . endfm 
+view SemComp from TRIV to SEM-COMP is sort Elt to SemComp . endv
+
+fmod PI-IR is 
+     sorts OpCode Statement .
+endfm
+view Statement from TRIV to PI-IR is sort Elt to Statement . endv
+
+fmod RECORD{X :: TRIV, Y :: TRIV} is 
+     sorts Field{X, Y} PreRecord{X, Y} Record{X, Y} .
+     subsort Field{X, Y} < PreRecord{X, Y} .
+     op __ : X$Elt Y$Elt ~> Field{X, Y} [prec 20] . 
+     op empty : -> PreRecord{X, Y} .
+     op _,_ : PreRecord{X, Y} PreRecord{X, Y} -> PreRecord{X, Y} [prec 40 assoc comm id: empty] .
+     op [_] : PreRecord{X, Y} -> Record{X, Y} .
+endfm
+
+fmod PI-AUTOMATA is
+     inc PI-IR .
+     inc RECORD{Idx, SemComp} * (sort Record{Idx, SemComp} to State,
+                                 sort PreRecord{Idx, SemComp} to PreState) .
+     sort FinalState .
+     subsort FinalState < State .
+     op run : State -> State [iter] .
+     op run* : State -> State .
+     op exec : Statement -> State .
+     var S : State . var F : FinalState .
+     eq run*(F) = F .
+     eq run*(S) = run*(run(S)) .
+endfm
+
+fmod CONTROL is
+     sort Control .
+endfm
+view Control from TRIV to CONTROL is sort Elt to Control . endv
+
+fmod VALUE is 
+     sort Value .
+endfm
+view Value from TRIV to VALUE is sort Elt to Value . endv
+
+fmod EXP-IR is inc PI-IR .
+     inc RAT .
+     sort Exp .
+     subsort Exp < Statement .
+     op exp : Rat -> Exp .
+     op exp : Bool -> Exp .
+     ops sum sub mul div lth leq 
+         gth geq equ lor lan : Exp Exp -> Exp .
+     op not : Exp -> Exp .
+endfm
+
+fmod BASIC-VALUES is 
+     inc VALUE .
+     inc RAT . 
+     inc BOOL .
+     inc STRING .
+     inc FLOAT .
+     op val : Rat -> Value .
+     op val : Bool -> Value .
+     op val : String -> Value .
+     op val : Float -> Value .
+endfm
+     
+fmod EXP-AUTOMATON is 
+     inc BOOL .
+     inc EXP-IR .
+     inc PI-AUTOMATA .
+     inc BASIC-VALUES .
+     inc STACK{Control} * (op [] to mtCnt) .
+     inc STACK{Value} * (op [] to mtVal) .
+
+     subsort OpCode < Control .
+
+     ops #SUM #MUL #DIV #SUB #LTH #LEQ 
+         #GTH #GEQ #EQU #NOT #LOR #LAN : -> OpCode .
+
+     op cnt : -> Idx .
+     op val : -> Idx .
+     op :_ : Stack{Control} -> SemComp .
+     op :_ : Stack{Value} -> SemComp .
+     op cnt : Exp -> Control .
+     op cnt : Rat -> Control .
+
+     var C : Stack{Control} . var L : List{Control} . 
+     var V : Stack{Value} . var M : List{Value} .
+     vars E E1 E2 : Exp . var ... : PreState .
+     vars R R1 R2 : Rat . vars B B1 B2 : Bool .
+
+     ---| Control stack semantic component
+     mb (cnt : C) : Field{Idx, SemComp} .
+
+     ---| Value stack semantic component 
+     mb (val : V) : Field{Idx, SemComp} .
+
+     ---| A final state is reached when the whole program has been processed.
+     mb [cnt : mtCnt, ...] : FinalState .
+
+     ---| Basic values
+     eq run( [ cnt : [ L :: cnt(exp(R)) ], 
+               val : V , 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : push(V, val(R)), 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(exp(B)) ], 
+               val : V , 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : push(V, val(B)), 
+               ... ] .
+
+     ---| Arithmetic
+     eq run( [ cnt : [ L :: cnt(sum(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #SUM :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+
+     eq run( [ cnt : [ L :: #SUM ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 + R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(sub(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #SUB :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+
+     eq run( [ cnt : [ L :: #SUB ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 - R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(mul(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #MUL :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+
+     eq run( [ cnt : [ L :: #MUL ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 * R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(div(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #DIV :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+
+     eq run( [ cnt : [ L :: #DIV ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 / R2) ], 
+               ... ] .
+
+     ---| Logical operators
+     eq run( [ cnt : [ L :: cnt(lth(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #LTH :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #LTH ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 < R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(leq(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #LEQ :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #LEQ ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 <= R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(gth(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #GTH :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #GTH ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 > R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(geq(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #GEQ :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #GEQ ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 >= R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(equ(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #EQU :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #EQU ], 
+               val : [ M :: val(R1) :: val(R2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(R1 == R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #EQU ], 
+               val : [ M :: val(B1) :: val(B2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(B1 == B2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(lor(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #LOR :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #LOR ], 
+               val : [ M :: val(B1) :: val(B2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(B1 or B2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(lan(E1, E2)) ], ... ] ) =
+             [ cnt : [ L :: #LAN :: cnt(E2) :: cnt(E1) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #LAN ], 
+               val : [ M :: val(B1) :: val(B2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(B1 and B2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: cnt(not(E)) ], ... ] ) =
+             [ cnt : [ L :: #NOT :: cnt(E) ] , ... ] .
+
+     eq run( [ cnt : [ L :: #NOT ], 
+               val : [ M :: val(B) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(not B) ], 
+               ... ] .
+endfm
+
+fmod ID-IR is 
+     inc QID .
+     sort Id .
+     op id : Qid -> Id .
+endfm
+view Id from TRIV to ID-IR is sort Elt to Id . endv
+
+fmod BINDABLE is
+     sort Bindable .
+endfm
+view Bindable from TRIV to BINDABLE is sort Elt to Bindable . endv
+
+fmod ENV is 
+     inc MAP{Id, Bindable} * (sort Map{Id, Bindable} to Env, 
+                              op empty to mtEnv) .
+
+     ---| Updates rho1 with entries from rho2 by overwriting 
+     ---| values of common indices with values from rho2,
+     ---| adding entries from rho2 which are not common to both,
+     ---| preserving entries from rho1 which are not common to both.
+     op update : Env Env -> Env .
+     vars rho rho1 rho2 : Env . vars I I1 I2 : Id . vars Bnd1 Bnd2 : Bindable .  
+     eq update(mtEnv, rho) = rho .
+     eq update(rho, mtEnv) = rho .
+     eq update((I1 |-> Bnd1, rho1), (I1 |-> Bnd2, rho2)) = (I1 |-> Bnd2), update(rho1, rho2) .
+     eq update((I1 |-> Bnd1, rho1), (I2 |-> Bnd2, rho2)) = 
+        (I1 |-> Bnd1), (I2 |-> Bnd2), update(rho1, rho2) [owise] .
+endfm
+
+fmod BASIC-ENV is 
+     inc ENV .
+     inc RAT . 
+     inc BOOL .
+     inc BASIC-VALUES .
+     op bnd : Rat -> Bindable .
+     op bnd : Bool -> Bindable .
+     op getVal : Bindable -> Value .
+     var R : Rat . var B : Bool .
+     eq getVal(bnd(R)) = val(R) .
+     eq getVal(bnd(B)) = val(B) .
+endfm
+
+fmod EXP-WITH-ID-AUTOMATON is 
+     inc ID-IR .
+     inc BASIC-ENV .
+     inc EXP-AUTOMATON .
+     op env : -> Idx .
+     op :_ : Env -> SemComp .
+     op exp : Id -> Exp .
+
+     var rho : Env . var I : Id .
+     var L : List{Control} . var V : Stack{Value} . 
+     var ... : PreState . 
+
+     mb (env : rho) : Field{Idx, SemComp} .
+
+     eq run( [ cnt : [ L :: cnt(exp(I)) ], 
+               val : V , 
+               env : rho,
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : push(V, getVal(rho[I])), 
+               env : rho,
+               ... ] .
+endfm
+
+fmod LOCATION is sort Loc . endfm
+view Loc from TRIV to LOCATION is sort Elt to Loc . endv
+
+fmod STORABLE is sort Storable . endfm
+view Storable from TRIV to STORABLE is sort Elt to Storable . endv
+
+fmod STORE is 
+     inc NAT .
+     inc MAP{Loc, Storable} * (sort Map{Loc, Storable} to Store, 
+                               sort Entry{Loc, Storable} to Cell, 
+                               op empty to mtStore) .
+     op loc : Nat -> Loc .
+     op new : Store -> Loc .
+     op largestLoc : Store -> Nat . 
+     op $largestLoc : Store Nat -> Nat . 
+     var S : Store . vars L N : Nat . var V : Storable .
+     eq largestLoc(S) = $largestLoc(S, 0) .
+     eq $largestLoc(mtStore, N) = N .
+     eq $largestLoc((loc(L) |-> V, S), N) = 
+        if L > N then $largestLoc(S, L) else $largestLoc(S, N) fi .
+     eq new(S) = loc(largestLoc(S) + 1) .
+endfm
+
+fmod CMD-IR is 
+     inc EXP-IR .
+     inc ID-IR .
+     sort Cmd .
+     op seq : Cmd Cmd -> Cmd .
+     op assign : Id Exp -> Cmd . 
+     op cond : Exp Cmd Cmd -> Cmd .
+     op loop : Exp Cmd -> Cmd .
+     op ref : Exp -> Exp .
+     op deref : Id -> Exp .
+endfm
+
+fmod CMD-AUTOMATON is 
+     inc EXP-WITH-ID-AUTOMATON .
+     inc CMD-IR .
+     inc STORE . 
+
+     ops #ASSIGN #COND #LOOP #REF : -> OpCode .
+
+     op sto : -> Idx .
+     op :_ : Store -> SemComp .
+     op cnt : Cmd -> Control .
+     op val : Id -> Value .
+     op val : Cmd -> Value .
+     op val : Loc -> Value .
+     op bnd : Loc -> Bindable .
+     op stb : Value -> Storable .
+     op getLoc : Bindable -> Loc .
+     op getVal : Bindable -> Value .     
+     op getVal : Storable -> Value .
+
+     var L : List{Control} . var I : Id . vars E E1 E2 : Exp . 
+     var V : Stack{Value} . var M : List{Value} . var U : Value .
+     var rho : Env . var sigma : Store . var ... : PreState .
+     var Loc : Loc . vars C C1 C2 : Cmd . var R : Rat . var B : Bool .
+
+     ---| Store semantic component
+     mb (sto : sigma) : Field{Idx, SemComp} .   
+
+     eq getLoc(bnd(Loc)) = Loc .
+     eq getVal(bnd(Loc)) = val(Loc) .
+     eq getVal(stb(U)) = U .
+
+     ---| Sequence of commmands
+     eq run( [ cnt : [ L :: cnt(seq(C1, C2)) ], 
+               ... ] ) =
+             [ cnt : push(push([ L ], cnt(C2)), cnt(C1)),
+               ... ] .          
+
+     ---| Assignment
+     eq run( [ cnt : [ L :: cnt(assign(I, E)) ], 
+               val : V, 
+               ... ] ) =
+             [ cnt : push(push([ L ], #ASSIGN), cnt(E)),
+               val : push(V, val(I)),
+               ... ] .          
+
+     eq run( [ cnt : [ L :: #ASSIGN ],
+               val : [ M :: val(I) :: U ],
+               env : rho,
+               sto : sigma,
+               ... ] ) =  
+             [ cnt : [ L ],
+               val : [ M ],
+               env : rho,
+               sto : insert(getLoc(rho[I]), stb(U), sigma),
+               ... ] .
+
+     ---| Conditional
+     eq run( [ cnt : [ L :: cnt(cond(E, C1, C2)) ],
+               val : V,
+               ... ] ) =
+             [ cnt : push(push([ L ], #COND), cnt(E)),
+               val : push(push(V, val(C2)), val(C1)),
+               ... ]  . 
+
+     eq run( [ cnt : [ L :: #COND ],
+               val : [ M :: val(C2) :: val(C1) :: val(true) ],
+               ... ] ) =  
+             [ cnt : [ L :: cnt(C1)],
+               val : [ M ],
+               ... ] .
+
+     eq run( [ cnt : [ L :: #COND ],
+               val : [ M :: val(C2) :: val(C1) :: val(false) ],
+               ... ] ) =  
+             [ cnt : [ L :: cnt(C2)],
+               val : [ M ],
+               ... ] .
+
+     ---| Unbounded repetition
+     eq run( [ cnt : [ L :: cnt(loop(E, C)) ],
+               val : V,
+               ... ] ) =
+             [ cnt : push(push([ L ], #LOOP), cnt(E)),
+               val : push(V, val(loop(E, C))),
+               ... ]  . 
+
+     eq run( [ cnt : [ L :: #LOOP ],
+               val : [ M :: val(loop(E, C)) :: val(true) ],
+               ... ] ) =  
+             [ cnt : [ L :: cnt(loop(E, C)) :: cnt(C) ],
+               val : [ M ],
+               ... ] .
+
+     eq run( [ cnt : [ L :: #LOOP ],
+               val : [ M :: val(loop(E, C)) :: val(false) ],
+               ... ] ) =  
+             [ cnt : [ L ], 
+               val : [ M ],
+               ... ] .
+
+     ---| References
+     eq run( [ cnt : [ L :: cnt(ref(E)) ],
+               ... ] ) =
+             [ cnt : [ L :: #REF :: cnt(E) ],
+               ... ] .
+
+     eq run( [ cnt : [ L :: #REF ],
+               val : [ M :: U ], 
+               sto : sigma, 
+               ... ] ) =
+             [ cnt : [ L ],
+               val : push([ M ], val(new(sigma))),
+               sto : insert(new(sigma), stb(U), sigma),
+               ... ] .
+
+     ---| Dereferenciation
+     eq run( [ cnt : [ L :: cnt(deref(I)) ],
+               val : V, 
+               env : rho,
+               sto : sigma, 
+               ... ] ) =
+             [ cnt : [ L ],
+               val : push(V, getVal(sigma[getLoc(rho[I])])),
+               env : rho,
+               sto : sigma,
+               ... ] .
+endfm
+
+fmod DEC-IR is 
+     inc ID-IR .
+     inc CMD-IR .
+     sort Dec .
+     op dec : Id Exp -> Dec .
+     op block : Dec Cmd -> Cmd .
+endfm
+
+fmod DEC-AUTOMATON is
+     inc DEC-IR . 
+     inc CMD-AUTOMATON .
+
+     ops #DEC #BLKDEC #BLKCMD : -> OpCode .
+
+     op cnt : Dec -> Control .
+     op val : Env -> Value .
+
+     var L : List{Control} . var I : Id . vars E E1 E2 : Exp . var D : Dec .
+     var V : Stack{Value} . var M : List{Value} . var U : Value .
+     vars rho rho1 rho2 : Env . var sigma : Store . var ... : PreState .
+     var Loc : Loc . vars C C1 C2 : Cmd . var R : Rat . var B : Bool .
+
+     ---| Declaration
+     eq run( [ cnt : [ L :: cnt(dec(I, E)) ],
+               val : V,
+               ... ] ) =  
+             [ cnt : push(push([ L ], #DEC), cnt(E)), 
+               val : push(V, val(I)),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #DEC ],
+               val : [ M :: val(I) :: val(R) ],
+               ... ] ) =  
+             [ cnt : [ L ],
+               val : push([ M ], val(I |-> bnd(R))),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #DEC ],
+               val : [ M :: val(I) :: val(B) ],
+               ... ] ) =  
+             [ cnt : [ L ],
+               val : push([ M ], val(I |-> bnd(B))),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #DEC ],
+               val : [ M :: val(I) :: val(Loc) ],
+               ... ] ) =  
+             [ cnt : [ L ],
+               val : push([ M ], val(I |-> bnd(Loc))),
+               ... ] .
+
+     ---| Block
+     eq run( [ cnt : [ L :: cnt(block(D, C)) ],
+               val : V,
+               ... ] ) = 
+             [ cnt : [ L :: #BLKDEC :: cnt(D) ],
+               val : push(V, val(C)),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #BLKDEC ],
+               val : [ M :: val(C) :: val(rho2) ],
+               env : rho1,
+               ... ] ) = 
+             [ cnt : [ L :: #BLKCMD :: cnt(C) ], 
+               val : push([ M ], val(rho1)),
+               env : update(rho1, rho2),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #BLKCMD ],
+               val : [ M :: val(rho2) ],
+               env : rho1,
+               ... ] ) = 
+             [ cnt : [ L ], 
+               val : [ M ], 
+               env : rho2,
+               ... ] .
+endfm
+
+eof
+
+fmod FORMALS is 
+     inc LIST{Id} * (sort List{Id} to Formals, 
+                     sort NeList{Id} to NeFormals, 
+                     op nil to nilFormals) .
+endfm
+
+view Exp from TRIV to EXP-IR is sort Elt to Exp . endv
+
+fmod ACTUALS is
+     inc LIST{Exp} * (sort List{Exp} to Actuals, 
+                      sort NeList{Exp} to NeActuals, 
+                      op nil to nilActuals) .
+endfm
+
+fmod LAMBDA-IR is 
+     inc FORMALS .
+     inc ACTUALS .
+     inc EXP-IR .
+     sort Abs .
+     op lambda : Formals Exp -> Abs .
+     op apply : Id Actuals -> Exp .
+endfm
+
+fmod MATCH is
+     inc FORMALS .
+     inc LIST{Value} * (op nil to nilListVal) .
+     inc ENV .
+
+     op match : Formals List{Value} ~> Env .
+     op $match : Formals List{Value} -> Env .
+     var F : Formals . var L : List{Value} . var I : Id . var V : Value .
+     ceq match(F, L) = $match(F, L) if size(F) == size(L) .
+     eq $match(nilFormals, nilListVal) = mtEnv .
+     eq $match((I, F), (V, L)) = I |-> bnd(V), match(F, L) .
+endfm
+
+fmod ABS-AUTOMATON is
+     inc LAMBDA-IR .
+     inc DEC-AUTOMATON .
+     inc BASIC-ENV .
+     sort Clos .
+     op closure : Env Formals Exp -> Clos .
+     op bnd : Clos -> Bindable .
+
+     
+endfm
+
+eof 
+
+fmod PROC-IR is
+     inc FORMALS .
+     inc ACTUALS .
+     inc CMD-IR .
+     sort Proc .
+     op proc : Formals Cmd -> Proc .
+     op call : Id Actuals -> Cmd .
+endfm
