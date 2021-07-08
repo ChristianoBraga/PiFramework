@@ -35,7 +35,7 @@ fmod RECORD{X :: TRIV, Y :: TRIV} is
      op [_] : PreRecord{X, Y} -> Record{X, Y} .
 endfm
 
-fmod PI-AUTOMATA is
+fmod PI-AUTOMATON is
      inc PI-IR .
      inc RECORD{Idx, SemComp} * (sort Record{Idx, SemComp} to State,
                                  sort PreRecord{Idx, SemComp} to PreState) .
@@ -59,17 +59,6 @@ fmod VALUE is
 endfm
 view Value from TRIV to VALUE is sort Elt to Value . endv
 
-fmod EXP-IR is inc PI-IR .
-     inc RAT .
-     sort Exp .
-     subsort Exp < Statement .
-     op exp : Rat -> Exp .
-     op exp : Bool -> Exp .
-     ops sum sub mul div lth leq 
-         gth geq equ lor lan : Exp Exp -> Exp .
-     op not : Exp -> Exp .
-endfm
-
 fmod BASIC-VALUES is 
      inc VALUE .
      inc RAT . 
@@ -81,54 +70,72 @@ fmod BASIC-VALUES is
      op val : String -> Value .
      op val : Float -> Value .
 endfm
+
+fmod EXP-IR is inc PI-IR .
+     inc VALUE .
+     sort Exp .
+     subsort Exp < Statement .
+     op exp : Value -> Exp .
+     ops sum sub mul div lth leq 
+         gth geq equ lor lan : Exp Exp -> Exp .
+     op not : Exp -> Exp .
+endfm
+
+fmod CONTROL-STACK-COMPONENT is 
+     inc PI-IR .
+     inc CONTROL .
+     inc INDEX .
+     inc SEM-COMP .
+     inc STACK{Control} * (op [] to mtCnt) .
+     subsort OpCode < Control .
+     op cnt : -> Idx .
+     op :_ : Stack{Control} -> SemComp .
+endfm
+
+fmod VALUE-STACK-COMPONENT is 
+     inc VALUE .
+     inc INDEX .
+     inc SEM-COMP .
+     inc STACK{Value} * (op [] to mtVal) .
+     op val : -> Idx .
+     op :_ : Stack{Value} -> SemComp .
+endfm
      
 fmod EXP-AUTOMATON is 
      inc BOOL .
      inc EXP-IR .
-     inc PI-AUTOMATA .
+     inc PI-AUTOMATON .
      inc BASIC-VALUES .
-     inc STACK{Control} * (op [] to mtCnt) .
-     inc STACK{Value} * (op [] to mtVal) .
-
-     subsort OpCode < Control .
+     inc CONTROL-STACK-COMPONENT .
+     inc VALUE-STACK-COMPONENT .
 
      ops #SUM #MUL #DIV #SUB #LTH #LEQ 
          #GTH #GEQ #EQU #NOT #LOR #LAN : -> OpCode .
 
-     op cnt : -> Idx .
-     op val : -> Idx .
-     op :_ : Stack{Control} -> SemComp .
-     op :_ : Stack{Value} -> SemComp .
      op cnt : Exp -> Control .
-     op cnt : Rat -> Control .
 
-     var C : Stack{Control} . var L : List{Control} . 
+     var L : List{Control} . var C : Stack{Control} .
      var V : Stack{Value} . var M : List{Value} .
      vars E E1 E2 : Exp . var ... : PreState .
-     vars R R1 R2 : Rat . vars B B1 B2 : Bool .
+     var U : Value . 
+     vars R R1 R2 : Rat . vars F F1 F2 : Float .
+     vars B B1 B2 : Bool . vars S S1 S2 : String .
 
-     ---| Control stack semantic component
+     ---| Control stack component is a record field.
      mb (cnt : C) : Field{Idx, SemComp} .
 
-     ---| Value stack semantic component 
+     ---| Value stack component is a record field.
      mb (val : V) : Field{Idx, SemComp} .
 
-     ---| A final state is reached when the whole program has been processed.
+     ---| A final state is reached when the control stack is empty.
      mb [cnt : mtCnt, ...] : FinalState .
 
      ---| Basic values
-     eq run( [ cnt : [ L :: cnt(exp(R)) ], 
+     eq run( [ cnt : [ L :: cnt(exp(U)) ], 
                val : V , 
                ... ] ) =
              [ cnt : [ L ], 
-               val : push(V, val(R)), 
-               ... ] .
-
-     eq run( [ cnt : [ L :: cnt(exp(B)) ], 
-               val : V , 
-               ... ] ) =
-             [ cnt : [ L ], 
-               val : push(V, val(B)), 
+               val : push(V, U), 
                ... ] .
 
      ---| Arithmetic
@@ -143,6 +150,20 @@ fmod EXP-AUTOMATON is
                val : [ M  :: val(R1 + R2) ], 
                ... ] .
 
+     eq run( [ cnt : [ L :: #SUM ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 + F2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #SUM ], 
+               val : [ M :: val(S1) :: val(S2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(S1 + S2) ], 
+               ... ] .
+
      eq run( [ cnt : [ L :: cnt(sub(E1, E2)) ], ... ] ) =
              [ cnt : [ L :: #SUB :: cnt(E2) :: cnt(E1) ] , ... ] .
 
@@ -152,6 +173,13 @@ fmod EXP-AUTOMATON is
                ... ] ) =
              [ cnt : [ L ], 
                val : [ M  :: val(R1 - R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #SUB ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 - F2) ], 
                ... ] .
 
      eq run( [ cnt : [ L :: cnt(mul(E1, E2)) ], ... ] ) =
@@ -165,6 +193,13 @@ fmod EXP-AUTOMATON is
                val : [ M  :: val(R1 * R2) ], 
                ... ] .
 
+     eq run( [ cnt : [ L :: #MUL ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 * F2) ], 
+               ... ] .
+
      eq run( [ cnt : [ L :: cnt(div(E1, E2)) ], ... ] ) =
              [ cnt : [ L :: #DIV :: cnt(E2) :: cnt(E1) ] , ... ] .
 
@@ -174,6 +209,13 @@ fmod EXP-AUTOMATON is
                ... ] ) =
              [ cnt : [ L ], 
                val : [ M  :: val(R1 / R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #DIV ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 / F2) ], 
                ... ] .
 
      ---| Logical operators
@@ -187,6 +229,20 @@ fmod EXP-AUTOMATON is
                val : [ M  :: val(R1 < R2) ], 
                ... ] .
 
+     eq run( [ cnt : [ L :: #LTH ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 < F2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #LTH ], 
+               val : [ M :: val(S1) :: val(S2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(S1 < S2) ], 
+               ... ] .
+
      eq run( [ cnt : [ L :: cnt(leq(E1, E2)) ], ... ] ) =
              [ cnt : [ L :: #LEQ :: cnt(E2) :: cnt(E1) ] , ... ] .
 
@@ -195,6 +251,20 @@ fmod EXP-AUTOMATON is
                ... ] ) =
              [ cnt : [ L ], 
                val : [ M  :: val(R1 <= R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #LEQ ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 <= F2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #LEQ ], 
+               val : [ M :: val(S1) :: val(S2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(S1 <= S2) ], 
                ... ] .
 
      eq run( [ cnt : [ L :: cnt(gth(E1, E2)) ], ... ] ) =
@@ -207,6 +277,20 @@ fmod EXP-AUTOMATON is
                val : [ M  :: val(R1 > R2) ], 
                ... ] .
 
+     eq run( [ cnt : [ L :: #GTH ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 > F2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #GTH ], 
+               val : [ M :: val(S1) :: val(S2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(S1 > S2) ], 
+               ... ] .
+
      eq run( [ cnt : [ L :: cnt(geq(E1, E2)) ], ... ] ) =
              [ cnt : [ L :: #GEQ :: cnt(E2) :: cnt(E1) ] , ... ] .
 
@@ -215,6 +299,20 @@ fmod EXP-AUTOMATON is
                ... ] ) =
              [ cnt : [ L ], 
                val : [ M  :: val(R1 >= R2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #GEQ ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 >= F2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #GEQ ], 
+               val : [ M :: val(S1) :: val(S2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(S1 >= S2) ], 
                ... ] .
 
      eq run( [ cnt : [ L :: cnt(equ(E1, E2)) ], ... ] ) =
@@ -234,6 +332,19 @@ fmod EXP-AUTOMATON is
                val : [ M  :: val(B1 == B2) ], 
                ... ] .
 
+     eq run( [ cnt : [ L :: #EQU ], 
+               val : [ M :: val(F1) :: val(F2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(F1 == F2) ], 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #EQU ], 
+               val : [ M :: val(S1) :: val(S2) ], 
+               ... ] ) =
+             [ cnt : [ L ], 
+               val : [ M  :: val(S1 == S2) ], 
+               ... ] .
      eq run( [ cnt : [ L :: cnt(lor(E1, E2)) ], ... ] ) =
              [ cnt : [ L :: #LOR :: cnt(E2) :: cnt(E1) ] , ... ] .
 
@@ -296,29 +407,35 @@ endfm
 
 fmod BASIC-ENV is 
      inc ENV .
-     inc RAT . 
-     inc BOOL .
-     inc BASIC-VALUES .
-     op bnd : Rat -> Bindable .
-     op bnd : Bool -> Bindable .
+     inc VALUE .
+     op bnd : Value -> Bindable .
      op getVal : Bindable -> Value .
-     var R : Rat . var B : Bool .
-     eq getVal(bnd(R)) = val(R) .
-     eq getVal(bnd(B)) = val(B) .
+     var V : Value .
+     eq getVal(bnd(V)) = V .
+endfm
+
+fmod ENV-COMPONENT is 
+     inc INDEX .
+     inc SEM-COMP .
+     inc ENV .
+     op env : -> Idx .
+     op :_ : Env -> SemComp .
 endfm
 
 fmod EXP-WITH-ID-AUTOMATON is 
      inc ID-IR .
      inc BASIC-ENV .
      inc EXP-AUTOMATON .
-     op env : -> Idx .
-     op :_ : Env -> SemComp .
+     inc ENV-COMPONENT .
+
      op exp : Id -> Exp .
+     op val : Id -> Value .
 
      var rho : Env . var I : Id .
      var L : List{Control} . var V : Stack{Value} . 
      var ... : PreState . 
 
+     ---| Env component is a record field.
      mb (env : rho) : Field{Idx, SemComp} .
 
      eq run( [ cnt : [ L :: cnt(exp(I)) ], 
@@ -354,6 +471,18 @@ fmod STORE is
      eq new(S) = loc(largestLoc(S) + 1) .
 endfm
 
+fmod BASIC-STORE is 
+     inc STORE .
+     inc BASIC-VALUES .
+     op val : Loc -> Value .
+     op stb : Value -> Storable .
+     op getVal : Storable -> Value .
+     op getLoc : Value -> Loc .
+     var V : Value . var L : Loc .
+     eq getVal(stb(V)) = V .
+     eq getLoc(val(L)) = L .
+endfm
+
 fmod CMD-IR is 
      inc EXP-IR .
      inc ID-IR .
@@ -366,24 +495,24 @@ fmod CMD-IR is
      op deref : Id -> Exp .
 endfm
 
+fmod STORE-COMPONENT is 
+     inc INDEX .
+     inc SEM-COMP .
+     inc STORE .
+     op sto : -> Idx .
+     op :_ : Store -> SemComp .
+endfm
+
 fmod CMD-AUTOMATON is 
      inc EXP-WITH-ID-AUTOMATON .
      inc CMD-IR .
-     inc STORE . 
+     inc BASIC-STORE . 
+     inc STORE-COMPONENT .
 
      ops #ASSIGN #COND #LOOP #REF : -> OpCode .
 
-     op sto : -> Idx .
-     op :_ : Store -> SemComp .
      op cnt : Cmd -> Control .
-     op val : Id -> Value .
      op val : Cmd -> Value .
-     op val : Loc -> Value .
-     op bnd : Loc -> Bindable .
-     op stb : Value -> Storable .
-     op getLoc : Bindable -> Loc .
-     op getVal : Bindable -> Value .     
-     op getVal : Storable -> Value .
 
      var L : List{Control} . var I : Id . vars E E1 E2 : Exp . 
      var V : Stack{Value} . var M : List{Value} . var U : Value .
@@ -392,10 +521,6 @@ fmod CMD-AUTOMATON is
 
      ---| Store semantic component
      mb (sto : sigma) : Field{Idx, SemComp} .   
-
-     eq getLoc(bnd(Loc)) = Loc .
-     eq getVal(bnd(Loc)) = val(Loc) .
-     eq getVal(stb(U)) = U .
 
      ---| Sequence of commmands
      eq run( [ cnt : [ L :: cnt(seq(C1, C2)) ], 
@@ -419,7 +544,7 @@ fmod CMD-AUTOMATON is
              [ cnt : [ L ],
                val : [ M ],
                env : rho,
-               sto : insert(getLoc(rho[I]), stb(U), sigma),
+               sto : insert(getLoc(getVal(rho[I])), stb(U), sigma),
                ... ] .
 
      ---| Conditional
@@ -488,7 +613,7 @@ fmod CMD-AUTOMATON is
                sto : sigma, 
                ... ] ) =
              [ cnt : [ L ],
-               val : push(V, getVal(sigma[getLoc(rho[I])])),
+               val : push(V, getVal(sigma[getLoc(getVal(rho[I]))])),
                env : rho,
                sto : sigma,
                ... ] .
@@ -514,7 +639,7 @@ fmod DEC-AUTOMATON is
      var L : List{Control} . var I : Id . vars E E1 E2 : Exp . var D : Dec .
      var V : Stack{Value} . var M : List{Value} . var U : Value .
      vars rho rho1 rho2 : Env . var sigma : Store . var ... : PreState .
-     var Loc : Loc . vars C C1 C2 : Cmd . var R : Rat . var B : Bool .
+     var Loc : Loc . vars C C1 C2 : Cmd . 
 
      ---| Declaration
      eq run( [ cnt : [ L :: cnt(dec(I, E)) ],
@@ -525,24 +650,10 @@ fmod DEC-AUTOMATON is
                ... ] .
 
      eq run( [ cnt : [ L :: #DEC ],
-               val : [ M :: val(I) :: val(R) ],
+               val : [ M :: val(I) :: U ],
                ... ] ) =  
              [ cnt : [ L ],
-               val : push([ M ], val(I |-> bnd(R))),
-               ... ] .
-
-     eq run( [ cnt : [ L :: #DEC ],
-               val : [ M :: val(I) :: val(B) ],
-               ... ] ) =  
-             [ cnt : [ L ],
-               val : push([ M ], val(I |-> bnd(B))),
-               ... ] .
-
-     eq run( [ cnt : [ L :: #DEC ],
-               val : [ M :: val(I) :: val(Loc) ],
-               ... ] ) =  
-             [ cnt : [ L ],
-               val : push([ M ], val(I |-> bnd(Loc))),
+               val : push([ M ], val(I |-> bnd(U))),
                ... ] .
 
      ---| Block
@@ -572,8 +683,6 @@ fmod DEC-AUTOMATON is
                ... ] .
 endfm
 
-eof
-
 fmod FORMALS is 
      inc LIST{Id} * (sort List{Id} to Formals, 
                      sort NeList{Id} to NeFormals, 
@@ -600,14 +709,14 @@ endfm
 fmod MATCH is
      inc FORMALS .
      inc LIST{Value} * (op nil to nilListVal) .
-     inc ENV .
+     inc BASIC-ENV .
 
      op match : Formals List{Value} ~> Env .
      op $match : Formals List{Value} -> Env .
      var F : Formals . var L : List{Value} . var I : Id . var V : Value .
      ceq match(F, L) = $match(F, L) if size(F) == size(L) .
      eq $match(nilFormals, nilListVal) = mtEnv .
-     eq $match((I, F), (V, L)) = I |-> bnd(V), match(F, L) .
+     eq $match((I F), (V L)) = I |-> bnd(V), match(F, L) .
 endfm
 
 fmod ABS-AUTOMATON is
@@ -616,9 +725,7 @@ fmod ABS-AUTOMATON is
      inc BASIC-ENV .
      sort Clos .
      op closure : Env Formals Exp -> Clos .
-     op bnd : Clos -> Bindable .
-
-     
+     op val : Clos -> Value .
 endfm
 
 eof 
