@@ -708,15 +708,15 @@ endfm
 
 fmod MATCH is
      inc FORMALS .
-     inc LIST{Value} * (op nil to nilListVal) .
-     inc BASIC-ENV .
+     inc STACK{Value} .
+     inc ENV .
 
      op match : Formals List{Value} ~> Env .
      op $match : Formals List{Value} -> Env .
      var F : Formals . var L : List{Value} . var I : Id . var V : Value .
      ceq match(F, L) = $match(F, L) if size(F) == size(L) .
      eq $match(nilFormals, nilListVal) = mtEnv .
-     eq $match((I F), (V L)) = I |-> bnd(V), match(F, L) .
+     eq $match((I F), (V :: L)) = I |-> bnd(V), match(F, L) .
 endfm
 
 fmod ABS-AUTOMATON is
@@ -726,6 +726,26 @@ fmod ABS-AUTOMATON is
      sort Clos .
      op closure : Env Formals Exp -> Clos .
      op val : Clos -> Value .
+     op #APPLY : -> OpCode .
+
+     var L : List{Control} . 
+     var F : Formals . var E : Exp . var V : Stack{Value} . 
+     vars rho rho1 rho2 : Env .
+     var I : Id . var A : Actuals . vars M1 M2 : List{Values} .
+
+     eq run( [ cnt : [ L :: cnt(exp(lambda(F, E))) ], val : V, env : rho, ... ] = 
+             [ cnt : [ L ], val : push(V, val(closure(rho, F, E))), env : rho, ... ] .
+
+     eq run( [ cnt : [ L :: cnt(apply(I, A))], val : V, ... ] ) = 
+             [ cnt : [ L :: #APPLY :: mkControl(A)], val : push(V, val(rho[I])), ... ] ] .
+
+     eq run( [ cnt : [ L :: #APPLY ], 
+               val : [ M1 :: val(closure(rho2, F, E)) :: M2 ], 
+               env : rho1, 
+               ... ] ) = 
+             [ cnt : [ L :: cnt(E) ], 
+               val : [ M1 :: val(rho1) ], 
+               env : update(rho2, match(F, M2)), ... ] .
 endfm
 
 eof 
