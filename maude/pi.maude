@@ -31,8 +31,9 @@ fmod RECORD{X :: TRIV, Y :: TRIV} is
      subsort Field{X, Y} < PreRecord{X, Y} .
      op __ : X$Elt Y$Elt ~> Field{X, Y} [prec 20] . 
      op empty : -> PreRecord{X, Y} .
-     op _,_ : PreRecord{X, Y} PreRecord{X, Y} -> PreRecord{X, Y} [prec 40 assoc comm id: empty] .
-     op [_] : PreRecord{X, Y} -> Record{X, Y} .
+     op _,_ : PreRecord{X, Y} PreRecord{X, Y} -> PreRecord{X, Y} 
+                              [prec 40 assoc comm id: empty format(d d nss d)] .
+     op [_] : PreRecord{X, Y} -> Record{X, Y} [format (n s s d)] .
 endfm
 
 fmod PI-AUTOMATON is
@@ -65,10 +66,10 @@ fmod BASIC-VALUES is
      inc BOOL .
      inc STRING .
      inc FLOAT .
-     op val : Rat -> Value .
-     op val : Bool -> Value .
-     op val : String -> Value .
-     op val : Float -> Value .
+     op val : Rat -> Value [format(! o)] .
+     op val : Bool -> Value [format(! o)] .
+     op val : String -> Value [format(! o)] .
+     op val : Float -> Value [format(! o)] .
 endfm
 
 fmod EXP-IR is inc PI-IR .
@@ -77,8 +78,9 @@ fmod EXP-IR is inc PI-IR .
      subsort Exp < Statement .
      op exp : Value -> Exp .
      ops sum sub mul div lth leq 
-         gth geq equ lor lan : Exp Exp -> Exp .
-     op not : Exp -> Exp .
+         gth geq equ lor lan : Exp Exp -> Exp [format (y o)] .
+     op not : Exp -> Exp [format (y o)] .
+     op ite : Exp Exp Exp -> Exp [format (y o)] .
 endfm
 
 fmod CONTROL-STACK-COMPONENT is 
@@ -88,7 +90,7 @@ fmod CONTROL-STACK-COMPONENT is
      inc SEM-COMP .
      inc STACK{Control} * (op [] to mtCnt) .
      subsort OpCode < Control .
-     op cnt : -> Idx .
+     op cnt : -> Idx [format (b! o)] .
      op :_ : Stack{Control} -> SemComp .
 endfm
 
@@ -97,7 +99,7 @@ fmod VALUE-STACK-COMPONENT is
      inc INDEX .
      inc SEM-COMP .
      inc STACK{Value} * (op [] to mtVal) .
-     op val : -> Idx .
+     op val : -> Idx [format (b! o)] .
      op :_ : Stack{Value} -> SemComp .
 endfm
      
@@ -109,14 +111,15 @@ fmod EXP-AUTOMATON is
      inc CONTROL-STACK-COMPONENT .
      inc VALUE-STACK-COMPONENT .
 
-     ops #SUM #MUL #DIV #SUB #LTH #LEQ 
+     ops #SUM #MUL #DIV #SUB #LTH #LEQ #ITE
          #GTH #GEQ #EQU #NOT #LOR #LAN : -> OpCode .
 
      op cnt : Exp -> Control .
+     op val : Exp -> Value .
 
      var L : List{Control} . var C : Stack{Control} .
      var V : Stack{Value} . var M : List{Value} .
-     vars E E1 E2 : Exp . var ... : PreState .
+     vars E E1 E2 E3 : Exp . var ... : PreState .
      var U : Value . 
      vars R R1 R2 : Rat . vars F F1 F2 : Float .
      vars B B1 B2 : Bool . vars S S1 S2 : String .
@@ -136,6 +139,28 @@ fmod EXP-AUTOMATON is
                ... ] ) =
              [ cnt : [ L ], 
                val : push(V, U), 
+               ... ] .
+
+     ---| ITE
+     eq run( [ cnt : [ L :: cnt(ite(E1, E2, E3)) ],
+               val : V,
+               ... ] ) =
+             [ cnt : push(push([ L ], #ITE), cnt(E1)),
+               val : push(push(V, val(E3)), val(E2)),
+               ... ]  . 
+
+     eq run( [ cnt : [ L :: #ITE ],
+               val : [ M :: val(E3) :: val(E2) :: val(true) ],
+               ... ] ) =  
+             [ cnt : [ L :: cnt(E2)],
+               val : [ M ],
+               ... ] .
+
+     eq run( [ cnt : [ L :: #ITE ],
+               val : [ M :: val(E3) :: val(E2) :: val(false) ],
+               ... ] ) =  
+             [ cnt : [ L :: cnt(E3)],
+               val : [ M ],
                ... ] .
 
      ---| Arithmetic
@@ -379,7 +404,7 @@ endfm
 fmod ID-IR is 
      inc QID .
      sort Id .
-     op id : Qid -> Id .
+     op id : Qid -> Id [format (! o)] .
 endfm
 view Id from TRIV to ID-IR is sort Elt to Id . endv
 
@@ -418,7 +443,7 @@ fmod ENV-COMPONENT is
      inc INDEX .
      inc SEM-COMP .
      inc ENV .
-     op env : -> Idx .
+     op env : -> Idx [format (b! o)] .
      op :_ : Env -> SemComp .
 endfm
 
@@ -459,7 +484,7 @@ fmod STORE is
      inc MAP{Loc, Storable} * (sort Map{Loc, Storable} to Store, 
                                sort Entry{Loc, Storable} to Cell, 
                                op empty to mtStore) .
-     op loc : Nat -> Loc .
+     op loc : Nat -> Loc [format(! o)] .
      op new : Store -> Loc .
      op largestLoc : Store -> Nat . 
      op $largestLoc : Store Nat -> Nat . 
@@ -487,19 +512,19 @@ fmod CMD-IR is
      inc EXP-IR .
      inc ID-IR .
      sort Cmd .
-     op seq : Cmd Cmd -> Cmd .
-     op assign : Id Exp -> Cmd . 
-     op cond : Exp Cmd Cmd -> Cmd .
-     op loop : Exp Cmd -> Cmd .
-     op ref : Exp -> Exp .
-     op deref : Id -> Exp .
+     op seq : Cmd Cmd -> Cmd [format (g o)] .
+     op assign : Id Exp -> Cmd [format (g o)] . 
+     op cond : Exp Cmd Cmd -> Cmd [format (c o)] .
+     op loop : Exp Cmd -> Cmd [format (g o)] .
+     op ref : Exp -> Exp [format (y o)] .
+     op deref : Id -> Exp [format (y o)] .
 endfm
 
 fmod STORE-COMPONENT is 
      inc INDEX .
      inc SEM-COMP .
      inc STORE .
-     op sto : -> Idx .
+     op sto : -> Idx [format (b! o)] .
      op :_ : Store -> SemComp .
 endfm
 
@@ -623,8 +648,8 @@ fmod DEC-IR is
      inc ID-IR .
      inc CMD-IR .
      sort Dec .
-     op dec : Id Exp -> Dec .
-     op block : Dec Cmd -> Cmd .
+     op dec : Id Exp -> Dec [format (m o)] .
+     op block : Dec Cmd -> Cmd [format (g o)] .
 endfm
 
 fmod DEC-AUTOMATON is
@@ -686,75 +711,149 @@ endfm
 fmod FORMALS is 
      inc LIST{Id} * (sort List{Id} to Formals, 
                      sort NeList{Id} to NeFormals, 
-                     op nil to nilFormals) .
+                     op nil to nilFormals) . 
 endfm
 
 view Exp from TRIV to EXP-IR is sort Elt to Exp . endv
 
-fmod ACTUALS is
+fmod ACTUALS is 
      inc LIST{Exp} * (sort List{Exp} to Actuals, 
                       sort NeList{Exp} to NeActuals, 
-                      op nil to nilActuals) .
+                      op nil to nilActuals) . 
 endfm
 
 fmod LAMBDA-IR is 
      inc FORMALS .
      inc ACTUALS .
      inc EXP-IR .
+     inc DEC-IR .
      sort Abs .
-     op lambda : Formals Exp -> Abs .
-     op apply : Id Actuals -> Exp .
+     subsort Abs < Exp .
+     op lambda : Formals Exp -> Abs [format (y o)] .
+     op apply : Id Actuals -> Exp [format (y o)] .
 endfm
 
 fmod MATCH is
      inc FORMALS .
-     inc STACK{Value} .
-     inc ENV .
+     inc VALUE-STACK-COMPONENT .
+     inc BASIC-ENV .
 
      op match : Formals List{Value} ~> Env .
      op $match : Formals List{Value} -> Env .
      var F : Formals . var L : List{Value} . var I : Id . var V : Value .
      ceq match(F, L) = $match(F, L) if size(F) == size(L) .
-     eq $match(nilFormals, nilListVal) = mtEnv .
+     eq $match(nilFormals, empty) = mtEnv .
      eq $match((I F), (V :: L)) = I |-> bnd(V), match(F, L) .
 endfm
 
-fmod ABS-AUTOMATON is
-     inc LAMBDA-IR .
-     inc DEC-AUTOMATON .
-     inc BASIC-ENV .
+fmod ABS-AUTOMATON is 
+     inc LAMBDA-IR . 
+     inc DEC-AUTOMATON . 
+     inc BASIC-ENV . 
+     inc MATCH .
+
      sort Clos .
      op closure : Env Formals Exp -> Clos .
      op val : Clos -> Value .
      op #APPLY : -> OpCode .
+     op #ENDAPPLY : -> OpCode .
+     op $mkControl : Actuals -> List{Control} .
 
-     var L : List{Control} . 
+     var L : List{Control} . var U : Value .
      var F : Formals . var E : Exp . var V : Stack{Value} . 
-     vars rho rho1 rho2 : Env .
-     var I : Id . var A : Actuals . vars M1 M2 : List{Values} .
+     vars rho rho1 rho2 : Env . var ... : PreState .
+     var I : Id . var A : Actuals . vars M M1 M2 : List{Value} .
 
-     eq run( [ cnt : [ L :: cnt(exp(lambda(F, E))) ], val : V, env : rho, ... ] = 
+     eq $mkControl(nilActuals) = empty .
+     eq $mkControl((E A)) = cnt(E) :: $mkControl(A) .
+
+     eq run( [ cnt : [ L :: cnt(lambda(F, E)) ], val : V, env : rho, ... ] ) = 
              [ cnt : [ L ], val : push(V, val(closure(rho, F, E))), env : rho, ... ] .
 
-     eq run( [ cnt : [ L :: cnt(apply(I, A))], val : V, ... ] ) = 
-             [ cnt : [ L :: #APPLY :: mkControl(A)], val : push(V, val(rho[I])), ... ] ] .
+     eq run( [ cnt : [ L :: cnt(apply(I, A))], val : V, env : rho, ... ] ) = 
+             [ cnt : [ L :: #APPLY :: $mkControl(A) ], 
+               val : push(V, getVal(rho[I])), 
+               env : rho, ... ] .
 
      eq run( [ cnt : [ L :: #APPLY ], 
                val : [ M1 :: val(closure(rho2, F, E)) :: M2 ], 
                env : rho1, 
                ... ] ) = 
-             [ cnt : [ L :: cnt(E) ], 
+             [ cnt : [ L :: #ENDAPPLY :: cnt(E) ], 
                val : [ M1 :: val(rho1) ], 
                env : update(rho2, match(F, M2)), ... ] .
+
+     eq run( [ cnt : [ L :: #ENDAPPLY ], 
+               val : [ M :: val(rho2) :: U ], 
+               env : rho1, 
+               ... ] ) = 
+             [ cnt : [ L ], 
+               val : [ M :: U ], 
+               env : rho2, ... ] .
 endfm
 
-eof 
-
-fmod PROC-IR is
-     inc FORMALS .
+fmod REC-IR is
+     inc LAMBDA-IR .
      inc ACTUALS .
-     inc CMD-IR .
-     sort Proc .
-     op proc : Formals Cmd -> Proc .
-     op call : Id Actuals -> Cmd .
+     op rec : Id Abs -> Dec [format (m o)] .
+     op recall : Id Actuals -> Exp [format (y o)] .
 endfm
+
+fmod REC-ABS-AUTOMATON is
+     inc ABS-AUTOMATON .
+     inc REC-IR .
+
+     sort Reclos .
+     op reclosure : Formals Exp Env Env -> Reclos .
+     op val : Reclos -> Value .
+     op unfold : Env -> Env .
+     op reclose : Env Env -> Env .
+     op #RECALL : -> OpCode .
+
+     vars rho rho1 rho2 rho3 : Env .
+     var F : Formals .
+     var E : Exp .
+     var I : Id .
+     var U : Value .
+     var L : List{Control} .
+     var V : Stack{Value} .
+     vars M M1 M2 : List{Value} .
+     var A : Actuals .
+     var ... : PreState .
+
+     eq unfold(rho) = reclose(rho, rho) .
+     eq reclose(rho1, I |-> bnd(val(closure(rho2, F, E)))) =
+        I |-> bnd(val(reclosure(F, E, rho2, rho1))) .
+     eq reclose(rho1, I |-> bnd(val(reclosure(F, E, rho2, rho3)))) = 
+        I |-> bnd(val(reclosure(F, E, rho2, rho1))) .
+     eq reclose(rho, (rho1 , rho2)) = reclose(rho, rho1) , reclose(rho, rho2) .
+     eq reclose(rho, mtEnv) = mtEnv .
+     eq reclose(rho, I |-> bnd(U)) = I |-> bnd(U) [owise] .
+
+     eq run( [ cnt : [ L :: cnt(rec(I, lambda(F, E))) ], 
+               val : V, 
+               env : rho, 
+               ... ] ) = 
+             [ cnt : [ L ], 
+               val : push(V, val(unfold(I |-> bnd(val(closure(rho, F, E)))))),
+               env : rho, 
+               ... ] . 
+
+     eq run( [ cnt : [ L :: cnt(recall(I, A))], val : V, env : rho, ... ] ) = 
+             [ cnt : [ L :: #RECALL :: $mkControl(A) ], 
+               val : push(V, getVal(rho[I])), 
+               env : rho, 
+               ... ] .
+
+     eq run( [ cnt : [ L :: #RECALL ], 
+               val : [ M1 :: val(reclosure(F, E, rho1, rho2)) :: M2 ], 
+               env : rho3, 
+               ... ] ) = 
+             [ cnt : [ L :: #ENDAPPLY :: cnt(E) ], 
+               val : [ M1 :: val(rho3) ], 
+               env : update(rho1, update(unfold(rho2), match(F, M2))), 
+               ... ] .
+endfm
+
+set print conceal on .
+print conceal sum sub mul div lth leq gth geq equ lor lan not .
