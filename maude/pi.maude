@@ -1,3 +1,7 @@
+---| Pi Framework
+---| Christiano Braga
+---| July, 2021
+
 fmod STACK{X :: TRIV} is 
      inc LIST{X} * (op __ to _::_, op nil to empty) .
      sort Stack{X} .
@@ -21,10 +25,10 @@ view Idx from TRIV to INDEX is sort Elt to Idx . endv
 fmod SEM-COMP is sort SemComp . endfm 
 view SemComp from TRIV to SEM-COMP is sort Elt to SemComp . endv
 
-fmod PI-IR is 
+fmod BASIC-PI-IR is 
      sorts OpCode Statement .
 endfm
-view Statement from TRIV to PI-IR is sort Elt to Statement . endv
+view Statement from TRIV to BASIC-PI-IR is sort Elt to Statement . endv
 
 fmod RECORD{X :: TRIV, Y :: TRIV} is 
      sorts Field{X, Y} PreRecord{X, Y} Record{X, Y} .
@@ -37,7 +41,7 @@ fmod RECORD{X :: TRIV, Y :: TRIV} is
 endfm
 
 fmod PI-AUTOMATON is
-     inc PI-IR .
+     inc BASIC-PI-IR .
      inc RECORD{Idx, SemComp} * (sort Record{Idx, SemComp} to State,
                                  sort PreRecord{Idx, SemComp} to PreState) .
      sort FinalState .
@@ -61,10 +65,8 @@ endfm
 view Value from TRIV to VALUE is sort Elt to Value . endv
 
 fmod BASIC-VALUES is 
-     inc VALUE .
-     inc RAT . 
-     inc BOOL .
-     inc STRING .
+     inc VALUE . inc RAT . 
+     inc BOOL . inc STRING .
      inc FLOAT .
      op val : Rat -> Value [format(! o)] .
      op val : Bool -> Value [format(! o)] .
@@ -72,8 +74,8 @@ fmod BASIC-VALUES is
      op val : Float -> Value [format(! o)] .
 endfm
 
-fmod EXP-IR is inc PI-IR .
-     inc VALUE .
+fmod EXP-IR is 
+     inc BASIC-PI-IR . inc VALUE .
      sort Exp .
      subsort Exp < Statement .
      op exp : Value -> Exp .
@@ -84,10 +86,8 @@ fmod EXP-IR is inc PI-IR .
 endfm
 
 fmod CONTROL-STACK-COMPONENT is 
-     inc PI-IR .
-     inc CONTROL .
-     inc INDEX .
-     inc SEM-COMP .
+     inc BASIC-PI-IR . inc CONTROL .
+     inc INDEX . inc SEM-COMP .
      inc STACK{Control} * (op [] to mtCnt) .
      subsort OpCode < Control .
      op cnt : -> Idx [format (b! o)] .
@@ -95,8 +95,7 @@ fmod CONTROL-STACK-COMPONENT is
 endfm
 
 fmod VALUE-STACK-COMPONENT is 
-     inc VALUE .
-     inc INDEX .
+     inc VALUE . inc INDEX .
      inc SEM-COMP .
      inc STACK{Value} * (op [] to mtVal) .
      op val : -> Idx [format (b! o)] .
@@ -104,10 +103,8 @@ fmod VALUE-STACK-COMPONENT is
 endfm
      
 fmod EXP-AUTOMATON is 
-     inc BOOL .
-     inc EXP-IR .
-     inc PI-AUTOMATON .
-     inc BASIC-VALUES .
+     inc BOOL . inc EXP-IR .
+     inc PI-AUTOMATON . inc BASIC-VALUES .
      inc CONTROL-STACK-COMPONENT .
      inc VALUE-STACK-COMPONENT .
 
@@ -431,8 +428,7 @@ fmod ENV is
 endfm
 
 fmod BASIC-ENV is 
-     inc ENV .
-     inc VALUE .
+     inc ENV . inc VALUE .
      op bnd : Value -> Bindable .
      op getVal : Bindable -> Value .
      var V : Value .
@@ -440,18 +436,15 @@ fmod BASIC-ENV is
 endfm
 
 fmod ENV-COMPONENT is 
-     inc INDEX .
-     inc SEM-COMP .
+     inc INDEX . inc SEM-COMP .
      inc ENV .
      op env : -> Idx [format (b! o)] .
      op :_ : Env -> SemComp .
 endfm
 
 fmod EXP-WITH-ID-AUTOMATON is 
-     inc ID-IR .
-     inc BASIC-ENV .
-     inc EXP-AUTOMATON .
-     inc ENV-COMPONENT .
+     inc ID-IR . inc BASIC-ENV .
+     inc EXP-AUTOMATON . inc ENV-COMPONENT .
 
      op exp : Id -> Exp .
      op val : Id -> Value .
@@ -497,8 +490,7 @@ fmod STORE is
 endfm
 
 fmod BASIC-STORE is 
-     inc STORE .
-     inc BASIC-VALUES .
+     inc STORE . inc BASIC-VALUES .
      op val : Loc -> Value .
      op stb : Value -> Storable .
      op getVal : Storable -> Value .
@@ -509,32 +501,45 @@ fmod BASIC-STORE is
 endfm
 
 fmod CMD-IR is 
-     inc EXP-IR .
-     inc ID-IR .
+     inc EXP-IR . inc ID-IR .
      sort Cmd .
      op seq : Cmd Cmd -> Cmd [format (g o)] .
      op assign : Id Exp -> Cmd [format (g o)] . 
-     op cond : Exp Cmd Cmd -> Cmd [format (c o)] .
+     op cond : Exp Cmd Cmd -> Cmd [format (g o)] .
      op loop : Exp Cmd -> Cmd [format (g o)] .
+     op print : Exp -> Cmd [format (g o)] .
      op ref : Exp -> Exp [format (y o)] .
      op deref : Id -> Exp [format (y o)] .
 endfm
 
 fmod STORE-COMPONENT is 
-     inc INDEX .
-     inc SEM-COMP .
-     inc STORE .
+     inc INDEX . inc SEM-COMP .
+     inc STORE . 
      op sto : -> Idx [format (b! o)] .
      op :_ : Store -> SemComp .
 endfm
 
-fmod CMD-AUTOMATON is 
-     inc EXP-WITH-ID-AUTOMATON .
-     inc CMD-IR .
-     inc BASIC-STORE . 
-     inc STORE-COMPONENT .
+fmod OUTPUT is
+     inc VALUE .
+     sort Output .
+     subsort Value < Output .
+     op noOutput : -> Output .
+     op _;_ : Output Output -> Output [assoc id: noOutput] .
+endfm
 
-     ops #ASSIGN #COND #LOOP #REF : -> OpCode .
+fmod OUTPUT-COMPONENT is 
+     inc INDEX . inc SEM-COMP .
+     inc STORE . inc OUTPUT .
+     op out : -> Idx [format (b! o)] .
+     op :_ : Output -> SemComp .
+endfm
+
+fmod CMD-AUTOMATON is 
+     inc EXP-WITH-ID-AUTOMATON . inc CMD-IR .
+     inc BASIC-STORE . inc STORE-COMPONENT .
+     inc OUTPUT-COMPONENT .
+
+     ops #ASSIGN #COND #LOOP #REF #PRINT : -> OpCode .
 
      op cnt : Cmd -> Control .
      op val : Cmd -> Value .
@@ -543,9 +548,13 @@ fmod CMD-AUTOMATON is
      var V : Stack{Value} . var M : List{Value} . var U : Value .
      var rho : Env . var sigma : Store . var ... : PreState .
      var Loc : Loc . vars C C1 C2 : Cmd . var R : Rat . var B : Bool .
+     var O : Output .
 
      ---| Store semantic component
      mb (sto : sigma) : Field{Idx, SemComp} .   
+
+     ---| Output semantic component
+     mb (out : O) : Field{Idx, SemComp} .   
 
      ---| Sequence of commmands
      eq run( [ cnt : [ L :: cnt(seq(C1, C2)) ], 
@@ -642,21 +651,36 @@ fmod CMD-AUTOMATON is
                env : rho,
                sto : sigma,
                ... ] .
+
+     ---| Output
+     eq run( [ cnt : [ L :: cnt(print(E)) ],
+               ... ] ) =
+             [ cnt : [ L :: #PRINT :: cnt(E) ],
+               ... ] .
+
+     eq run( [ cnt : [ L :: #PRINT ],
+               val : [ M :: U ], 
+               out : O, 
+               ... ] ) =
+             [ cnt : [ L ],
+               val : [ M ],
+               out : (O ; U),
+               ... ] .
+
 endfm
 
 fmod DEC-IR is 
-     inc ID-IR .
-     inc CMD-IR .
+     inc ID-IR . inc CMD-IR .
      sort Dec .
      op dec : Id Exp -> Dec [format (m o)] .
+     op let : Dec Exp -> Exp [format (y o)] .
      op block : Dec Cmd -> Cmd [format (g o)] .
 endfm
 
 fmod DEC-AUTOMATON is
-     inc DEC-IR . 
-     inc CMD-AUTOMATON .
+     inc DEC-IR . inc CMD-AUTOMATON .
 
-     ops #DEC #BLKDEC #BLKCMD : -> OpCode .
+     ops #DEC #LETDEC #LETEXP #BLKDEC #BLKCMD : -> OpCode .
 
      op cnt : Dec -> Control .
      op val : Env -> Value .
@@ -679,6 +703,32 @@ fmod DEC-AUTOMATON is
                ... ] ) =  
              [ cnt : [ L ],
                val : push([ M ], val(I |-> bnd(U))),
+               ... ] .
+
+     ---| Let
+     eq run( [ cnt : [ L :: cnt(let(D, E)) ],
+               val : V,
+               ... ] ) = 
+             [ cnt : [ L :: #LETDEC :: cnt(D) ],
+               val : push(V, val(E)),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #LETDEC ],
+               val : [ M :: val(E) :: val(rho2) ],
+               env : rho1,
+               ... ] ) = 
+             [ cnt : [ L :: #LETEXP :: cnt(E) ], 
+               val : push([ M ], val(rho1)),
+               env : update(rho1, rho2),
+               ... ] .
+
+     eq run( [ cnt : [ L :: #LETEXP ],
+               val : [ M :: val(rho2) :: U ],
+               env : rho1,
+               ... ] ) = 
+             [ cnt : [ L ], 
+               val : [ M :: U ], 
+               env : rho2,
                ... ] .
 
      ---| Block
@@ -723,19 +773,16 @@ fmod ACTUALS is
 endfm
 
 fmod LAMBDA-IR is 
-     inc FORMALS .
-     inc ACTUALS .
-     inc EXP-IR .
-     inc DEC-IR .
-     sort Abs .
+     inc FORMALS . inc ACTUALS .
+     inc EXP-IR .  inc DEC-IR .
+     sort Abs .    
      subsort Abs < Exp .
      op lambda : Formals Exp -> Abs [format (y o)] .
      op apply : Id Actuals -> Exp [format (y o)] .
 endfm
 
 fmod MATCH is
-     inc FORMALS .
-     inc VALUE-STACK-COMPONENT .
+     inc FORMALS . inc VALUE-STACK-COMPONENT .
      inc BASIC-ENV .
 
      op match : Formals List{Value} ~> Env .
@@ -747,10 +794,8 @@ fmod MATCH is
 endfm
 
 fmod ABS-AUTOMATON is 
-     inc LAMBDA-IR . 
-     inc DEC-AUTOMATON . 
-     inc BASIC-ENV . 
-     inc MATCH .
+     inc LAMBDA-IR . inc DEC-AUTOMATON . 
+     inc BASIC-ENV . inc MATCH .
 
      sort Clos .
      op closure : Env Formals Exp -> Clos .
@@ -793,15 +838,13 @@ fmod ABS-AUTOMATON is
 endfm
 
 fmod REC-IR is
-     inc LAMBDA-IR .
-     inc ACTUALS .
+     inc LAMBDA-IR . inc ACTUALS .
      op rec : Id Abs -> Dec [format (m o)] .
      op recall : Id Actuals -> Exp [format (y o)] .
 endfm
 
 fmod REC-ABS-AUTOMATON is
-     inc ABS-AUTOMATON .
-     inc REC-IR .
+     inc ABS-AUTOMATON . inc REC-IR .
 
      sort Reclos .
      op reclosure : Formals Exp Env Env -> Reclos .
@@ -811,14 +854,10 @@ fmod REC-ABS-AUTOMATON is
      op #RECALL : -> OpCode .
 
      vars rho rho1 rho2 rho3 : Env .
-     var F : Formals .
-     var E : Exp .
-     var I : Id .
-     var U : Value .
-     var L : List{Control} .
-     var V : Stack{Value} .
-     vars M M1 M2 : List{Value} .
-     var A : Actuals .
+     var F : Formals . var E : Exp .
+     var I : Id . var U : Value .
+     var L : List{Control} . var V : Stack{Value} .
+     vars M M1 M2 : List{Value} . var A : Actuals .
      var ... : PreState .
 
      eq unfold(rho) = reclose(rho, rho) .
@@ -854,6 +893,8 @@ fmod REC-ABS-AUTOMATON is
                env : update(rho1, update(unfold(rho2), match(F, M2))), 
                ... ] .
 endfm
+
+fmod PI-IR is inc EXP-IR . inc CMD-IR . inc DEC-IR . inc LAMBDA-IR . inc REC-IR . endfm
 
 set print conceal on .
 print conceal sum sub mul div lth leq gth geq equ lor lan not .
