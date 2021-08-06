@@ -1,0 +1,13 @@
+load pi
+
+select DEC-AUTOMATON .
+
+red run*([cnt : [cnt(block(dec(id('z), ref(exp(val(1)))),
+                      block(dec(id('x), ref(exp(val(5)))),
+                        loop(gth(deref(id('x)), exp(val(1))),
+                           seq(assign(id('z), mul(deref(id('z)), deref(id('x)))),
+                               assign(id('x), sub(deref(id('x)), exp(val(1)))))))))], 
+          val : mtVal,
+          env : mtEnv,
+          sto : mtStore]) .
+quit
