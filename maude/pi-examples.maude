@@ -1,0 +1,50 @@
+load pi
+
+---| Slides 17 and 18
+select EXP-WITH-ID-AUTOMATON .
+print reveal sum .
+
+red run*([cnt : [cnt(ite(exp(val(true)), 
+                      sum(exp(id('x)), exp(val(1))), 
+                      sum(exp(id('x)), exp(val(2)))))],
+          val : mtVal,
+          env : (id('x) |-> bnd(val(5)))]) .
+
+red run*([cnt : [cnt(ite(exp(val(false)), 
+                      sum(exp(id('x)), exp(val(1))), 
+                      sum(exp(id('x)), exp(val(2)))))],
+          val : mtVal,
+          env : (id('x) |-> bnd(val(5)))]) .
+
+select DEC-AUTOMATON .
+
+red run*([cnt : [cnt(let(dec(id('x), exp(val(5))),
+                         ite(exp(val(false)), 
+                          sum(exp(id('x)), exp(val(1))), 
+                          sum(exp(id('x)), exp(val(2))))))],
+          val : mtVal,
+          env : mtEnv]) .
+
+select REC-ABS-AUTOMATON .
+
+red run*([cnt : [cnt(
+ let(rec(id('fat), lambda(id('x), 
+         ite(gth(exp(id('x)), exp(val(1))), 
+             mul(exp(id('x)), recall(id('fat), 
+                 sub(exp(id('x)), exp(val(1))))), 
+             exp(val(1))))), 
+     recall(id('fat), exp(val(10)))))], 
+          val : mtVal,
+          env : mtEnv]) .
+
+red run*([cnt : [cnt(
+ let(rec(id('fat), lambda(id('x), 
+         ite(gth(exp(id('x)), exp(val(1))), 
+             mul(exp(id('x)), recall(id('fat), 
+                 sub(exp(id('x)), exp(val(1))))), 
+             exp(val(1))))), 
+     recall(id('fat), exp(val(100)))))], 
+          val : mtVal,
+          env : mtEnv]) .
+
+quit
