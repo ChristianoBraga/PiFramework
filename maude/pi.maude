@@ -47,7 +47,7 @@ fmod PI-AUTOMATON is
      sort FinalState .
      subsort FinalState < State .
      op run : State -> State [iter] .
-     op run* : State ~> State .
+     op run* : State -> State .
      op exec : Statement -> State .
      var S : State . var F : FinalState .
      eq run*(F) = F .
@@ -470,24 +470,41 @@ endfm
 fmod LOCATION is sort Loc . endfm
 view Loc from TRIV to LOCATION is sort Elt to Loc . endv
 
+fmod LOC-SET is
+     inc SET{Loc} * (op empty to noLoc, op _,_ to _;_) . 
+endfm
+
 fmod STORABLE is sort Storable . endfm
 view Storable from TRIV to STORABLE is sort Elt to Storable . endv
 
 fmod STORE is 
      inc NAT .
+     inc LOC-SET .
      inc MAP{Loc, Storable} * (sort Map{Loc, Storable} to Store, 
                                sort Entry{Loc, Storable} to Cell, 
                                op empty to mtStore) .
      op loc : Nat -> Loc [format(! o)] .
      op new : Store -> Loc .
+     op mod : Store Set{Loc} -> Store .
      op largestLoc : Store -> Nat . 
      op $largestLoc : Store Nat -> Nat . 
      var S : Store . vars L N : Nat . var V : Storable .
+     var SL : Set{Loc} . vars O O' : Loc .
+
      eq largestLoc(S) = $largestLoc(S, 0) .
      eq $largestLoc(mtStore, N) = N .
      eq $largestLoc((loc(L) |-> V, S), N) = 
         if L > N then $largestLoc(S, L) else $largestLoc(S, N) fi .
+
      eq new(S) = loc(largestLoc(S) + 1) .
+
+     eq mod(mtStore, SL) = mtStore .
+     eq mod(S, noLoc) = S .
+     eq mod((O |-> V, S), (O' ; SL)) = 
+        if O =/= O' 
+        then ((O |-> V), mod(S, (O' ; SL)))
+        else mod(S, SL) 
+        fi .
 endfm
 
 fmod BASIC-STORE is 
@@ -535,10 +552,18 @@ fmod OUTPUT-COMPONENT is
      op :_ : Output -> SemComp .
 endfm
 
+fmod LOC-SET-COMPONENT is 
+     inc LOC-SET .
+     inc INDEX . inc SEM-COMP .
+     op loc : -> Idx [format (b! o)] .
+     op :_ : Set{Loc} -> SemComp .
+endfm
+
 fmod CMD-AUTOMATON is 
      inc EXP-WITH-ID-AUTOMATON . inc CMD-IR .
      inc BASIC-STORE . inc STORE-COMPONENT .
      inc OUTPUT-COMPONENT .
+     inc LOC-SET-COMPONENT .
 
      ops #ASSIGN #COND #LOOP #REF #PRINT : -> OpCode .
 
@@ -549,13 +574,16 @@ fmod CMD-AUTOMATON is
      var V : Stack{Value} . var M : List{Value} . var U : Value .
      var rho : Env . var sigma : Store . var ... : PreState .
      var Loc : Loc . vars C C1 C2 : Cmd . var R : Rat . var B : Bool .
-     var O : Output .
+     var O : Output . var SL : Set{Loc} .
 
      ---| Store semantic component
      mb (sto : sigma) : Field{Idx, SemComp} .   
 
      ---| Ouput semantic component
      mb (out : O) : Field{Idx, SemComp} .   
+
+     ---| Set{Loc} semantic component
+     mb (loc : SL) : Field{Idx, SemComp} .   
 
      ---| Sequence of commmands
      eq run( [ cnt : [ L :: cnt(seq(C1, C2)) ], 
@@ -635,10 +663,12 @@ fmod CMD-AUTOMATON is
      eq run( [ cnt : [ L :: #REF ],
                val : [ M :: U ], 
                sto : sigma, 
+               loc : SL,
                ... ] ) =
              [ cnt : [ L ],
                val : push([ M ], val(new(sigma))),
                sto : insert(new(sigma), stb(U), sigma),
+               loc : (SL ; new(sigma)),
                ... ] .
 
      ---| Dereferenciation
@@ -684,11 +714,12 @@ fmod DEC-AUTOMATON is
 
      op cnt : Dec -> Control .
      op val : Env -> Value .
+     op val : Set{Loc} -> Value .
 
      var L : List{Control} . var I : Id . vars E E1 E2 : Exp . var D : Dec .
      var V : Stack{Value} . var M : List{Value} . var U : Value .
      vars rho rho1 rho2 : Env . var sigma : Store . var ... : PreState .
-     var Loc : Loc . vars C C1 C2 : Cmd . 
+     vars SL SL' : Set{Loc} . vars C C1 C2 : Cmd . 
 
      ---| Declaration
      eq run( [ cnt : [ L :: cnt(dec(I, E)) ],
@@ -734,9 +765,11 @@ fmod DEC-AUTOMATON is
      ---| Block
      eq run( [ cnt : [ L :: cnt(block(D, C)) ],
                val : V,
+               loc : SL,
                ... ] ) = 
              [ cnt : [ L :: #BLKDEC :: cnt(D) ],
-               val : push(V, val(C)),
+               val : push(push(V, val(SL)), val(C)),
+               loc : noLoc,
                ... ] .
 
      eq run( [ cnt : [ L :: #BLKDEC ],
@@ -749,12 +782,16 @@ fmod DEC-AUTOMATON is
                ... ] .
 
      eq run( [ cnt : [ L :: #BLKCMD ],
-               val : [ M :: val(rho2) ],
+               val : [ M :: val(SL) :: val(rho2) ],
                env : rho1,
+               sto : sigma,
+               loc : SL',
                ... ] ) = 
              [ cnt : [ L ], 
                val : [ M ], 
                env : rho2,
+               sto : mod(sigma, SL'),
+               loc : SL,
                ... ] .
 endfm
 
