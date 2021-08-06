@@ -1,6 +1,6 @@
----| Pi Framework
+---| Pi Framework, beta
 ---| Christiano Braga
----| July, 2021
+---| August, 2021
 
 fmod STACK{X :: TRIV} is 
      inc LIST{X} * (op __ to _::_, op nil to empty) .
@@ -47,7 +47,7 @@ fmod PI-AUTOMATON is
      sort FinalState .
      subsort FinalState < State .
      op run : State -> State [iter] .
-     op run* : State -> State .
+     op run* : State ~> State .
      op exec : Statement -> State .
      var S : State . var F : FinalState .
      eq run*(F) = F .
@@ -400,8 +400,10 @@ endfm
 
 fmod ID-IR is 
      inc QID .
+     inc EXP-IR .
      sort Id .
      op id : Qid -> Id [format (! o)] .
+     op exp : Id -> Exp .
 endfm
 view Id from TRIV to ID-IR is sort Elt to Id . endv
 
@@ -446,7 +448,6 @@ fmod EXP-WITH-ID-AUTOMATON is
      inc ID-IR . inc BASIC-ENV .
      inc EXP-AUTOMATON . inc ENV-COMPONENT .
 
-     op exp : Id -> Exp .
      op val : Id -> Value .
 
      var rho : Env . var I : Id .
@@ -505,9 +506,9 @@ fmod CMD-IR is
      sort Cmd .
      op seq : Cmd Cmd -> Cmd [format (g o)] .
      op assign : Id Exp -> Cmd [format (g o)] . 
-     op cond : Exp Cmd Cmd -> Cmd [format (g o)] .
+     op print : Exp -> Cmd [format (g o)] . 
+     op cond : Exp Cmd Cmd -> Cmd [format (c o)] .
      op loop : Exp Cmd -> Cmd [format (g o)] .
-     op print : Exp -> Cmd [format (g o)] .
      op ref : Exp -> Exp [format (y o)] .
      op deref : Id -> Exp [format (y o)] .
 endfm
@@ -519,17 +520,17 @@ fmod STORE-COMPONENT is
      op :_ : Store -> SemComp .
 endfm
 
-fmod OUTPUT is
+fmod OUTPUT is 
      inc VALUE .
      sort Output .
      subsort Value < Output .
      op noOutput : -> Output .
-     op _;_ : Output Output -> Output [assoc id: noOutput] .
+     op _,_ : Output Output -> Output [assoc id: noOutput] .
 endfm
 
 fmod OUTPUT-COMPONENT is 
-     inc INDEX . inc SEM-COMP .
-     inc STORE . inc OUTPUT .
+     inc OUTPUT . inc INDEX .
+     inc SEM-COMP .
      op out : -> Idx [format (b! o)] .
      op :_ : Output -> SemComp .
 endfm
@@ -553,7 +554,7 @@ fmod CMD-AUTOMATON is
      ---| Store semantic component
      mb (sto : sigma) : Field{Idx, SemComp} .   
 
-     ---| Output semantic component
+     ---| Ouput semantic component
      mb (out : O) : Field{Idx, SemComp} .   
 
      ---| Sequence of commmands
@@ -652,7 +653,7 @@ fmod CMD-AUTOMATON is
                sto : sigma,
                ... ] .
 
-     ---| Output
+     ---| Print
      eq run( [ cnt : [ L :: cnt(print(E)) ],
                ... ] ) =
              [ cnt : [ L :: #PRINT :: cnt(E) ],
@@ -664,9 +665,8 @@ fmod CMD-AUTOMATON is
                ... ] ) =
              [ cnt : [ L ],
                val : [ M ],
-               out : (O ; U),
+               out : (O, U),
                ... ] .
-
 endfm
 
 fmod DEC-IR is 
@@ -894,7 +894,4 @@ fmod REC-ABS-AUTOMATON is
                ... ] .
 endfm
 
-fmod PI-IR is inc EXP-IR . inc CMD-IR . inc DEC-IR . inc LAMBDA-IR . inc REC-IR . endfm
-
-set print conceal on .
-print conceal sum sub mul div lth leq gth geq equ lor lan not .
+fmod PI-IR is inc BASIC-VALUES . inc EXP-IR . inc CMD-IR . inc DEC-IR . inc LAMBDA-IR . inc REC-IR . endfm
