@@ -1,0 +1,40 @@
+load pi
+
+select CMD-AUTOMATON .
+
+red run*(
+
+[
+cnt : [cnt(seq(assign(id('x), mul(deref(id('z)), deref(id('y)))), print(deref(id('x)))))],
+val : mtVal, 
+env : (id('x) |-> bnd(val(loc(0))), 
+       id('y) |-> bnd(val(loc(1))),
+       id('z) |-> bnd(val(loc(2)))),
+sto : (loc(0) |-> stb(val(1)), 
+       loc(1) |-> stb(val(2)),
+       loc(2) |-> stb(val(3))), 
+out : noOutput]
+) .
+
+
+red run*(
+
+[
+cnt : [cnt(seq(loop(gth(deref(id('x)), exp(val(1))), 
+                    seq(
+                     assign(id('z), mul(deref(id('x)), deref(id('y)))),
+                     assign(id('x), sub(deref(id('x)), exp(val(1)))))),
+               print(deref(id('z)))))],
+val : mtVal, 
+env : (id('x) |-> bnd(val(loc(0))), 
+       id('y) |-> bnd(val(loc(1))),
+       id('z) |-> bnd(val(loc(2)))),
+sto : (loc(0) |-> stb(val(3)), 
+       loc(1) |-> stb(val(2)),
+       loc(2) |-> stb(val(1))), 
+out : noOutput]
+) .
+
+
+quit
+
