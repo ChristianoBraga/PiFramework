@@ -131,7 +131,7 @@ fmod EXP-AUTOMATON is
      mb [cnt : (∅).Stack{Control}, ...] : FinalState .
 
      ---| Basic values
-     eq [Value] :
+     eq [value] :
           δ( [ cnt : [ L :: cnt(exp(U)) ], 
                val : V , 
                ... ] ) =
