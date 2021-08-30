@@ -1,6 +1,6 @@
 ---| Pi Framework, beta
 ---| Christiano Braga
----| August, ₂0₂1
+---| August, 2021
 
 fmod STACK{X :: TRIV} is 
      inc LIST{X} * (op __ to _::_, op nil to empty) .
@@ -88,7 +88,7 @@ endfm
 fmod CONTROL-STACK-COMPONENT is 
      inc BASIC-PI-IR . inc CONTROL .
      inc INDEX . inc SEM-COMP .
-     inc STACK{Control} * (op [] to ∅) .
+     inc STACK{Control} * (op empty to ∅, op [] to ∅) .
      subsort OpCode < Control .
      op cnt : -> Idx [format (b! o)] .
      op :_ : Stack{Control} -> SemComp .
@@ -915,7 +915,7 @@ fmod ABS-AUTOMATON is
      vars ρ ρ₁ ρ₂ : Env . var ... : PreState .
      var I : Id . var A : Actuals . vars M M₁ M₂ : List{Value} .
 
-     eq $mkControl(nilActuals) = empty .
+     eq $mkControl(nilActuals) = (∅).List{Control} .
      eq $mkControl((E A)) = cnt(E) :: $mkControl(A) .
 
      eq [lambda] :
