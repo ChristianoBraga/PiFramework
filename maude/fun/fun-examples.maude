@@ -1,0 +1,25 @@
+load fun
+
+red downTerm(compile(upTerm(
+
+fun idn('fat) (idn('x)) = 
+    if idn('x) > rat(1)
+    then idn('x) * idn('fat) (idn('x) - rat(1))
+    else rat(1), 
+
+idn('fat)(rat(3))
+
+)), E:[Exp]) .
+
+red out(exec(
+
+fun idn('fat) (idn('x)) = 
+    if idn('x) > rat(1)
+    then idn('x) * idn('fat) (idn('x) - rat(1))
+    else rat(1), 
+
+idn('fat)(rat(1000))
+
+)) .
+
+

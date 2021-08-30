@@ -2,49 +2,43 @@ load pi
 
 ---| Slides 17 and 18
 select EXP-WITH-ID-AUTOMATON .
-print reveal sum .
+print reveal ite sum .
 
-red run*([cnt : [cnt(ite(exp(val(true)), 
+red δ*([cnt : [cnt(ite(exp(val(true)), 
                       sum(exp(id('x)), exp(val(1))), 
                       sum(exp(id('x)), exp(val(2)))))],
-          val : mtVal,
-          env : (id('x) |-> bnd(val(5)))]) .
+          val : (∅).Stack{Value},
+          env : (id('x) ↦ bnd(val(5)))]) .
 
-red run*([cnt : [cnt(ite(exp(val(false)), 
+red δ*([cnt : [cnt(ite(exp(val(false)), 
                       sum(exp(id('x)), exp(val(1))), 
                       sum(exp(id('x)), exp(val(2)))))],
-          val : mtVal,
-          env : (id('x) |-> bnd(val(5)))]) .
+          val : (∅).Stack{Value},
+          env : (id('x) ↦ bnd(val(5)))]) .
+
+print conceal ite sum .
 
 select DEC-AUTOMATON .
 
-red run*([cnt : [cnt(let(dec(id('x), exp(val(5))),
+red δ*([cnt : [cnt(let(dec(id('x), exp(val(5))),
                          ite(exp(val(false)), 
                           sum(exp(id('x)), exp(val(1))), 
                           sum(exp(id('x)), exp(val(2))))))],
-          val : mtVal,
-          env : mtEnv]) .
+          val : (∅).Stack{Value},
+          env : (∅).Env]) .
 
 select REC-ABS-AUTOMATON .
 
-red run*([cnt : [cnt(
- let(rec(id('fat), lambda(id('x), 
-         ite(gth(exp(id('x)), exp(val(1))), 
-             mul(exp(id('x)), recall(id('fat), 
-                 sub(exp(id('x)), exp(val(1))))), 
-             exp(val(1))))), 
-     recall(id('fat), exp(val(10)))))], 
-          val : mtVal,
-          env : mtEnv]) .
+print reveal recapp .
 
-red run*([cnt : [cnt(
+red δ*([cnt : [cnt(
  let(rec(id('fat), lambda(id('x), 
          ite(gth(exp(id('x)), exp(val(1))), 
-             mul(exp(id('x)), recall(id('fat), 
+             mul(exp(id('x)), recapp(id('fat), 
                  sub(exp(id('x)), exp(val(1))))), 
              exp(val(1))))), 
-     recall(id('fat), exp(val(100)))))], 
-          val : mtVal,
-          env : mtEnv]) .
+     recapp(id('fat), exp(val(10)))))], 
+          val : (∅).Stack{Value},
+          env : (∅).Env]) .
 
 quit

@@ -2,11 +2,11 @@ load pi
 
 select REC-ABS-AUTOMATON .
 
-red run*([
+red δ*([
 
-cnt : [cnt(let(rec(id('fat), lambda(id('x), ite(gth(exp(id('x)), exp(val(1))), mul(exp(id('x)), recall(id(
-    'fat), sub(exp(id('x)), exp(val(1))))), exp(val(1))))), recall(id('fat), exp(val(3)))))],
-val : mtVal, env : mtEnv
+cnt : [cnt(let(rec(id('fat), lambda(id('x), ite(gth(exp(id('x)), exp(val(1))), mul(exp(id('x)), recapp(id(
+    'fat), sub(exp(id('x)), exp(val(1))))), exp(val(1))))), recapp(id('fat), exp(val(3)))))],
+val : (∅).Stack{Value}, env : (∅).Env
 
 ]) .
 

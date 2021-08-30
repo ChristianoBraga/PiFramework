@@ -1,0 +1,74 @@
+load ../pi
+
+fmod FUN-GRM is
+     inc QID .
+     inc RAT .
+     inc BOOL .
+     sorts Expr Idn Val .
+     subsort Idn Val < Expr .  
+     op _,_ : Expr Expr -> Expr [prec 60 assoc] .
+     op idn : Qid -> Idn .
+     op rat : Rat -> Val .
+     op boo : Bool -> Val .
+     ops _+_ _*_ _-_ _/_ _==_ _<_ _>_ _or_ _and_ : Expr Expr -> Expr [gather(E e) prec 20] .
+     op !_ : Expr -> Expr [prec 5] . 
+     op if_then_else_ : Expr Expr Expr -> Expr [prec 40] .
+     op fun_(_) =_ : Idn Idn Expr -> Expr [prec 50] .
+     op _(_) : Idn Expr -> Expr [prec 10] . 
+endfm 
+
+fmod FUN-TRAN is
+     inc META-LEVEL * (op id to ml-id) .
+
+     op compile : Term ~> Term .
+     op compileOp : Qid -> Qid . 
+     op compileActual : Term -> Term .
+     op compileActuals : TermList -> TermList .
+     var C : Constant . vars T T1 T2 T3 : Term . vars Op F F1 F2 : Qid .
+     var TL : TermList .
+
+     eq compile('idn[C]) = 'id[C] . 
+     eq compile('rat[T]) = 'val[T] .
+     eq compile('if_then_else_[T1,T2,T3]) = 
+        'ite[compileActual(T1), compileActual(T2), compileActual(T3)] . 
+     eq compile('_`(_`)[T1, T2]) = 'recapp[compile(T1), compileActual(T2)] . 
+     eq compile('fun_`(_`)=_[T1, T2, T3]) = 
+       'rec[compile(T1), 'lambda[compile(T2), compileActual(T3)]] . 
+     eq compile('_`,_[T1, T2]) = 'let[compile(T1), compile(T2)] .
+     eq compile(Op[TL]) = compileOp(Op)[compileActuals(TL)] [owise] .
+
+     eq compileActual('idn[T]) = 'exp[compile('idn[T])] . 
+     eq compileActual('rat[T]) = 'exp[compile('rat[T])] . 
+     eq compileActual(T) = compile(T) [owise] .      
+
+     eq compileActuals(empty) = empty .
+     eq compileActuals((T, TL)) = compileActual(T), compileActuals(TL) .
+
+     eq compileOp('_+_) = 'sum .  eq compileOp('_-_) = 'sub .
+     eq compileOp('_*_) = 'mul .  eq compileOp('_/_) = 'div .
+     eq compileOp('_>_) = 'gth .  eq compileOp('_<_) = 'lth .
+     eq compileOp('_or_) = 'lor . eq compileOp('_and_) = 'lan .
+     eq compileOp('!_) = 'not .   eq compileOp('_==_) = 'equ . 
+endfm   
+
+fmod FUN-RUN-TIME is 
+     inc FUN-GRM . 
+     inc PI-IR . 
+     inc FUN-TRAN . 
+     inc REC-ABS-AUTOMATON .
+     op exec : Expr -> State .
+     op comp : Expr -> Exp .
+     op out : State -> Rat .
+     op getRat : Value -> Rat .
+     op error : ~> Exp . 
+     var E : Expr . var V : Stack{Value} . var ... : PreState . var R : Rat .
+     var X : Expr .
+     eq getRat(val(R)) = R .
+     eq exec(E) = 
+        δ*( [cnt : [cnt(downTerm(compile(upTerm(E)), error))], 
+               val : (∅).Stack{Value}, env : (∅).Env]) .
+     eq out([val : V, ...]) = getRat(top(V)) .
+     eq comp(X) = downTerm(compile(upTerm(X)), error) .
+endfm
+
+

@@ -4,4 +4,7 @@ set trace body off .         ---| The “start of rewrite” line is not printed
 set trace whole off .        ---| The whole term is not printed. 
 set trace substitution off . ---| Set trace substitution off .
 set trace select on .  
-trace select run .
+trace select δ .
+set print conceal on .
+set show stats off .
+set show command off .
