@@ -1,0 +1,144 @@
+sload ../pi
+sload ../basic-lex
+
+fmod FUN-LEX is 
+     inc LEXICAL .
+     inc BASIC-LEX .
+
+     eq keywords = ('fun '`( '`) '= '`, '~ '+ '- '* '/ '>= '> '<= '< '== 'or 'and 'if 'then 'else) .
+     eq ignore = nil .
+
+     var Q : Qid .
+     eq $lexQid(Q) =
+        if ignore?(Q) then nil  
+        else if isRat(Q) then mkRat(Q)
+        else if isString(Q) then mkString(Q)
+        else if isFloat(Q) then mkFloat(Q)
+        else mkIdn(Q) 
+        fi fi fi fi .
+
+     op mkRat : Qid -> Qid .
+     eq mkRat(Q) = tokenize("rat(" + printTokens(Q) + ")") .
+
+     op mkString : Qid -> Qid .
+     eq mkString(Q) = tokenize("str(" + printTokens(Q) + ")") .
+
+     op mkFloat : Qid -> Qid .
+     eq mkFloat(Q) = tokenize("flo(" + printTokens(Q) + ")") .
+
+     op mkIdn : Qid -> Qid .
+     eq mkIdn(Q) = tokenize("idn('" + printTokens(Q) + ")") .
+endfm
+
+fmod FUN-GRM is
+     inc QID .
+     inc RAT .
+     inc FLOAT .
+     inc STRING .
+     inc BOOL .
+     sorts Expr Idn Val .
+     subsort Idn Val < Expr .  
+     op idn : Qid -> Idn .
+     op rat : Rat -> Val .
+     op flo : Float -> Val .
+     op str : String -> Val . 
+     op boo : Bool -> Val .
+     ops _+_ _*_ _-_ _/_ _==_ _<_ _<=_ _>_ _>=_ _or_ _and_ : Expr Expr -> Expr [gather(E e) prec 20] .
+     op ~_ : Expr -> Expr .
+     op if_then_else_ : Expr Expr Expr -> Expr [prec 40] .
+     op fun_(_) =_ : Idn Idn Expr -> Expr [prec 50] .
+     op _(_) : Idn Expr -> Expr [prec 10] . 
+     op _,_ : Expr Expr -> Expr [prec 60 assoc] .
+ endfm 
+
+fmod FUN-PARSER is 
+     inc FUN-LEX .
+     inc FUN-GRM .
+     inc META-LEVEL * (op id to ml-id) .
+     op parse : String -> Expr .
+     op parseToTerm : String -> ResultPair? .
+     op $errorExpr : ~> Expr .
+     var S : String .
+     eq parse(S) = downTerm(getTerm(
+                    metaParse(upModule('FUN-GRM, false), lex(S), 'Expr)), $errorExpr) . 
+     eq parseToTerm(S) = metaParse(upModule('FUN-GRM, false), lex(S), 'Expr) . 
+endfm
+
+fmod FUN-TRAN2 is
+     inc FUN-GRM .
+     inc BASIC-VALUES .
+     inc ID-IR .
+     inc REC-IR .
+
+     op compileIdn : Idn -> Id .
+     var Q : Qid .
+     eq compileIdn(idn(Q)) = id(Q) .
+
+     op compileExpr : Expr ~> Exp .
+     var R : Rat . var F : Float . var S : String . var B : Bool .
+     eq compileExpr(rat(R)) = exp(val(R)) .
+     eq compileExpr(flo(F)) = exp(val(F)) .
+     eq compileExpr(str(S)) = exp(val(S)) .
+     eq compileExpr(boo(B)) = exp(val(B)) .
+     eq compileExpr(idn(Q)) = exp(id(Q)) .
+
+     vars E1 E2 E3 : Expr .
+     eq compileExpr(E1 + E2) = sum(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 - E2) = sub(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 * E2) = mul(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 / E2) = div(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 > E2) = gth(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 < E2) = lth(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 >= E2) = geq(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 <= E2) = leq(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 == E2) = equ(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 or E2) = lor(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(E1 and E2) = lan(compileExpr(E1), compileExpr(E2)) .
+     eq compileExpr(~ E) = not(compileExpr(E)) .
+
+     eq compileExpr(if E1 then E2 else E3) = 
+        ite(compileExpr(E1), compileExpr(E2), compileExpr(E3)) .
+
+     var I : Idn . var E : Expr .   
+     eq compileExpr(I(E)) = recapp(compileIdn(I), compileExpr(E)) .
+
+     eq compileExpr(((fun I1 (I2) = E1), E2)) = 
+        let(compileDec(fun I1 (I2) = E1), compileExpr(E2)) .
+
+     op compileDec : Expr -> Dec .
+     vars I1 I2 : Idn . 
+     eq compileDec(fun I1 (I2) = E) = 
+        rec(compileIdn(I1), lambda(compileIdn(I2), compileExpr(E))) . 
+endfm
+
+fmod FUN-RUN-TIME is 
+     inc FUN-LEX .
+     inc FUN-PARSER . 
+     inc FUN-TRAN2 . 
+     inc REC-ABS-AUTOMATON .
+     inc CONVERSION .
+     inc NAT .
+     
+     op exec : Exp -> State .
+     op fexe : Exp Nat -> State .
+     op comp : Expr -> Exp .
+     op out : State -> Value .
+     op pp : Value -> String .
+     op initCtx : -> PreState .
+
+     op getRat : Value -> Rat .
+     var E : Expr . var Epi : Exp . var V : Stack{Value} . var ... : PreState . 
+     var R : Rat . var S : String . var F : Float . var N : Nat .
+
+     eq comp(E) = compileExpr(E) .
+     eq initCtx = val : (∅).Stack{Value}, env : (∅).Env .
+
+     eq exec(Epi) = 
+        δ*( [cnt : [cnt(Epi)], initCtx] ) .
+
+     eq out([val : V, ...]) = top(V) .
+
+     eq pp(val(R)) = string(R, 10) .
+     eq pp(val(F)) = string(F) .
+     eq pp(val(S)) = S .
+endfm

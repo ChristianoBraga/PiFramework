@@ -31,7 +31,7 @@ select REC-ABS-AUTOMATON .
 
 print reveal recapp .
 
-red δ*([cnt : [cnt(
+red δ^5([cnt : [cnt(
  let(rec(id('fat), lambda(id('x), 
          ite(gth(exp(id('x)), exp(val(1))), 
              mul(exp(id('x)), recapp(id('fat), 

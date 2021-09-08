@@ -1,0 +1,168 @@
+sload fun2
+sload file
+
+fmod ANSI-COLORS is
+     inc CONVERSION .
+     op ansi : String String -> String .
+     op ansi-bold : String -> String .
+     op ansi-red : String -> String .
+     op ansi-green : String -> String .
+     var S : String . var C : String .
+     eq ansi(S, C) = "\033[" + C + "m" + S + "\033[0m" .
+     eq ansi-bold(S) = ansi(S, "1") .
+     eq ansi-red(S) = ansi(S, "31") .
+     eq ansi-green(S) = ansi(S, "32") .
+endfm
+
+fmod FUN-CMD-GRM is 
+     inc STRING .
+     sort Action .
+     op lex_ : String -> Action .
+     op parse_ : String -> Action .
+     op compile_ : String -> Action .
+     op run_ : String -> Action .
+     op load_ : String -> Action .
+     ops fload_ $floading_ : String -> Action .
+     ops lex parse compile run show : -> Action .
+endfm
+
+fmod PI-IR+META-TERM is
+     inc PI-IR .
+     inc META-TERM .
+endfm
+
+view Oid from TRIV to CONFIGURATION is 
+ sort Elt to Oid . 
+endv
+ 
+fmod MAYBE{X :: TRIV} is 
+ sort Maybe{X} . 
+ subsort X$Elt < Maybe{X} . 
+ op maybe : -> Maybe{X} [ctor] . 
+endfm
+
+mod FUN-IO is 
+    inc STD-STREAM .
+    inc FUN-CMD-GRM .
+    inc FUN-RUN-TIME .
+    inc ANSI-COLORS .
+    inc FILE .
+    pr (MAYBE * (op maybe to null)){Oid} . 
+
+    sorts FunI . 
+    subsort FunI < Cid . 
+    op FunI : -> FunI . 
+    op funi : -> Oid . 
+    op action :_ : Action -> Attribute .
+    op code :_ : String -> Attribute .
+    op idle : -> Action .
+
+    op fun interpreter : -> Configuration . 
+    eq fun interpreter = 
+       <> 
+       < funi : FunI | action : idle , code : "" > 
+       write(stdout, funi, "🎉" + " " + ansi-bold("Fun Interpreter\n")) .
+
+     vars O O’ : Oid . 
+     var Str Str1 Str2 : String . 
+     var ... : AttributeSet . 
+     var X : FunI . var N : Nat . var RP : ResultPair . var T : Term . var Tx : String . var FH : Oid .
+
+ 
+     rl < O : X | ... > wrote(O, O’)  => 
+        < O : X | ... > getLine(stdin, O, "Fun > ") . 
+
+     op handleCommandError : Nat -> String .
+     eq handleCommandError(0) = ansi-red("Invalid command.\n") . 
+     eq handleCommandError(N) = ansi-red("Syntax error at position: ") + string(N, 10) + ansi-red(".\n") [owise] .      
+
+     op handleInput : Oid Cid ResultPair? AttributeSet -> Configuration .
+     eq handleInput(O, X, noParse(N), ...) = 
+        < O : X | action : idle, ... >  write(stdout, O, handleCommandError(N)) .
+
+     op handleInput : Oid Cid ResultPair AttributeSet -> Configuration .
+     eq handleInput(O, X, RP, ...) = 
+        < O : X | action : downTerm(getTerm(RP), idle), ... > .
+
+     ---| Quit command
+     rl < O : X | action : idle, ... > gotLine(O, O’, "quit\n") => none .
+     rl < O : X | action : idle, ... > gotLine(O, O’, "q\n") => none .
+
+     ---| Recognizes a command which is not quit.
+     crl < O : X | action : idle, ... > gotLine(O, O’, Str) => 
+         handleInput(O, X, metaParse(upModule('FUN-CMD-GRM, false), tokenize(Str), 'Action), ...) 
+      if Str =/= "quit\n" .
+
+     ---| Lex command
+     rl < O : X | action : (lex Str), ... > => < O : X | action : idle, ... > 
+        write(stdout, O, printTokens(lex(Str)) + "\n") . 
+
+     ---| Parse command
+     op handleParse : Oid String ResultPair? -> Configuration .
+     eq handleParse(O, Str, noParse(N)) = write(stdout, O, ansi-red("Parse error: ") + ansi-bold(substr(Str, 0, N)) + "...👈\n") . 
+
+     op handleParse : Oid String ResultPair -> Configuration .
+     eq handleParse(O, Str, RP) = write(stdout, O, ansi-bold(printTokens(metaPrettyPrint(upModule('FUN-GRM, false), getTerm(RP)))) + "\n") . 
+
+     rl < O : X | action : (parse Str), ... > => < O : X | action : idle, ... > handleParse(O, Str, parseToTerm(Str)) .
+
+     ---| Compile command
+     ***(The meta-representation of an identifier x is ''x.Sort and Sort is not present at PI-IR grammar.
+         For this reason we need to create module PI-IR+META-TERM that has Sort together with PI-IR statements.)
+     rl < O : X | action : (compile Str), ... > => < O : X | action : idle, ... > 
+        write(stdout, O, printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(parse(Str))))) + "\n") . 
+
+     ---| Run command 
+      rl < O : X | action : (run Str1), code : Str2, ... > => < O : X | action : idle, code : Str2, ... > 
+        write(stdout, O, ansi-green(pp(out(exec(comp(parse(Str2 + "," + Str1)))))) + "\n") . 
+
+     ---| Load command 
+     rl < O : X | action : (load Str1), code : Str2, ... > => < O : X | action : idle, code : Str1, ... > 
+        write(stdout, O, ansi-green("Code ") + ansi-bold(Str1) + ansi-green(" loaded!\n")) . 
+
+     ---| Fload command, part 1: openFile 
+     rl < O : X | action : (fload Str1), code : Str2, ... > => 
+        < O : X | action : $floading Str1, code : "", ... > 
+        openFile(fileManager, O, Str1, "r") .
+
+     ---| Fload command, part 2: getLine
+     rl < O : X | action : $floading Str, ... > openedFile(O, fileManager, FH) =>
+        < O : X | action : $floading Str, ... > getLine(FH, O) .
+
+     ---| Fload command, part 3: getLine loop
+     rl < O : X | action : $floading Str1, code : Str2, ... > gotLine(O, FH, Tx) =>
+        if Tx == "" 
+        then closeFile(FH, O) 
+             write(stdout, O, ansi-green("File ") + ansi-bold(Str1) + ansi-green(" loaded!\n"))  
+             < O : X | action : idle, code : Str2, ... >
+        else < O : X | action : $floading Str1, code : (Str2 + Tx), ... > getLine(FH, O)  
+        fi . 
+
+     ---| Fload command, part 4: closedFile
+     rl < O : X | ... > closedFile(O, FH) => < O : X | ... > .
+
+     ---| Lex after a load command
+     rl < O : X | action : lex , (code : Str) , ... > => < O : X | (action : idle), (code : Str), ... > 
+        write(stdout, O, printTokens(lex(Str)) + "\n") . 
+
+     ---| Parse after a load command
+     rl < O : X | action : parse, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
+        handleParse(O, Str, parseToTerm(Str)) .
+
+     ---| Compile after a load command
+     rl < O : X | action : compile, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
+        write(stdout, O, printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(parse(Str))))) + "\n") . 
+
+     ---| Run after a load command 
+     rl < O : X | action : run, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
+        write(stdout, O, ansi-green(pp(out(exec(comp(parse(Str)))))) + "\n") . 
+
+     ---| Show after a load command 
+     rl < O : X | action : show, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
+        write(stdout, O, ansi-bold(Str) + "\n") . 
+endm    
+
+set show stats off .
+set show command off .
+erew fun interpreter .
+quit

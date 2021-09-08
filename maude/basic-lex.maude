@@ -1,0 +1,41 @@
+fmod BASIC-LEX is 
+     inc RAT .
+     inc FLOAT .
+     inc QID .
+     inc BOOL .
+     inc LEXICAL .
+     inc META-LEVEL * (op id to ml-id) .
+
+     op $errorRat : ~> Rat .   
+     op isRat : Qid -> Bool .
+     var Q : Qid .
+     eq isRat(Q) = downTerm(getTerm(
+        metaParse(upModule('RAT, false), Q, 'Rat)), $errorRat) =/= $errorRat .
+
+     op $errorString : ~> String .   
+     op isString : Qid -> Bool .
+     eq isString(Q) = downTerm(getTerm(
+        metaParse(upModule('STRING, false), Q, 'String)), $errorString) =/= $errorString .
+
+     op $errorFloat : ~> Float .   
+     op isFloat : Qid -> Bool .
+     eq isFloat(Q) = downTerm(getTerm(
+        metaParse(upModule('FLOAT, false), Q, 'Float)), $errorFloat) =/= $errorFloat .
+
+     op keywords : -> QidList .
+     op ignore : -> QidList .
+     op ignore? : Qid -> Bool .
+
+     eq ignore?(Q) = occurs(Q, ignore) .
+  
+     op lex : String -> QidList .
+     op $lex : QidList -> QidList .
+     op $lexQid : Qid -> Qid .
+     var S : String .
+     eq lex(S) = $lex(tokenize(S)) .
+
+     var QL : QidList .
+     eq $lex(nil) = nil .
+     eq $lex(Q QL) = 
+        if occurs(Q, keywords) then (Q $lex(QL)) else ($lexQid(Q) $lex(QL)) fi .
+endfm

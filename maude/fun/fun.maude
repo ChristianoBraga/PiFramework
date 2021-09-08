@@ -3,12 +3,16 @@ load ../pi
 fmod FUN-GRM is
      inc QID .
      inc RAT .
+     inc FLOAT .
+     inc STRING .
      inc BOOL .
      sorts Expr Idn Val .
      subsort Idn Val < Expr .  
      op _,_ : Expr Expr -> Expr [prec 60 assoc] .
      op idn : Qid -> Idn .
      op rat : Rat -> Val .
+     op flo : Float -> Val .
+     op str : String -> Val . 
      op boo : Bool -> Val .
      ops _+_ _*_ _-_ _/_ _==_ _<_ _>_ _or_ _and_ : Expr Expr -> Expr [gather(E e) prec 20] .
      op !_ : Expr -> Expr [prec 5] . 

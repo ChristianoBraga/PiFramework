@@ -41,6 +41,7 @@ fmod RECORD{X :: TRIV, Y :: TRIV} is
 endfm
 
 fmod PI-AUTOMATON is
+     inc NAT .
      inc BASIC-PI-IR .
      inc RECORD{Idx, SemComp} * (sort Record{Idx, SemComp} to State,
                                  sort PreRecord{Idx, SemComp} to PreState) .
@@ -48,7 +49,10 @@ fmod PI-AUTOMATON is
      subsort FinalState < State .
      op δ : State -> State [iter] .
      op δ* : State -> State .
+     ---| Liberal execution 
      op exec : Statement -> State .
+     ---| Finite execution
+     op fexe : Statement Nat -> State . 
      var S : State . var F : FinalState .
      eq δ*(F) = F .
      eq δ*(S) = δ*(δ(S)) .
