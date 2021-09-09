@@ -30,6 +30,7 @@ fibo(10)
 ```
 $ ./fun
 🎉 Fun Interpreter
+Beta version, Sep. 2021
 Fun > 
 ```
 
@@ -59,6 +60,19 @@ Fun > load "fun fat(x) = if x == 0 then 1 else x * fat(x - 1), fat(10)"
 Fun > fload "fat.fun"
 File fat.fun loaded!
 Fun >
+```
+
+### Show
+
+```
+Fun > fload "fat.fun"
+File fat.fun loaded!
+Fun > show
+fun fat(x) =
+    if x == 0
+    then 1
+    else x * fat(x - 1)
+Fun > 
 ```
 
 ### Invoking the lexer
