@@ -125,6 +125,10 @@ mod FUN-IO is
         < O : X | action : $floading Str1, code : "", ... > 
         openFile(fileManager, O, Str1, "r") .
 
+     ---| Error while opening a file
+     rl < O : X | action : $floading Str1, ... > fileError(O, fileManager, Str) => 
+        < O : X | action : idle, ... > write(stdout, O, ansi-red(Str) + ansi-red("!") + "\n") .
+
      ---| Fload command, part 2: getLine
      rl < O : X | action : $floading Str, ... > openedFile(O, fileManager, FH) =>
         < O : X | action : $floading Str, ... > getLine(FH, O) .

@@ -74,7 +74,8 @@ fmod FUN-TRAN2 is
      var Q : Qid .
      eq compileIdn(idn(Q)) = id(Q) .
 
-     op compileExpr : Expr ~> Exp .
+     op compileExpr : Expr -> Exp .
+
      var R : Rat . var F : Float . var S : String . var B : Bool .
      eq compileExpr(rat(R)) = exp(val(R)) .
      eq compileExpr(flo(F)) = exp(val(F)) .
@@ -102,8 +103,8 @@ fmod FUN-TRAN2 is
      var I : Idn . var E : Expr .   
      eq compileExpr(I(E)) = recapp(compileIdn(I), compileExpr(E)) .
 
-     eq compileExpr(((fun I1 (I2) = E1), E2)) = 
-        let(compileDec(fun I1 (I2) = E1), compileExpr(E2)) .
+     eq compileExpr((E1, E2)) = 
+        let(compileDec(E1), compileExpr(E2)) .
 
      op compileDec : Expr -> Dec .
      vars I1 I2 : Idn . 
