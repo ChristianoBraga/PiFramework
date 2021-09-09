@@ -66,7 +66,9 @@ Fun >
 #### From string
 ```
 Fun > lex "fun fat(x) = if x == 0 then 1 else x * fat(x - 1), fat(10)"
-fun idn('fat)(idn('x)) = if idn('x) == rat(0) then rat(1) else idn('x) * idn('fat)(idn('x) - rat(1)), idn('fat)(rat(10))
+token(fun) token(idn) token(() token('fat) token()) token(() token(idn) token(() token('x) token()) token()) token(=) token(if) token(idn) token(() token('x) token()) token(
+    ==) token(rat) token(() token(0) token()) token(then) token(rat) token(() token(1) token()) token(else) token(idn) token(() token('x) token()) token(*) token(idn) token(()
+    token('fat) token()) token(() token(idn) token(() token('x) token()) token(-) token(rat) token(() token(1) token()) token()) 
 Fun > 
 ```
 
@@ -76,7 +78,9 @@ Fun >
 Fun > fload "fat.fun"
 File fat.fun loaded!
 Fun > lex
-fun idn('fat)(idn('x)) = if idn('x) == rat(0) then rat(1) else idn('x) * idn('fat)(idn('x) - rat(1))
+token(fun) token(idn) token(() token('fat) token()) token(() token(idn) token(() token('x) token()) token()) token(=) token(if) token(idn) token(() token('x) token()) token(
+    ==) token(rat) token(() token(0) token()) token(then) token(rat) token(() token(1) token()) token(else) token(idn) token(() token('x) token()) token(*) token(idn) token(()
+    token('fat) token()) token(() token(idn) token(() token('x) token()) token(-) token(rat) token(() token(1) token()) token()) 
 Fun > 
 ```
 
@@ -85,8 +89,8 @@ Fun >
 #### From string
 
 ```
-Fun > parse "fun fat(x) = if x == 0 then 1 else x * fat(x - 1), fat(10)"
-fun idn('fat)(idn('x)) = if idn('x) == rat(0) then rat(1) else idn('x) * idn('fat)(idn('x) - rat(1)), idn('fat)(rat(10))
+Fun > parse "fun fat(x) = if x == 0 then 1 else x * fat(x - 1)"
+fun idn('fat)(idn('x)) = if idn('x) == rat(0) then rat(1) else idn('x) * idn('fat)(idn('x) - rat(1)) :: Expr
 Fun > 
 ```
 
@@ -96,7 +100,7 @@ Fun >
 Fun > fload "fat.fun"
 File fat.fun loaded!
 Fun > parse
-fun idn('fat)(idn('x)) = if idn('x) == rat(0) then rat(1) else idn('x) * idn('fat)(idn('x) - rat(1))
+fun idn('fat)(idn('x)) = if idn('x) == rat(0) then rat(1) else idn('x) * idn('fat)(idn('x) - rat(1)) :: Expr
 Fun > 
 ```
 

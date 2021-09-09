@@ -74,16 +74,18 @@ fmod FUN-TRAN2 is
      var Q : Qid .
      eq compileIdn(idn(Q)) = id(Q) .
 
-     op compileExpr : Expr -> Exp .
+     op compileExpr : Expr -> Statement .
 
      var R : Rat . var F : Float . var S : String . var B : Bool .
+     vars E E1 E2 E3 : Expr .
+     var I I1 I2 : Idn . 
+
      eq compileExpr(rat(R)) = exp(val(R)) .
      eq compileExpr(flo(F)) = exp(val(F)) .
      eq compileExpr(str(S)) = exp(val(S)) .
      eq compileExpr(boo(B)) = exp(val(B)) .
      eq compileExpr(idn(Q)) = exp(id(Q)) .
 
-     vars E1 E2 E3 : Expr .
      eq compileExpr(E1 + E2) = sum(compileExpr(E1), compileExpr(E2)) .
      eq compileExpr(E1 - E2) = sub(compileExpr(E1), compileExpr(E2)) .
      eq compileExpr(E1 * E2) = mul(compileExpr(E1), compileExpr(E2)) .
@@ -100,14 +102,14 @@ fmod FUN-TRAN2 is
      eq compileExpr(if E1 then E2 else E3) = 
         ite(compileExpr(E1), compileExpr(E2), compileExpr(E3)) .
 
-     var I : Idn . var E : Expr .   
+     eq compileExpr(fun I1 (I2) = E) = compileDec(fun I1 (I2) = E) .
+
      eq compileExpr(I(E)) = recapp(compileIdn(I), compileExpr(E)) .
 
-     eq compileExpr((E1, E2)) = 
-        let(compileDec(E1), compileExpr(E2)) .
+     eq compileExpr((fun I1 (I2) = E1, E2)) = 
+        let(compileDec(fun I1 (I2) = E1), compileExpr(E2)) .
 
      op compileDec : Expr -> Dec .
-     vars I1 I2 : Idn . 
      eq compileDec(fun I1 (I2) = E) = 
         rec(compileIdn(I1), lambda(compileIdn(I2), compileExpr(E))) . 
 endfm

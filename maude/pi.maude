@@ -768,6 +768,7 @@ endfm
 fmod DEC-IR is 
      inc ID-IR . inc CMD-IR .
      sort Dec .
+     subsort Dec < Statement .
      op dec : Id Exp -> Dec [format (m o)] .
      op let : Dec Exp -> Exp [format (y o)] .
      op block : Dec Cmd -> Cmd [format (g o)] .

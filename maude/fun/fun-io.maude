@@ -7,11 +7,13 @@ fmod ANSI-COLORS is
      op ansi-bold : String -> String .
      op ansi-red : String -> String .
      op ansi-green : String -> String .
+     op ansi-blue : String -> String .
      var S : String . var C : String .
      eq ansi(S, C) = "\033[" + C + "m" + S + "\033[0m" .
      eq ansi-bold(S) = ansi(S, "1") .
      eq ansi-red(S) = ansi(S, "31") .
      eq ansi-green(S) = ansi(S, "32") .
+     eq ansi-blue(S) = ansi(S, "34") .
 endfm
 
 fmod FUN-CMD-GRM is 
@@ -61,13 +63,14 @@ mod FUN-IO is
     eq fun interpreter = 
        <> 
        < funi : FunI | action : idle , code : "" > 
-       write(stdout, funi, "🎉" + " " + ansi-bold("Fun Interpreter\n")) .
+       write(stdout, funi, "🎉" + " " + ansi-bold("Fun Interpreter\n" + "Beta version, Sep. 2021\n")) .
 
      vars O O’ : Oid . 
      var Str Str1 Str2 : String . 
      var ... : AttributeSet . 
      var X : FunI . var N : Nat . var RP : ResultPair . var T : Term . var Tx : String . var FH : Oid .
-
+     var Q : Qid . var QL : QidList . var A : Action . var Expr : Expr .
+     var C : [Configuration] .
  
      rl < O : X | ... > wrote(O, O’)  => 
         < O : X | ... > getLine(stdin, O, "Fun > ") . 
@@ -94,29 +97,53 @@ mod FUN-IO is
       if Str =/= "quit\n" .
 
      ---| Lex command
+
+     op outputTokens : QidList -> String .
+     eq outputTokens(nil) = "" .
+     eq outputTokens(Q QL) = 
+        if printTokens(Q) == " " 
+        then outputTokens(QL)
+        else ansi-blue("token(") + ansi-bold(printTokens(Q)) + ansi-blue(")") + " " + outputTokens(QL)
+        fi .
      rl < O : X | action : (lex Str), ... > => < O : X | action : idle, ... > 
-        write(stdout, O, printTokens(lex(Str)) + "\n") . 
+        write(stdout, O, outputTokens(lex(Str)) + "\n") . 
 
      ---| Parse command
+
      op handleParse : Oid String ResultPair? -> Configuration .
      eq handleParse(O, Str, noParse(N)) = write(stdout, O, ansi-red("Parse error: ") + ansi-bold(substr(Str, 0, N)) + "...👈\n") . 
 
      op handleParse : Oid String ResultPair -> Configuration .
-     eq handleParse(O, Str, RP) = write(stdout, O, ansi-bold(printTokens(metaPrettyPrint(upModule('FUN-GRM, false), getTerm(RP)))) + "\n") . 
+     eq handleParse(O, Str, RP) = write(stdout, O, 
+        ansi-bold(printTokens(metaPrettyPrint(upModule('FUN-GRM, false), getTerm(RP)))) + " :: " +
+        ansi-blue(printTokens(getType(RP))) + 
+        "\n") . 
 
      rl < O : X | action : (parse Str), ... > => < O : X | action : idle, ... > handleParse(O, Str, parseToTerm(Str)) .
 
      ---| Compile command
+
      ***(The meta-representation of an identifier x is ''x.Sort and Sort is not present at PI-IR grammar.
          For this reason we need to create module PI-IR+META-TERM that has Sort together with PI-IR statements.)
-     rl < O : X | action : (compile Str), ... > => < O : X | action : idle, ... > 
-        write(stdout, O, printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(parse(Str))))) + "\n") . 
+
+     op handleCompile : Oid [Expr] -> Msg .
+     eq handleCompile(O, $errorExpr) = write(stdout, O, ansi-red("Compilation error!\n")) .
+
+     eq handleCompile(O, Expr) = write(stdout, O, printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(Expr)))) + "\n") [owise] .
+
+     rl < O : X | action : (compile Str), ... > => < O : X | action : idle, ... > handleCompile(O, parse(Str)) .
 
      ---| Run command 
-      rl < O : X | action : (run Str1), code : Str2, ... > => < O : X | action : idle, code : Str2, ... > 
-        write(stdout, O, ansi-green(pp(out(exec(comp(parse(Str2 + "," + Str1)))))) + "\n") . 
+
+     op handleRun : Oid [Expr] -> Msg .
+     eq handleRun(O, $errorExpr) = write(stdout, O, ansi-red("Execution error!\n")) .
+     eq handleRun(O, Expr) = write(stdout, O, ansi-green(pp(out(exec(comp(Expr))))) + "\n") . 
+
+     rl < O : X | action : (run Str1), code : Str2, ... > => < O : X | action : idle, code : Str2, ... > 
+        handleRun(O, parse(Str2 + "," + Str1)) .
 
      ---| Load command 
+
      rl < O : X | action : (load Str1), code : Str2, ... > => < O : X | action : idle, code : Str1, ... > 
         write(stdout, O, ansi-green("Code ") + ansi-bold(Str1) + ansi-green(" loaded!\n")) . 
 
@@ -147,19 +174,20 @@ mod FUN-IO is
 
      ---| Lex after a load command
      rl < O : X | action : lex , (code : Str) , ... > => < O : X | (action : idle), (code : Str), ... > 
-        write(stdout, O, printTokens(lex(Str)) + "\n") . 
+        write(stdout, O, outputTokens(lex(Str)) + "\n") . 
 
      ---| Parse after a load command
      rl < O : X | action : parse, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
         handleParse(O, Str, parseToTerm(Str)) .
 
      ---| Compile after a load command
-     rl < O : X | action : compile, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
-        write(stdout, O, printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(parse(Str))))) + "\n") . 
+     rl < O : X | action : compile, code : Str, ... > => 
+        < O : X | action : idle, code : Str, ... > 
+        handleCompile(O, parse(Str)) .
 
      ---| Run after a load command 
      rl < O : X | action : run, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
-        write(stdout, O, ansi-green(pp(out(exec(comp(parse(Str)))))) + "\n") . 
+        handleRun(O, parse(Str)) .
 
      ---| Show after a load command 
      rl < O : X | action : show, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
