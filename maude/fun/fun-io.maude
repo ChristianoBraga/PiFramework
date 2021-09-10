@@ -69,7 +69,7 @@ mod FUN-IO is
      var Str Str1 Str2 : String . 
      var ... : AttributeSet . 
      var X : FunI . var N : Nat . var RP : ResultPair . var T : Term . var Tx : String . var FH : Oid .
-     var Q : Qid . var QL : QidList . var A : Action . var Expr : Expr .
+     var Q : Qid . var QL : QidList . var A : Action . var Expr : Expr . var Dec : Dec .
      var C : [Configuration] .
  
      rl < O : X | ... > wrote(O, O’)  => 
@@ -137,7 +137,11 @@ mod FUN-IO is
 
      op handleRun : Oid [Expr] -> Msg .
      eq handleRun(O, $errorExpr) = write(stdout, O, ansi-red("Execution error!\n")) .
-     eq handleRun(O, Expr) = write(stdout, O, ansi-green(pp(out(exec(comp(Expr))))) + "\n") . 
+     eq handleRun(O, Expr) = 
+        if comp(Expr) :: Dec
+        then write(stdout, O, ansi-red("Can't run a declaration! Try running an application of the declared function.\n")) 
+        else write(stdout, O, ansi-green(pp(out(exec(comp(Expr))))) + "\n") 
+        fi . 
 
      rl < O : X | action : (run Str1), code : Str2, ... > => < O : X | action : idle, code : Str2, ... > 
         handleRun(O, parse(Str2 + "," + Str1)) .
