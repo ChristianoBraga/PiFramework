@@ -1,3 +1,8 @@
-#!/usr/local/bin/bash
+#!/usr/bin/bash
 
-maude.darwin64 -no-banner -allow-files fun-io
+if [ "$1" == "-st" ]; 
+then 
+    maude.linux64 ../trace-config -no-banner -allow-files fun-io
+else
+    maude.linux64 -no-banner -allow-files fun-io
+fi

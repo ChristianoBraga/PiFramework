@@ -88,13 +88,15 @@ mod FUN-IO is
         < O : X | action : downTerm(getTerm(RP), idle), ... > .
 
      ---| Quit command
+
      rl < O : X | action : idle, ... > gotLine(O, O’, "quit\n") => none .
      rl < O : X | action : idle, ... > gotLine(O, O’, "q\n") => none .
 
      ---| Recognizes a command which is not quit.
+
      crl < O : X | action : idle, ... > gotLine(O, O’, Str) => 
          handleInput(O, X, metaParse(upModule('FUN-CMD-GRM, false), tokenize(Str), 'Action), ...) 
-      if Str =/= "quit\n" .
+      if Str =/= "quit\n" or Str =/= "q\n" .
 
      ---| Lex command
 
@@ -129,7 +131,8 @@ mod FUN-IO is
      op handleCompile : Oid [Expr] -> Msg .
      eq handleCompile(O, $errorExpr) = write(stdout, O, ansi-red("Compilation error!\n")) .
 
-     eq handleCompile(O, Expr) = write(stdout, O, printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(Expr)))) + "\n") [owise] .
+     eq handleCompile(O, Expr) = write(stdout, O, 
+        ansi-bold(printTokens(metaPrettyPrint(upModule('PI-IR+META-TERM, false), upTerm(comp(Expr))))) + "\n") [owise] .
 
      rl < O : X | action : (compile Str), ... > => < O : X | action : idle, ... > handleCompile(O, parse(Str)) .
 
@@ -174,26 +177,32 @@ mod FUN-IO is
         fi . 
 
      ---| Fload command, part 4: closedFile
+
      rl < O : X | ... > closedFile(O, FH) => < O : X | ... > .
 
      ---| Lex after a load command
+
      rl < O : X | action : lex , (code : Str) , ... > => < O : X | (action : idle), (code : Str), ... > 
         write(stdout, O, outputTokens(lex(Str)) + "\n") . 
 
      ---| Parse after a load command
+
      rl < O : X | action : parse, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
         handleParse(O, Str, parseToTerm(Str)) .
 
      ---| Compile after a load command
+
      rl < O : X | action : compile, code : Str, ... > => 
         < O : X | action : idle, code : Str, ... > 
         handleCompile(O, parse(Str)) .
 
      ---| Run after a load command 
+
      rl < O : X | action : run, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
         handleRun(O, parse(Str)) .
 
      ---| Show after a load command 
+
      rl < O : X | action : show, code : Str, ... > => < O : X | action : idle, code : Str, ... > 
         write(stdout, O, ansi-bold(Str) + "\n") . 
 endm    
